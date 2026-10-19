@@ -47,6 +47,10 @@ class User extends Authenticatable
      */
     public function receiptTitle(): string
     {
-        return $this->jabatan ?: 'Bendahara / Kasir Keuangan';
+        if ($this->role === UserRole::Bendahara && $this->jabatan) {
+            return $this->jabatan;
+        }
+
+        return 'Bendahara / Kasir Keuangan';
     }
 }

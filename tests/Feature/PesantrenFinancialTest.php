@@ -180,6 +180,27 @@ class PesantrenFinancialTest extends TestCase
         $this->assertStringContainsString('SPP Bulanan, Makan &amp; Laundry - Januari 2027', $html);
         $this->assertStringNotContainsString('Potongan 50%', $html);
         $this->assertStringNotContainsString('Penerima Beasiswa', $html);
+        $this->assertStringContainsString("Satuan Pendidikan Muadalah Mu'allimien | Putra-Putri", $html);
+        $this->assertStringNotContainsString('Sistem Keuangan PTQ Amsa001', $html);
+    }
+
+    /**
+     * Test 7b: Gelar penanda tangan kuitansi mengikuti jabatan Bendahara 1 & 2
+     */
+    public function test_receipt_signature_title_follows_bendahara_jabatan(): void
+    {
+        $this->assertSame(
+            'Bendahara 1 PTQ Amsa001',
+            User::where('email', 'bendahara1@ptqamsa.id')->firstOrFail()->receiptTitle()
+        );
+        $this->assertSame(
+            'Bendahara 2 PTQ Amsa001',
+            User::where('email', 'bendahara2@ptqamsa.id')->firstOrFail()->receiptTitle()
+        );
+        $this->assertSame(
+            'Bendahara / Kasir Keuangan',
+            User::where('email', 'admin@ptqamsa.id')->firstOrFail()->receiptTitle()
+        );
     }
 
     /**
