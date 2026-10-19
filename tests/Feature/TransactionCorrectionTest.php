@@ -275,7 +275,35 @@ class TransactionCorrectionTest extends TestCase
     }
 
     /**
-     * Test 11: Bendahara dapat membuka halaman Koreksi Transaksi.
+     * Test 11: Kuitansi PDF yang dibatalkan memuat tanda air DIBATALKAN.
+     */
+    public function test_voided_receipt_pdf_contains_cancelled_watermark(): void
+    {
+        $bendahara = $this->userWithRole(UserRole::Bendahara);
+        $payment = Payment::where('payment_code', 'PAY-202607-0001')->firstOrFail();
+
+        $this->actingAs($bendahara)
+            ->patch(route('admin.transactions.void', $payment), ['void_reason' => 'Koreksi administrasi'])
+            ->assertRedirect();
+
+        $payment->load(['invoice', 'student', 'receipt']);
+        $receipt = $payment->receipt;
+
+        $html = view('pdf.receipt', [
+            'receipt' => $receipt,
+            'payment' => $payment->fresh(['invoice', 'student']),
+            'invoice' => $payment->invoice,
+            'student' => $payment->student,
+            'terbilang' => 'Dua Ratus Ribu Rupiah',
+            'verification_url' => $receipt->verification_url,
+        ])->render();
+
+        $this->assertStringContainsString('DIBATALKAN', $html);
+        $this->assertStringContainsString('Koreksi administrasi', $html);
+    }
+
+    /**
+     * Test 12: Bendahara dapat membuka halaman Koreksi Transaksi.
      */
     public function test_bendahara_can_open_transaction_correction_page(): void
     {
