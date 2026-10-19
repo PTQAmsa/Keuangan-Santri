@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Sistem Keuangan PTQ Amsa001')</title>
-    <!-- Favicon: logo resmi pesantren (di-host lokal) -->
-    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
-    <link rel="icon" type="image/png" sizes="64x64" href="{{ asset('favicon.png') }}">
+    <!-- Favicon: logo resmi pesantren format SVG (di-host lokal) -->
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="alternate icon" type="image/png" sizes="64x64" href="{{ asset('favicon.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('images/apple-touch-icon.png') }}">
     <!-- Tailwind CSS (di-host lokal agar demo tetap berjalan tanpa internet) -->
     <script src="{{ asset('vendor/tailwind/tailwind.min.js') }}"></script>
