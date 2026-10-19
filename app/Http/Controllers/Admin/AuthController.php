@@ -39,6 +39,15 @@ class AuthController
             ]);
         }
 
+        // Akun pengurus yang dinonaktifkan tidak boleh masuk.
+        if (! $request->user()->is_active) {
+            Auth::logout();
+
+            throw ValidationException::withMessages([
+                'email' => 'Akun ini sudah dinonaktifkan. Hubungi Administrator pesantren.',
+            ]);
+        }
+
         $request->session()->regenerate();
 
         ActivityLogService::loggedIn($request->user());

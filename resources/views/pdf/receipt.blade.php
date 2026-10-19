@@ -138,9 +138,37 @@
             font-size: 9px;
             display: inline-block;
         }
+        .watermark {
+            position: fixed;
+            top: 35%;
+            left: 8%;
+            width: 84%;
+            text-align: center;
+            font-size: 54px;
+            font-weight: bold;
+            color: rgba(190, 18, 60, 0.20);
+            border: 4px solid rgba(190, 18, 60, 0.20);
+            padding: 8px 0;
+            transform: rotate(-18deg);
+            letter-spacing: 6px;
+            z-index: 999;
+        }
+        .badge-void {
+            color: #9f1239;
+            background-color: #ffe4e6;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 9px;
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
+    @if($payment->isVoided())
+        <div class="watermark">DIBATALKAN</div>
+    @endif
+
     <!-- Header Lembaga -->
     <table class="header-table">
         <tr>
@@ -183,6 +211,17 @@
             <td class="separator-col">:</td>
             <td class="value-col">
                 <strong>{{ $invoice->receipt_title }}</strong>
+            </td>
+        </tr>
+        <tr>
+            <td class="label-col">Status Kuitansi</td>
+            <td class="separator-col">:</td>
+            <td class="value-col">
+                @if($payment->isVoided())
+                    <span class="badge-void">DIBATALKAN {{ $payment->voided_at->format('d/m/Y H:i') }} — {{ $payment->void_reason }}</span>
+                @else
+                    <span class="badge-paid">SAH</span>
+                @endif
             </td>
         </tr>
         <tr>

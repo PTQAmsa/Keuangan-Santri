@@ -48,6 +48,7 @@
                     <option value="unpaid" {{ request('status') === 'unpaid' ? 'selected' : '' }}>Belum Bayar (Unpaid)</option>
                     <option value="partial" {{ request('status') === 'partial' ? 'selected' : '' }}>Dicicil (Partial)</option>
                     <option value="paid" {{ request('status') === 'paid' ? 'selected' : '' }}>Lunas (Paid)</option>
+                    <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
                 </select>
             </div>
 
@@ -212,6 +213,8 @@
                                     <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-200">LUNAS</span>
                                 @elseif($inv->status === 'partial')
                                     <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-800 border border-amber-200">DICICIL</span>
+                                @elseif($inv->status === 'cancelled')
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-gray-200 text-gray-700 border border-gray-300">DIBATALKAN</span>
                                 @else
                                     <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-rose-100 text-rose-800 border border-rose-200">BELUM BAYAR</span>
                                 @endif
@@ -219,13 +222,49 @@
 
                             <!-- Aksi Kasir -->
                             <td class="py-3.5 px-4 text-center whitespace-nowrap">
-                                @if($inv->status !== 'paid')
-                                    <a href="{{ route('admin.cashier', ['student_id' => $inv->student_id]) }}"
-                                       class="inline-flex items-center px-3 py-1 bg-brand-900 hover:bg-brand-800 text-white rounded-lg text-xs font-semibold shadow-sm transition">
-                                        <i class="fa-solid fa-cash-register mr-1 text-gold-400"></i> Bayar
-                                    </a>
+                                @if($inv->status === 'cancelled')
+                                    <span class="text-xs text-gray-400 font-semibold"><i class="fa-solid fa-ban mr-1"></i> Dibatalkan</span>
                                 @else
-                                    <span class="text-xs text-emerald-600 font-semibold"><i class="fa-solid fa-circle-check mr-1"></i> Lunas</span>
+                                    <div class="inline-flex items-center space-x-1.5">
+                                        @if($inv->status !== 'paid')
+                                            <a href="{{ route('admin.cashier', ['student_id' => $inv->student_id]) }}"
+                                               class="inline-flex items-center px-2.5 py-1 bg-brand-900 hover:bg-brand-800 text-white rounded-lg text-[11px] font-semibold shadow-sm transition">
+                                                <i class="fa-solid fa-cash-register mr-1 text-gold-400"></i> Bayar
+                                            </a>
+                                        @endif
+
+                                        <button type="button"
+                                                data-invoice="{{ json_encode([
+                                                    'id' => $inv->id,
+                                                    'number' => $inv->invoice_number,
+                                                    'title' => $inv->title,
+                                                    'amount' => (float) $inv->amount,
+                                                    'due_date' => $inv->due_date?->format('Y-m-d'),
+                                                    'notes' => $inv->notes,
+                                                    'paid' => (float) $inv->paid_amount,
+                                                ]) }}"
+                                                onclick="openEditInvoice(this)"
+                                                class="inline-flex items-center px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg text-[11px] font-semibold border border-amber-200 transition" title="Ubah tagihan">
+                                            <i class="fa-solid fa-pen-to-square mr-1"></i> Ubah
+                                        </button>
+
+                                        @if($inv->paid_amount <= 0)
+                                            <button type="button"
+                                                    data-invoice="{{ json_encode(['id' => $inv->id, 'number' => $inv->invoice_number, 'title' => $inv->title]) }}"
+                                                    onclick="openCancelInvoice(this)"
+                                                    class="inline-flex items-center px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-[11px] font-semibold border border-rose-200 transition" title="Batalkan tagihan">
+                                                <i class="fa-solid fa-ban mr-1"></i>
+                                            </button>
+                                            <form action="{{ route('admin.invoices.destroy', $inv) }}" method="POST" class="inline"
+                                                  onsubmit="return confirm('Hapus tagihan {{ $inv->invoice_number }} secara permanen? Tindakan ini tercatat di Log Aktivitas.');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="inline-flex items-center px-2 py-1 bg-gray-50 hover:bg-gray-200 text-gray-600 rounded-lg text-[11px] font-semibold border border-gray-200 transition" title="Hapus tagihan">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
                                 @endif
                             </td>
                         </tr>
@@ -396,5 +435,125 @@
             document.getElementById('modalTitle').value = catName;
         }
     }
+
+    // Modal Ubah Tagihan
+    function openEditInvoice(button) {
+        const data = JSON.parse(button.dataset.invoice);
+        document.getElementById('editInvoiceForm').action = "{{ url('admin/tagihan') }}/" + data.id;
+        document.getElementById('editInvoiceNumber').textContent = data.number || '-';
+        document.getElementById('editInvoiceTitle').value = data.title || '';
+        document.getElementById('editInvoiceAmount').value = data.amount;
+        document.getElementById('editInvoiceDueDate').value = data.due_date || '';
+        document.getElementById('editInvoiceNotes').value = data.notes || '';
+        document.getElementById('editInvoicePaidInfo').textContent = data.paid > 0
+            ? 'Sudah dibayar: Rp ' + new Intl.NumberFormat('id-ID').format(data.paid)
+            : 'Belum ada pembayaran.';
+        document.getElementById('editInvoiceModal').classList.remove('hidden');
+    }
+
+    // Modal Batalkan Tagihan
+    function openCancelInvoice(button) {
+        const data = JSON.parse(button.dataset.invoice);
+        document.getElementById('cancelInvoiceForm').action = "{{ url('admin/tagihan') }}/" + data.id + "/batal";
+        document.getElementById('cancelInvoiceNumber').textContent = data.number || '-';
+        document.getElementById('cancelInvoiceSummary').textContent = data.title || '-';
+        document.getElementById('cancelInvoiceModal').classList.remove('hidden');
+    }
 </script>
+
+<!-- Modal Ubah Tagihan -->
+<div id="editInvoiceModal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden border border-gray-100">
+        <div class="bg-gradient-to-r from-brand-900 to-brand-800 px-6 py-5 text-white flex items-center justify-between">
+            <div>
+                <h3 class="font-bold text-base">Ubah Data Tagihan</h3>
+                <p class="text-xs text-blue-200" id="editInvoiceNumber">-</p>
+            </div>
+            <button type="button" onclick="document.getElementById('editInvoiceModal').classList.add('hidden')" class="text-gray-300 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form id="editInvoiceForm" method="POST" class="p-6 space-y-4 text-xs">
+            @csrf
+            @method('PATCH')
+
+            <div>
+                <label class="block font-bold text-gray-700 uppercase mb-1">Uraian Tagihan <span class="text-rose-500">*</span></label>
+                <input type="text" name="title" id="editInvoiceTitle" required maxlength="150"
+                       class="w-full text-xs rounded-xl border-gray-300 py-2.5 px-3 focus:ring-brand-800">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-bold text-gray-700 uppercase mb-1">Nominal Tagihan (Rp) <span class="text-rose-500">*</span></label>
+                    <input type="number" name="amount" id="editInvoiceAmount" required min="1000" step="1000"
+                           class="w-full text-xs font-bold rounded-xl border-gray-300 py-2.5 px-3 focus:ring-brand-800">
+                    <p class="text-[11px] text-gray-500 mt-1" id="editInvoicePaidInfo">-</p>
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 uppercase mb-1">Jatuh Tempo <span class="text-rose-500">*</span></label>
+                    <input type="date" name="due_date" id="editInvoiceDueDate" required
+                           class="w-full text-xs rounded-xl border-gray-300 py-2.5 px-3 focus:ring-brand-800">
+                </div>
+            </div>
+
+            <div>
+                <label class="block font-bold text-gray-700 uppercase mb-1">Catatan</label>
+                <input type="text" name="notes" id="editInvoiceNotes" maxlength="255"
+                       class="w-full text-xs rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800">
+            </div>
+
+            <div class="p-3 bg-amber-50 border border-amber-100 rounded-xl text-[11px] text-amber-900">
+                <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+                Nominal tidak boleh lebih kecil dari total yang sudah dibayar. Perubahan tercatat di Log Aktivitas.
+            </div>
+
+            <div class="flex items-center justify-end space-x-2 pt-2">
+                <button type="button" onclick="document.getElementById('editInvoiceModal').classList.add('hidden')" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold transition">Batal</button>
+                <button type="submit" class="px-5 py-2 bg-brand-900 hover:bg-brand-800 text-white rounded-xl font-bold shadow-md transition">
+                    <i class="fa-solid fa-floppy-disk mr-1.5"></i> Simpan Perubahan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Batalkan Tagihan -->
+<div id="cancelInvoiceModal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-100">
+        <div class="bg-gradient-to-r from-rose-800 to-rose-700 px-6 py-5 text-white flex items-center justify-between">
+            <div>
+                <h3 class="font-bold text-base">Batalkan Tagihan</h3>
+                <p class="text-xs text-rose-100" id="cancelInvoiceNumber">-</p>
+            </div>
+            <button type="button" onclick="document.getElementById('cancelInvoiceModal').classList.add('hidden')" class="text-gray-200 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form id="cancelInvoiceForm" method="POST" class="p-6 space-y-4 text-xs">
+            @csrf
+            @method('PATCH')
+
+            <div class="p-3 bg-rose-50 border border-rose-100 rounded-xl text-[11px] text-rose-900">
+                <p class="font-semibold" id="cancelInvoiceSummary">-</p>
+                <p class="mt-1">Tagihan berstatus <strong>DIBATALKAN</strong> tidak akan dihitung sebagai tunggakan dan tidak muncul di portal wali.</p>
+            </div>
+
+            <div>
+                <label class="block font-bold text-gray-700 uppercase mb-1">Alasan Pembatalan <span class="text-rose-500">*</span></label>
+                <textarea name="cancel_reason" required rows="3" maxlength="255" placeholder="Contoh: Santri batal mondok / tagihan salah terbit"
+                          class="w-full text-xs rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800"></textarea>
+            </div>
+
+            <div class="flex items-center justify-end space-x-2 pt-2">
+                <button type="button" onclick="document.getElementById('cancelInvoiceModal').classList.add('hidden')" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold transition">Tutup</button>
+                <button type="submit" class="px-5 py-2 bg-rose-700 hover:bg-rose-800 text-white rounded-xl font-bold shadow-md transition">
+                    <i class="fa-solid fa-ban mr-1.5"></i> Batalkan Tagihan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 @endsection

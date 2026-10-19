@@ -3,6 +3,13 @@
 @section('title', 'Dashboard Wali Santri - ' . $student->nama_lengkap)
 
 @section('content')
+@php
+    // Popup pengingat ganti PIN: wajib bila login lewat nomor WA, dan
+    // disarankan sekali bila PIN masih bawaan (belum pernah diganti).
+    $pinIsDefault = (string) $student->pin_portal === '123456';
+    $forcePinChange = $student->must_change_pin;
+    $suggestPinChange = ! $forcePinChange && $pinIsDefault && $student->pin_changed_at === null;
+@endphp
 <div class="space-y-6">
 
     <!-- 1. Header Profil Santri Card -->
@@ -59,9 +66,9 @@
             <div>
                 <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Dana Masuk</p>
                 <p class="text-xl sm:text-2xl font-bold text-emerald-600 mt-1">
-                    Rp {{ number_format($payments->sum('amount_paid'), 0, ',', '.') }}
+                    Rp {{ number_format($payments->whereNull('voided_at')->sum('amount_paid'), 0, ',', '.') }}
                 </p>
-                <p class="text-[11px] text-gray-400 mt-0.5">{{ $payments->count() }} transaksi terekam</p>
+                <p class="text-[11px] text-gray-400 mt-0.5">{{ $payments->whereNull('voided_at')->count() }} transaksi terekam</p>
             </div>
             <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
                 <i class="fa-solid fa-receipt"></i>
@@ -182,14 +189,17 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         @foreach($payments as $pay)
-                            <tr class="hover:bg-gray-50/50">
+                            <tr class="hover:bg-gray-50/50 {{ $pay->isVoided() ? 'opacity-60' : '' }}">
                                 <td class="py-3.5 px-4 font-mono font-bold text-brand-900">
                                     {{ $pay->receipt->receipt_number ?? '-' }}
+                                    @if($pay->isVoided())
+                                        <span class="block mt-0.5 text-[10px] font-bold text-rose-700 bg-rose-100 px-1.5 py-0.5 rounded w-max">DIBATALKAN</span>
+                                    @endif
                                 </td>
                                 <td class="py-3.5 px-4 font-medium text-gray-800">
                                     {{ $pay->invoice->title ?? '-' }}
                                 </td>
-                                <td class="py-3.5 px-4 font-bold text-emerald-600">
+                                <td class="py-3.5 px-4 font-bold {{ $pay->isVoided() ? 'text-gray-400 line-through' : 'text-emerald-600' }}">
                                     Rp {{ number_format($pay->amount_paid, 0, ',', '.') }}
                                 </td>
                                 <td class="py-3.5 px-4 text-gray-600">
@@ -225,4 +235,49 @@
     </div>
 
 </div>
+
+@if($forcePinChange || $suggestPinChange)
+    <!-- Popup saran/wajib ganti PIN setelah login -->
+    <div id="pinReminder" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-100">
+            <div class="bg-gradient-to-r from-brand-900 to-brand-800 px-6 py-5 text-white flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gold-400 text-brand-900 flex items-center justify-center text-lg shadow">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-base">{{ $forcePinChange ? 'Wajib Ganti PIN' : 'Amankan Akun Anda' }}</h3>
+                    <p class="text-[11px] text-blue-200">
+                        {{ $forcePinChange ? 'Anda login memakai nomor WhatsApp' : 'PIN Anda masih PIN bawaan' }}
+                    </p>
+                </div>
+            </div>
+
+            <div class="p-6 space-y-4 text-xs text-gray-600">
+                @if($forcePinChange)
+                    <p>Demi keamanan data keuangan santri, Anda <strong>wajib membuat PIN baru</strong> sebelum memakai portal.</p>
+                @else
+                    <p>PIN Anda saat ini masih <strong>PIN bawaan (123456)</strong> yang diketahui banyak orang. Kami menyarankan Anda menggantinya dengan PIN 6 angka yang hanya Anda ketahui.</p>
+                @endif
+
+                <div class="p-3 bg-blue-50 border border-blue-100 rounded-xl text-[11px] text-blue-900">
+                    <p class="font-semibold mb-1"><i class="fa-solid fa-circle-info mr-1"></i> Lupa PIN di kemudian hari?</p>
+                    <p>Anda tetap bisa masuk dengan <strong>NIS + nomor WhatsApp wali</strong>, lalu membuat PIN baru. Bila nomor WA juga berganti, ajukan reset PIN ke Bendahara Pesantren.</p>
+                </div>
+
+                <div class="flex items-center justify-end space-x-2 pt-1">
+                    @unless($forcePinChange)
+                        <button type="button" onclick="document.getElementById('pinReminder').classList.add('hidden')"
+                                class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold transition">
+                            Nanti Saja
+                        </button>
+                    @endunless
+                    <a href="{{ route('portal.change-pin') }}"
+                       class="px-5 py-2 bg-brand-900 hover:bg-brand-800 text-white rounded-xl font-bold shadow-md transition inline-flex items-center">
+                        <i class="fa-solid fa-lock mr-1.5"></i> {{ $forcePinChange ? 'Buat PIN Baru' : 'Ganti PIN Sekarang' }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
 @endsection

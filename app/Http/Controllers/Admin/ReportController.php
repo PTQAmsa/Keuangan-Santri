@@ -42,6 +42,7 @@ class ReportController
         }
 
         $query = Payment::with(['student', 'invoice.category', 'receipt'])
+            ->whereNull('voided_at')
             ->whereDate('payment_date', '>=', $startDate)
             ->whereDate('payment_date', '<=', $endDate);
 
@@ -126,6 +127,7 @@ class ReportController
         $paymentMethod = $request->input('payment_method');
 
         $query = Payment::with(['student', 'invoice.category', 'receipt'])
+            ->whereNull('voided_at')
             ->whereDate('payment_date', '>=', $startDate)
             ->whereDate('payment_date', '<=', $endDate)
             ->orderBy('payment_date', 'asc');
@@ -208,6 +210,7 @@ class ReportController
         $paymentMethod = $request->input('payment_method');
 
         $query = Payment::with(['student', 'invoice.category', 'receipt'])
+            ->whereNull('voided_at')
             ->whereDate('payment_date', '>=', $startDate)
             ->whereDate('payment_date', '<=', $endDate)
             ->orderBy('payment_date', 'asc');

@@ -6,17 +6,36 @@
 <div class="max-w-2xl mx-auto my-6">
 
     @if($receipt)
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-emerald-100">
+        @php($payment = $receipt->payment)
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden {{ $payment->isVoided() ? 'border border-rose-200' : 'border border-emerald-100' }}">
             <!-- Header Status Terverifikasi -->
-            <div class="bg-emerald-600 text-white p-6 sm:p-8 text-center relative overflow-hidden">
-                <div class="w-16 h-16 rounded-full bg-white/20 border-2 border-white mx-auto flex items-center justify-center text-3xl mb-3 shadow">
-                    <i class="fa-solid fa-certificate"></i>
+            @if($payment->isVoided())
+                <div class="bg-rose-700 text-white p-6 sm:p-8 text-center relative overflow-hidden">
+                    <div class="w-16 h-16 rounded-full bg-white/20 border-2 border-white mx-auto flex items-center justify-center text-3xl mb-3 shadow">
+                        <i class="fa-solid fa-ban"></i>
+                    </div>
+                    <h1 class="text-xl sm:text-2xl font-bold tracking-tight">KUITANSI SUDAH DIBATALKAN</h1>
+                    <p class="text-xs sm:text-sm text-rose-100 mt-1">
+                        Kuitansi ini diterbitkan sebelumnya, namun transaksinya telah dibatalkan oleh bagian keuangan.
+                    </p>
                 </div>
-                <h1 class="text-xl sm:text-2xl font-bold tracking-tight">DOKUMEN RESMI TERVERIFIKASI</h1>
-                <p class="text-xs sm:text-sm text-emerald-100 mt-1">
-                    Kuitansi elektronik ini sah dan terdaftar dalam pangkalan data resmi PTQ Amsa001.
-                </p>
-            </div>
+
+                <div class="mx-6 sm:mx-8 mt-6 p-4 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-900 space-y-1">
+                    <p><strong>Dibatalkan pada:</strong> {{ $payment->voided_at->format('d F Y, H:i') }} WIB</p>
+                    <p><strong>Alasan:</strong> {{ $payment->void_reason ?: '-' }}</p>
+                    <p class="text-rose-700">Kuitansi ini tidak sah sebagai bukti penerimaan kas. Hubungi Bendahara Pesantren bila memerlukan kuitansi pengganti.</p>
+                </div>
+            @else
+                <div class="bg-emerald-600 text-white p-6 sm:p-8 text-center relative overflow-hidden">
+                    <div class="w-16 h-16 rounded-full bg-white/20 border-2 border-white mx-auto flex items-center justify-center text-3xl mb-3 shadow">
+                        <i class="fa-solid fa-certificate"></i>
+                    </div>
+                    <h1 class="text-xl sm:text-2xl font-bold tracking-tight">DOKUMEN RESMI TERVERIFIKASI</h1>
+                    <p class="text-xs sm:text-sm text-emerald-100 mt-1">
+                        Kuitansi elektronik ini sah dan terdaftar dalam pangkalan data resmi PTQ Amsa001.
+                    </p>
+                </div>
+            @endif
 
             <!-- Detail Dokumen -->
             <div class="p-6 sm:p-8 space-y-6">
@@ -55,8 +74,8 @@
                             <span class="text-[11px] font-semibold text-brand-800 uppercase tracking-wider">Uraian Pembayaran</span>
                             <h3 class="text-base font-bold text-brand-900 mt-0.5">{{ $receipt->payment->invoice->receipt_title }}</h3>
                         </div>
-                        <span class="px-2.5 py-1 rounded text-xs font-bold bg-emerald-100 text-emerald-800">
-                            {{ $receipt->payment->invoice->status === 'paid' ? 'LUNAS' : 'DICICIL' }}
+                        <span class="px-2.5 py-1 rounded text-xs font-bold {{ $payment->isVoided() ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800' }}">
+                            {{ $payment->isVoided() ? 'DIBATALKAN' : ($receipt->payment->invoice->status === 'paid' ? 'LUNAS' : 'DICICIL') }}
                         </span>
                     </div>
 

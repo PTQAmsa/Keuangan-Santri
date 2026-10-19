@@ -70,7 +70,7 @@ class StudentController
             'nama_wali' => ['required', 'string', 'max:100'],
             'no_whatsapp_wali' => ['required', 'string', 'max:25'],
             'hubungan_wali' => ['required', 'in:Ayah,Ibu,Wali'],
-            'pin_portal' => ['required', 'string', 'max:10'],
+            'pin_portal' => ['required', 'digits:6'],
             'diskon_beasiswa' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'bebas_wakaf' => ['nullable', 'boolean'],
         ], [], [
@@ -84,6 +84,9 @@ class StudentController
         $data['bebas_wakaf'] = $request->boolean('bebas_wakaf');
         $data['diskon_beasiswa'] = $data['diskon_beasiswa'] ?? 0;
 
+        // Santri baru selalu diminta mengganti PIN bawaan saat login pertama.
+        $data['must_change_pin'] = true;
+
         $student = Student::create($data);
 
         ActivityLogService::studentCreated($student, auth()->id());
@@ -91,6 +94,21 @@ class StudentController
         return redirect()
             ->route('admin.students')
             ->with('success', 'Data santri '.$student->nama_lengkap.' (NIS '.$student->nis.') berhasil ditambahkan.');
+    }
+
+    /**
+     * Reset PIN portal wali oleh petugas (bendahara/administrator).
+     */
+    public function resetPin(Student $student)
+    {
+        $student->pin_portal = '123456';
+        $student->must_change_pin = true;
+        $student->pin_reset_requested_at = null;
+        $student->save();
+
+        ActivityLogService::pinReset($student, auth()->id());
+
+        return back()->with('success', 'PIN portal '.$student->nama_lengkap.' direset ke 123456. Wali akan diminta mengganti PIN saat login berikutnya.');
     }
 
     /**

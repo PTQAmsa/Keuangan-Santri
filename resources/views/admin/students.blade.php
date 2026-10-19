@@ -136,6 +136,11 @@
                             <td class="py-3 px-4">
                                 <p class="font-semibold text-gray-800">{{ $s->nama_wali }}</p>
                                 <p class="text-[11px] text-gray-500 font-mono">{{ $s->no_whatsapp_wali }} ({{ $s->hubungan_wali }})</p>
+                                @if($s->pin_reset_requested_at)
+                                    <span class="inline-flex items-center mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                                        <i class="fa-solid fa-key mr-1"></i> Minta reset PIN
+                                    </span>
+                                @endif
                             </td>
                             <td class="py-3 px-4 text-center">
                                 @if((float) $s->diskon_beasiswa > 0)
@@ -166,22 +171,32 @@
                                 @endif
                             </td>
                             <td class="py-3 px-4 text-center whitespace-nowrap">
-                                <form action="{{ route('admin.students.toggle', $s) }}" method="POST" class="inline"
-                                      onsubmit="return confirm('{{ $s->status === 'aktif'
-                                            ? 'Nonaktifkan santri '.$s->nama_lengkap.'? Santri ini tidak akan dibuatkan tagihan baru lagi (mis. SPP bulanan), namun seluruh tagihan & kuitansi lama tetap tercatat.'
-                                            : 'Aktifkan kembali santri '.$s->nama_lengkap.'?' }}');">
-                                    @csrf
-                                    @method('PATCH')
-                                    @if($s->status === 'aktif')
-                                        <button type="submit" class="inline-flex items-center px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-[11px] font-semibold transition border border-rose-200">
-                                            <i class="fa-solid fa-user-slash mr-1"></i> Nonaktifkan
+                                <div class="inline-flex items-center space-x-1.5">
+                                    <form action="{{ route('admin.students.reset-pin', $s) }}" method="POST" class="inline"
+                                          onsubmit="return confirm('Reset PIN portal {{ $s->nama_lengkap }} ke 123456? Wali akan diminta mengganti PIN saat login berikutnya.');">
+                                        @csrf
+                                        <button type="submit" class="inline-flex items-center px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 text-[11px] font-semibold transition border border-amber-200" title="Reset PIN portal wali">
+                                            <i class="fa-solid fa-key mr-1"></i> Reset PIN
                                         </button>
-                                    @else
-                                        <button type="submit" class="inline-flex items-center px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[11px] font-semibold transition border border-emerald-200">
-                                            <i class="fa-solid fa-user-check mr-1"></i> Aktifkan
-                                        </button>
-                                    @endif
-                                </form>
+                                    </form>
+
+                                    <form action="{{ route('admin.students.toggle', $s) }}" method="POST" class="inline"
+                                          onsubmit="return confirm('{{ $s->status === 'aktif'
+                                                ? 'Nonaktifkan santri '.$s->nama_lengkap.'? Santri ini tidak akan dibuatkan tagihan baru lagi (mis. SPP bulanan), namun seluruh tagihan & kuitansi lama tetap tercatat.'
+                                                : 'Aktifkan kembali santri '.$s->nama_lengkap.'?' }}');">
+                                        @csrf
+                                        @method('PATCH')
+                                        @if($s->status === 'aktif')
+                                            <button type="submit" class="inline-flex items-center px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-[11px] font-semibold transition border border-rose-200">
+                                                <i class="fa-solid fa-user-slash mr-1"></i> Nonaktifkan
+                                            </button>
+                                        @else
+                                            <button type="submit" class="inline-flex items-center px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[11px] font-semibold transition border border-emerald-200">
+                                                <i class="fa-solid fa-user-check mr-1"></i> Aktifkan
+                                            </button>
+                                        @endif
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @empty

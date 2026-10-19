@@ -98,11 +98,17 @@
                     </div>
                 </div>
 
-                <div class="text-center mt-4 text-xs text-gray-500">
-                    Mengalami kendala login?
-                    <a href="https://wa.me/6285692253516" target="_blank" class="text-brand-900 font-bold hover:text-gold-600 hover:underline inline-flex items-center">
-                        <i class="fa-brands fa-whatsapp text-emerald-600 mr-1"></i> Hubungi Usth. Yuni (Bendahara)
-                    </a>
+                <div class="text-center mt-4 text-xs text-gray-500 space-y-1.5">
+                    <p>
+                        Lupa PIN?
+                        <a href="{{ route('portal.forgot-pin') }}" class="text-brand-900 font-bold hover:text-gold-600 hover:underline">Lihat cara reset PIN</a>
+                    </p>
+                    <p>
+                        Mengalami kendala login?
+                        <a href="https://wa.me/6285692253516" target="_blank" class="text-brand-900 font-bold hover:text-gold-600 hover:underline inline-flex items-center">
+                            <i class="fa-brands fa-whatsapp text-emerald-600 mr-1"></i> Hubungi Bendahara
+                        </a>
+                    </p>
                 </div>
             </div>
         </div>

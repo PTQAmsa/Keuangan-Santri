@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CashierController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\StudentController;
+use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\ReceiptController;
 use Illuminate\Support\Facades\Route;
@@ -17,8 +19,12 @@ Route::get('/', function () {
 // Portal Wali Santri
 Route::prefix('portal')->name('portal.')->group(function () {
     Route::get('/', [PortalController::class, 'index'])->name('login');
-    Route::post('/login', [PortalController::class, 'login'])->name('login.post');
+    Route::post('/login', [PortalController::class, 'login'])->middleware('throttle:10,1')->name('login.post');
+    Route::get('/lupa-pin', [PortalController::class, 'forgotPin'])->name('forgot-pin');
+    Route::post('/lupa-pin', [PortalController::class, 'requestPinReset'])->middleware('throttle:5,1')->name('forgot-pin.post');
     Route::get('/dashboard', [PortalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/ganti-pin', [PortalController::class, 'showChangePin'])->name('change-pin');
+    Route::post('/ganti-pin', [PortalController::class, 'changePin'])->name('change-pin.post');
     Route::get('/logout', [PortalController::class, 'logout'])->name('logout');
 });
 
@@ -58,6 +64,18 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->middleware('role:admin')
             ->name('logs');
 
+        // Akun pengurus (kelola akun: khusus Administrator).
+        Route::middleware('role:admin')->group(function () {
+            Route::get('/akun', [AccountController::class, 'index'])->name('accounts');
+            Route::post('/akun', [AccountController::class, 'store'])->name('accounts.store');
+            Route::patch('/akun/{user}/reset-password', [AccountController::class, 'resetPassword'])->name('accounts.reset-password');
+            Route::patch('/akun/{user}/status', [AccountController::class, 'toggleStatus'])->name('accounts.status');
+        });
+
+        // Ganti sandi milik sendiri (semua peran).
+        Route::get('/ganti-sandi', [AccountController::class, 'showChangePassword'])->name('password.edit');
+        Route::patch('/ganti-sandi', [AccountController::class, 'updatePassword'])->name('password.update');
+
         // Hanya Administrator & Bendahara yang boleh mencatat transaksi keuangan.
         Route::middleware('role:admin,bendahara')->group(function () {
             Route::get('/kasir', [CashierController::class, 'createPayment'])->name('cashier');
@@ -70,6 +88,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('/santri', [StudentController::class, 'index'])->name('students');
             Route::post('/santri', [StudentController::class, 'store'])->name('students.store');
             Route::patch('/santri/{student}/status', [StudentController::class, 'toggleStatus'])->name('students.toggle');
+            Route::post('/santri/{student}/reset-pin', [StudentController::class, 'resetPin'])->name('students.reset-pin');
+
+            // Perbaikan & pembatalan transaksi keuangan.
+            Route::get('/transaksi', [TransactionController::class, 'index'])->name('transactions');
+            Route::patch('/transaksi/{payment}/void', [TransactionController::class, 'voidPayment'])->name('transactions.void');
+            Route::patch('/transaksi/{payment}', [TransactionController::class, 'updatePayment'])->name('transactions.update');
+            Route::patch('/tagihan/{invoice}', [TransactionController::class, 'updateInvoice'])->name('invoices.update');
+            Route::patch('/tagihan/{invoice}/batal', [TransactionController::class, 'cancelInvoice'])->name('invoices.cancel');
+            Route::delete('/tagihan/{invoice}', [TransactionController::class, 'destroyInvoice'])->name('invoices.destroy');
         });
     });
 });

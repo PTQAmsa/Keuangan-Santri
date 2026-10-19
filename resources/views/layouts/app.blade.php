@@ -68,6 +68,9 @@
                             <a href="{{ route('portal.dashboard') }}" class="px-3 py-1.5 rounded-lg bg-brand-800 hover:bg-brand-700 text-gold-400 border border-brand-700">
                                 <i class="fa-solid fa-user-graduate mr-1"></i> Dashboard Santri
                             </a>
+                            <a href="{{ route('portal.change-pin') }}" class="px-3 py-1.5 rounded-lg text-gray-300 hover:text-white hover:bg-brand-800">
+                                <i class="fa-solid fa-lock mr-1"></i> Ganti PIN
+                            </a>
                             <a href="{{ route('portal.logout') }}" class="px-3 py-1.5 rounded-lg text-gray-300 hover:text-white hover:bg-brand-800">
                                 <i class="fa-solid fa-right-from-bracket mr-1"></i> Keluar
                             </a>
@@ -89,6 +92,9 @@
                                 <a href="{{ route('admin.invoices') }}" class="px-2.5 py-1.5 rounded-lg {{ request()->routeIs('admin.invoices') ? 'bg-brand-800 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
                                     <i class="fa-solid fa-list-check mr-1"></i> Tagihan
                                 </a>
+                                <a href="{{ route('admin.transactions') }}" class="px-2.5 py-1.5 rounded-lg {{ request()->routeIs('admin.transactions') ? 'bg-brand-800 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
+                                    <i class="fa-solid fa-money-bill-transfer mr-1"></i> Transaksi
+                                </a>
                             @endif
                             <a href="{{ route('admin.reports.cash') }}" class="px-2.5 py-1.5 rounded-lg {{ request()->routeIs('admin.reports.*') ? 'bg-emerald-600 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }} transition">
                                 <i class="fa-solid fa-chart-column mr-1"></i> Laporan
@@ -97,11 +103,14 @@
                                 <a href="{{ route('admin.logs') }}" class="px-2.5 py-1.5 rounded-lg {{ request()->routeIs('admin.logs') ? 'bg-rose-600 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }} transition">
                                     <i class="fa-solid fa-clipboard-list mr-1"></i> Log Aktivitas
                                 </a>
+                                <a href="{{ route('admin.accounts') }}" class="px-2.5 py-1.5 rounded-lg {{ request()->routeIs('admin.accounts') ? 'bg-brand-800 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
+                                    <i class="fa-solid fa-users-gear mr-1"></i> Akun
+                                </a>
                             @endif
-                            <span class="hidden sm:flex flex-col items-end leading-tight px-2 text-right">
+                            <a href="{{ route('admin.password.edit') }}" class="hidden sm:flex flex-col items-end leading-tight px-2 text-right rounded-lg hover:bg-brand-800 py-1" title="Ganti kata sandi">
                                 <span class="text-[11px] font-semibold text-white">{{ auth()->user()->name }}</span>
                                 <span class="text-[10px] text-gold-400 font-medium">{{ auth()->user()->displayTitle() }}</span>
-                            </span>
+                            </a>
                             <form method="POST" action="{{ route('admin.logout') }}" class="ml-1">
                                 @csrf
                                 <button type="submit" class="px-2.5 py-1.5 rounded-lg text-xs text-gray-300 hover:text-white hover:bg-brand-800 border border-brand-700/60 transition" title="Keluar dari panel">

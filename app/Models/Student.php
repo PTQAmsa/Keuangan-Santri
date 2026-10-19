@@ -26,6 +26,9 @@ class Student extends Model
         'no_whatsapp_wali',
         'hubungan_wali',
         'pin_portal',
+        'must_change_pin',
+        'pin_changed_at',
+        'pin_reset_requested_at',
         'diskon_beasiswa',
         'bebas_wakaf',
     ];
@@ -34,6 +37,9 @@ class Student extends Model
         'diskon_beasiswa' => 'decimal:2',
         'bebas_wakaf' => 'boolean',
         'tahun_masuk' => 'integer',
+        'must_change_pin' => 'boolean',
+        'pin_changed_at' => 'datetime',
+        'pin_reset_requested_at' => 'datetime',
     ];
 
     public function invoices(): HasMany

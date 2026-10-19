@@ -55,6 +55,49 @@ class Invoice extends Model
     }
 
     /**
+     * Tagihan yang sudah dibatalkan tidak boleh diubah/dihapus lagi.
+     */
+    public function isCancelled(): bool
+    {
+        return $this->status === 'cancelled';
+    }
+
+    /**
+     * Pembayaran aktif (belum dibatalkan) yang tercatat pada tagihan ini.
+     */
+    public function hasActivePayments(): bool
+    {
+        return $this->payments()->whereNull('voided_at')->exists();
+    }
+
+    /**
+     * Hitung ulang status tagihan berdasarkan total pembayaran aktif.
+     */
+    public function recalculateStatus(): void
+    {
+        $paid = (float) $this->payments()->whereNull('voided_at')->sum('amount_paid');
+
+        $this->paid_amount = $paid;
+
+        // Tagihan yang sudah dibatalkan tetap berstatus dibatalkan.
+        if ($this->isCancelled()) {
+            $this->save();
+
+            return;
+        }
+
+        if ($paid <= 0) {
+            $this->status = 'unpaid';
+        } elseif ($paid >= (float) $this->amount) {
+            $this->status = 'paid';
+        } else {
+            $this->status = 'partial';
+        }
+
+        $this->save();
+    }
+
+    /**
      * Label status bahasa Indonesia
      */
     public function getStatusLabelAttribute(): string

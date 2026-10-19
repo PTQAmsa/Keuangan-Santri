@@ -20,14 +20,20 @@ class CashierController
     public function index()
     {
         $totalSantri = Student::where('status', 'aktif')->count();
-        $totalMasukBulanIni = Payment::whereYear('payment_date', now()->year)
+        $totalMasukBulanIni = Payment::whereNull('voided_at')
+            ->whereYear('payment_date', now()->year)
             ->whereMonth('payment_date', now()->month)
             ->sum('amount_paid');
         $totalTunggakan = Invoice::whereIn('status', ['unpaid', 'partial'])->get()->sum(function ($inv) {
             return $inv->remaining_amount;
         });
 
-        $recentPayments = Payment::with(['student', 'invoice', 'receipt'])->latest()->take(8)->get();
+        $recentPayments = Payment::with(['student', 'invoice', 'receipt'])
+            ->whereNull('voided_at')
+            ->latest('payment_date')
+            ->latest('id')
+            ->take(8)
+            ->get();
         $recentInvoices = Invoice::with(['student', 'category'])->whereIn('status', ['unpaid', 'partial'])->latest()->take(6)->get();
 
         return view('admin.dashboard', compact('totalSantri', 'totalMasukBulanIni', 'totalTunggakan', 'recentPayments', 'recentInvoices'));

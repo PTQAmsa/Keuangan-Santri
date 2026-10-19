@@ -6,6 +6,7 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Receipt;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 class ReceiptService
@@ -93,6 +94,97 @@ class ReceiptService
         ActivityLogService::paymentRecorded($payment, $previousStatus, $previousPaidAmount, $adminId);
 
         return $payment;
+    }
+
+    /**
+     * Batalkan kuitansi/pembayaran. Data tidak dihapus agar jejak audit tetap utuh,
+     * dan status tagihan dihitung ulang dari pembayaran yang masih aktif.
+     */
+    public function voidPayment(Payment $payment, string $reason, ?int $adminId = null): Payment
+    {
+        $invoice = $payment->invoice;
+
+        $previousStatus = (string) $invoice->status;
+        $previousPaidAmount = (float) $invoice->paid_amount;
+
+        $payment->voided_at = now();
+        $payment->voided_by = $adminId;
+        $payment->void_reason = $reason;
+        $payment->save();
+
+        $invoice->recalculateStatus();
+
+        ActivityLogService::paymentVoided(
+            payment: $payment,
+            reason: $reason,
+            previousStatus: $previousStatus,
+            previousPaidAmount: $previousPaidAmount,
+            userId: $adminId,
+        );
+
+        return $payment;
+    }
+
+    /**
+     * Perbaiki data pembayaran yang salah input (nominal, metode, tanggal, dsb).
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function updatePayment(Payment $payment, array $data, ?int $adminId = null): Payment
+    {
+        $invoice = $payment->invoice;
+
+        $labels = [
+            'amount_paid' => 'Nominal Bayar',
+            'payment_method' => 'Metode Bayar',
+            'payment_date' => 'Tanggal Bayar',
+            'received_from' => 'Diterima Dari',
+            'notes' => 'Catatan',
+        ];
+
+        $changes = [];
+
+        foreach ($labels as $field => $label) {
+            if (! array_key_exists($field, $data)) {
+                continue;
+            }
+
+            $format = function (string $field, mixed $value) {
+                return match ($field) {
+                    'payment_date' => $value ? Carbon::parse($value)->format('d/m/Y') : '-',
+                    'amount_paid' => self::rupiah((float) $value),
+                    'payment_method' => $value === 'cash' ? 'Tunai' : 'Transfer',
+                    default => (string) ($value ?? ''),
+                };
+            };
+
+            $old = $format($field, $payment->{$field});
+            $new = $format($field, $data[$field]);
+
+            if ($old !== $new) {
+                $changes[$label] = [$old === '' ? '-' : $old, $new === '' ? '-' : $new];
+            }
+        }
+
+        if ($changes === []) {
+            return $payment;
+        }
+
+        $payment->fill($data)->save();
+
+        $invoice->recalculateStatus();
+
+        ActivityLogService::paymentUpdated($payment, $changes, $adminId);
+
+        return $payment;
+    }
+
+    /**
+     * Format nominal menjadi teks Rupiah (dipakai untuk log perubahan).
+     */
+    private static function rupiah(float|int|string|null $amount): string
+    {
+        return 'Rp '.number_format((float) $amount, 0, ',', '.');
     }
 
     /**
