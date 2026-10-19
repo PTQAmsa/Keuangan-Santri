@@ -72,8 +72,8 @@
         <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-5 border border-amber-200/60 shadow-sm flex items-center justify-between">
             <div>
                 <p class="text-xs font-semibold text-amber-800 uppercase tracking-wider">Rekening Resmi Pesantren</p>
-                <p class="text-lg font-bold text-brand-900 mt-1">Bank BSI: 7200112233</p>
-                <p class="text-[11px] text-amber-700">a.n. Pesantren Tadabbur Al-Quran Amsa</p>
+                <p class="text-lg font-bold text-brand-900 mt-1">Bank Syariah Indonesia (BSI) 1202020212</p>
+                <p class="text-[11px] text-amber-700">a/n Pesantren Tadabbur Al-Qur'an</p>
             </div>
             <div class="w-12 h-12 rounded-xl bg-amber-200/50 text-amber-800 flex items-center justify-center text-xl">
                 <i class="fa-solid fa-building-columns"></i>
@@ -142,7 +142,7 @@
 
                         <!-- Panduan Pembayaran Singkat -->
                         <div class="mt-4 pt-3 border-t border-gray-100 flex flex-wrap items-center justify-between text-xs text-gray-500 gap-2">
-                            <span>Metode: Transfer ke Bank BSI (7200112233) a.n. Pesantren Tadabbur Al-Quran Amsa</span>
+                            <span>Metode: Transfer ke Bank Syariah Indonesia (BSI) 1202020212 a/n Pesantren Tadabbur Al-Qur'an</span>
                             <a href="https://wa.me/6285692253516?text={{ urlencode('Assalamu\'alaikum Admin PTQ Amsa, saya wali dari ' . $student->nama_lengkap . ' (NIS: ' . $student->nis . ') ingin konfirmasi pembayaran untuk tagihan: ' . $inv->title) }}" 
                                target="_blank" class="inline-flex items-center text-emerald-700 font-semibold hover:underline">
                                 <i class="fa-brands fa-whatsapp text-sm mr-1"></i> Konfirmasi Bayar ke Admin

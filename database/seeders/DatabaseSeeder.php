@@ -47,7 +47,7 @@ class DatabaseSeeder extends Seeder
         User::firstOrCreate(
             ['email' => 'bendahara2@ptqamsa.id'],
             [
-                'name' => 'Usth. Siti Nurhaliza (Bendahara 2)',
+                'name' => 'Usth. Revina (Bendahara 2)',
                 'role' => UserRole::Bendahara,
                 'password' => Hash::make('password'),
             ]

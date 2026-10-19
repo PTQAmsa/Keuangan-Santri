@@ -190,6 +190,90 @@ class ActivityLogService
     }
 
     /**
+     * Catat penambahan data santri baru (santri masuk).
+     */
+    public static function studentCreated(Student $student, ?int $userId = null): ActivityLog
+    {
+        return self::record(
+            module: ActivityModule::Student,
+            action: ActivityAction::Created,
+            description: sprintf(
+                'Menambahkan data santri baru %s (NIS %s) kelas %s.',
+                $student->nama_lengkap,
+                $student->nis,
+                $student->kelas
+            ),
+            subjectId: $student->id,
+            studentId: $student->id,
+            properties: self::studentProperties($student),
+            userId: $userId,
+        );
+    }
+
+    /**
+     * Catat perubahan status santri (mis. santri keluar / aktif kembali).
+     */
+    public static function studentStatusChanged(Student $student, string $previousStatus, ?int $userId = null): ActivityLog
+    {
+        $label = $previousStatus === 'aktif' ? 'Menonaktifkan' : 'Mengaktifkan kembali';
+
+        return self::record(
+            module: ActivityModule::Student,
+            action: ActivityAction::Updated,
+            description: sprintf(
+                '%s data keuangan %s (NIS %s) menjadi %s.',
+                $label,
+                $student->nama_lengkap,
+                $student->nis,
+                self::studentStatusLabel($student->status)
+            ),
+            subjectId: $student->id,
+            studentId: $student->id,
+            properties: [
+                'Santri' => $student->nama_lengkap.' (NIS '.$student->nis.')',
+                'Kelas' => $student->jenjang.' - '.$student->kelas,
+                'Status' => self::studentStatusLabel($previousStatus).' → '.self::studentStatusLabel($student->status),
+                'Tunggakan Tercatat' => self::rupiah($student->total_tunggakan),
+            ],
+            userId: $userId,
+        );
+    }
+
+    /**
+     * Rincian data santri untuk baris log penambahan santri baru.
+     *
+     * @return array<string, string>
+     */
+    private static function studentProperties(Student $student): array
+    {
+        return [
+            'NIS' => $student->nis,
+            'Nama Santri' => $student->nama_lengkap,
+            'Jenjang & Kelas' => $student->jenjang.' - '.$student->kelas,
+            'Kamar Asrama' => $student->kamar_asrama ?: '-',
+            'Wali Santri' => trim(($student->nama_wali ?? '-').' ('.($student->hubungan_wali ?? '-').')'),
+            'No. WhatsApp Wali' => $student->no_whatsapp_wali ?: '-',
+            'Diskon Beasiswa' => ((float) $student->diskon_beasiswa > 0 ? number_format((float) $student->diskon_beasiswa, 0) : '0').'%',
+            'Bebas Wakaf' => $student->bebas_wakaf ? 'Ya' : 'Tidak',
+            'Status' => self::studentStatusLabel($student->status),
+        ];
+    }
+
+    /**
+     * Label status santri dalam Bahasa Indonesia.
+     */
+    private static function studentStatusLabel(?string $status): string
+    {
+        return match ($status) {
+            'aktif' => 'Aktif',
+            'nonaktif' => 'Nonaktif (Keluar)',
+            'lulus' => 'Lulus',
+            'pindah' => 'Pindah',
+            default => (string) $status,
+        };
+    }
+
+    /**
      * Format nominal menjadi teks Rupiah.
      */
     private static function rupiah(float|int|string|null $amount): string

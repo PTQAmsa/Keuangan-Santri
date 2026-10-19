@@ -3,6 +3,10 @@
 @section('title', 'Laporan Rekapitulasi Tunggakan Santri - PTQ Amsa001')
 
 @section('content')
+@php
+    // Pengasuh (read-only) tidak boleh melihat tombol aksi cepat keuangan.
+    $canManageFinances = auth()->user()->role?->canManageFinances();
+@endphp
 <div class="space-y-6">
 
     <!-- Header & Breadcrumbs / Tabs -->
@@ -144,7 +148,9 @@
                         <th class="py-3 px-4">Wali Santri & Kontak</th>
                         <th class="py-3 px-4">Rincian Tagihan Tertunggak</th>
                         <th class="py-3 px-4 text-right">Total Tunggakan</th>
-                        <th class="py-3 px-4 text-center">Aksi Cepat</th>
+                        @if($canManageFinances)
+                            <th class="py-3 px-4 text-center">Aksi Cepat</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -169,7 +175,7 @@
                             <td class="py-3 px-4">
                                 <p class="font-semibold text-gray-800">{{ $item['student']->nama_wali ?? '-' }}</p>
                                 <p class="text-[11px] text-gray-500 font-mono">{{ $item['student']->no_whatsapp_wali ?? '-' }}</p>
-                                @if($item['student']->no_whatsapp_wali)
+                                @if($item['student']->no_whatsapp_wali && $canManageFinances)
                                     <a href="{{ $waUrl }}" target="_blank" class="inline-flex items-center text-[10px] font-semibold text-emerald-600 hover:text-emerald-700 hover:underline mt-1">
                                         <i class="fa-brands fa-whatsapp mr-1 text-xs"></i> Kirim Reminder WA
                                     </a>
@@ -196,15 +202,17 @@
                             <td class="py-3 px-4 text-right font-extrabold text-rose-600 text-sm whitespace-nowrap">
                                 Rp {{ number_format($item['total_tunggakan'], 0, ',', '.') }}
                             </td>
-                            <td class="py-3 px-4 text-center whitespace-nowrap">
-                                <a href="{{ route('admin.cashier', ['student_id' => $item['student']->id]) }}" class="inline-flex items-center px-3 py-1.5 rounded-xl bg-brand-900 hover:bg-brand-800 text-white text-xs font-semibold shadow-sm transition">
-                                    <i class="fa-solid fa-cash-register mr-1.5 text-gold-400"></i> Bayar di Kasir
-                                </a>
-                            </td>
+                            @if($canManageFinances)
+                                <td class="py-3 px-4 text-center whitespace-nowrap">
+                                    <a href="{{ route('admin.cashier', ['student_id' => $item['student']->id]) }}" class="inline-flex items-center px-3 py-1.5 rounded-xl bg-brand-900 hover:bg-brand-800 text-white text-xs font-semibold shadow-sm transition">
+                                        <i class="fa-solid fa-cash-register mr-1.5 text-gold-400"></i> Bayar di Kasir
+                                    </a>
+                                </td>
+                            @endif
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="py-12 text-center text-gray-400">
+                            <td colspan="{{ $canManageFinances ? 6 : 5 }}" class="py-12 text-center text-gray-400">
                                 <i class="fa-solid fa-circle-check text-4xl mb-2 text-emerald-400 block"></i>
                                 MasyaAllah, tidak ada santri yang memiliki tunggakan untuk filter ini!
                             </td>
@@ -218,7 +226,9 @@
                             <td class="py-3 px-4 text-right text-rose-700 font-black text-base">
                                 Rp {{ number_format($totalNilaiTunggakan, 0, ',', '.') }}
                             </td>
-                            <td></td>
+                            @if($canManageFinances)
+                                <td></td>
+                            @endif
                         </tr>
                     </tfoot>
                 @endif

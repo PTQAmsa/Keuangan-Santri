@@ -85,14 +85,14 @@
                         <div class="flex items-center justify-between p-1.5 rounded-lg bg-white/80 border border-brand-100">
                             <div>
                                 <strong class="text-brand-900">Bendahara 1</strong>
-                                <span class="block text-[11px] text-gray-500"><code>bendahara1@ptqamsa.id</code></span>
+                                <span class="block text-[11px] text-gray-500">Usth. Yuni Permatasari &mdash; <code>bendahara1@ptqamsa.id</code></span>
                             </div>
                             <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">Kasir &amp; Laporan</span>
                         </div>
                         <div class="flex items-center justify-between p-1.5 rounded-lg bg-white/80 border border-brand-100">
                             <div>
                                 <strong class="text-brand-900">Bendahara 2</strong>
-                                <span class="block text-[11px] text-gray-500"><code>bendahara2@ptqamsa.id</code></span>
+                                <span class="block text-[11px] text-gray-500">Usth. Revina &mdash; <code>bendahara2@ptqamsa.id</code></span>
                             </div>
                             <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">Kasir &amp; Laporan</span>
                         </div>

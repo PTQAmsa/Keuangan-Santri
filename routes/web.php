@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CashierController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\ReceiptController;
 use Illuminate\Support\Facades\Route;
@@ -64,6 +65,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/generate-spp', [CashierController::class, 'generateMonthlySPP'])->name('generate-spp');
             Route::get('/tagihan', [CashierController::class, 'invoices'])->name('invoices');
             Route::post('/tagihan', [CashierController::class, 'storeInvoice'])->name('invoices.store');
+
+            // Data santri: santri masuk (tambah) & santri keluar (nonaktifkan).
+            Route::get('/santri', [StudentController::class, 'index'])->name('students');
+            Route::post('/santri', [StudentController::class, 'store'])->name('students.store');
+            Route::patch('/santri/{student}/status', [StudentController::class, 'toggleStatus'])->name('students.toggle');
         });
     });
 });

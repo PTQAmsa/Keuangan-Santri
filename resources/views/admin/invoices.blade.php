@@ -16,6 +16,9 @@
             <button type="button" onclick="openInvoiceModal()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-sm transition flex items-center">
                 <i class="fa-solid fa-plus-circle mr-1.5 text-sm"></i> Terbitkan Tagihan Baru (Kitab / Iuran)
             </button>
+            <a href="{{ route('admin.students') }}" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-semibold shadow-sm transition flex items-center">
+                <i class="fa-solid fa-user-gear mr-1.5 text-sm"></i> Data Santri (Masuk / Keluar)
+            </a>
             <a href="{{ route('admin.cashier') }}" class="px-3.5 py-2 bg-brand-900 hover:bg-brand-800 text-white rounded-xl text-xs font-semibold shadow-sm transition">
                 <i class="fa-solid fa-cash-register mr-1.5 text-gold-400"></i> Meja Kasir
             </a>

@@ -18,11 +18,11 @@ class WhatsAppService
         $invoice = $payment->invoice;
         $receipt = $payment->receipt;
 
-        $nominalFormatted = 'Rp ' . number_format($payment->amount_paid, 0, ',', '.');
-        $sisaFormatted = 'Rp ' . number_format($invoice->remaining_amount, 0, ',', '.');
+        $nominalFormatted = 'Rp '.number_format($payment->amount_paid, 0, ',', '.');
+        $sisaFormatted = 'Rp '.number_format($invoice->remaining_amount, 0, ',', '.');
         $statusKet = $invoice->status === 'paid' ? 'LUNAS' : "DICICIL (Sisa: {$sisaFormatted})";
 
-        $receiptUrl = $receipt ? url("/kuitansi/{$receipt->id}/download") : url("/portal");
+        $receiptUrl = $receipt ? url("/kuitansi/{$receipt->id}/download") : url('/portal');
 
         return <<<TEXT
 *BUKTI PEMBAYARAN PTQ AMSA001 GADOG*
@@ -58,9 +58,9 @@ TEXT;
     public function formatInvoiceReminderMessage(Invoice $invoice): string
     {
         $student = $invoice->student;
-        $nominalFormatted = 'Rp ' . number_format($invoice->remaining_amount, 0, ',', '.');
+        $nominalFormatted = 'Rp '.number_format($invoice->remaining_amount, 0, ',', '.');
         $dueDateFormatted = $invoice->due_date ? $invoice->due_date->format('d/m/Y') : '-';
-        $portalUrl = url("/portal");
+        $portalUrl = url('/portal');
 
         return <<<TEXT
 *PEMBERITAHUAN TAGIHAN PTQ AMSA001*
@@ -82,8 +82,8 @@ Rincian pembayaran & kuitansi dapat dicek melalui Portal Wali Santri:
 
 *Rekening Resmi Pesantren:*
 Bank Syariah Indonesia (BSI)
-No. Rekening: *7200112233*
-A.n: *Pesantren Tadabbur Al-Quran Amsa*
+No. Rekening: *1202020212*
+A.n: *Pesantren Tadabbur Al-Qur'an*
 
 Setelah melakukan transfer, bukti transfer dapat dikonfirmasikan ke nomor ini.
 _Jazakumullahu khairan._
@@ -102,7 +102,8 @@ TEXT;
 
         // Log pesan di lingkungan lokal/dev jika belum ada token aktif
         if (empty($token) || $token === 'YOUR_WHATSAPP_TOKEN') {
-            Log::info("WhatsApp Gateway [Simulation] to {$targetPhone}:\n" . $message);
+            Log::info("WhatsApp Gateway [Simulation] to {$targetPhone}:\n".$message);
+
             return [
                 'status' => true,
                 'simulated' => true,
@@ -122,7 +123,8 @@ TEXT;
 
             return $response->json();
         } catch (\Exception $e) {
-            Log::error('WhatsApp Gateway Error: ' . $e->getMessage());
+            Log::error('WhatsApp Gateway Error: '.$e->getMessage());
+
             return [
                 'status' => false,
                 'error' => $e->getMessage(),
