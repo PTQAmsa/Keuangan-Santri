@@ -13,6 +13,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Percayai reverse proxy (tunnel / load balancer) agar URL aset & form
+        // tetap memakai skema HTTPS saat aplikasi diakses dari internet.
+        $middleware->trustProxies(at: '*');
+
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
         ]);
