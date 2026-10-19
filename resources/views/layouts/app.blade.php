@@ -99,7 +99,7 @@
                     @else
                         {{-- NAV BERANDA DEPAN / PUBLIK --}}
                         <a href="{{ route('admin.login') }}" class="px-3.5 py-1.5 rounded-lg bg-gold-400 text-brand-900 font-bold hover:bg-gold-500 shadow-sm transition">
-                            <i class="fa-solid fa-lock mr-1"></i> Login Pengurus / Kasir
+                            <i class="fa-solid fa-lock mr-1"></i> Login Pengurus / Bendahara
                         </a>
                     @endif
                 </div>

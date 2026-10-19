@@ -57,7 +57,7 @@
                         <p class="text-gray-400 font-semibold uppercase text-[11px]">Identitas Santri</p>
                         <p class="font-bold text-gray-900 text-base">{{ $receipt->payment->student->nama_lengkap }}</p>
                         <p class="text-gray-600">NIS: <strong>{{ $receipt->payment->student->nis }}</strong></p>
-                        <p class="text-gray-600">Kelas: <strong>{{ $receipt->payment->student->kelas }}</strong> &bull; {{ $receipt->payment->student->kelompok }}</p>
+                        <p class="text-gray-600">Kelas: <strong>{{ $receipt->payment->student->kelas }}</strong> &bull; Marhalah: <strong>{{ $receipt->payment->student->kelompok }}</strong></p>
                     </div>
 
                     <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-1">

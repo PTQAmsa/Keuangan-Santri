@@ -39,6 +39,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'bendahara1@ptqamsa.id'],
             [
                 'name' => 'Usth. Yuni Permatasari (Bendahara 1)',
+                'jabatan' => 'Bendahara 1 PTQ Amsa001',
                 'role' => UserRole::Bendahara,
                 'password' => Hash::make('password'),
             ]
@@ -48,6 +49,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'bendahara2@ptqamsa.id'],
             [
                 'name' => 'Usth. Revina (Bendahara 2)',
+                'jabatan' => 'Bendahara 2 PTQ Amsa001',
                 'role' => UserRole::Bendahara,
                 'password' => Hash::make('password'),
             ]

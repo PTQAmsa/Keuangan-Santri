@@ -177,7 +177,7 @@
             </td>
             <td style="width: 63%; vertical-align: middle;">
                 <div class="logo-text">PESANTREN TADABBUR AL-QUR'AN AMSA001</div>
-                <div class="sub-text">Satuan Pendidikan Muadalah Mu'allimien (Program 6 Tahun) Putra &amp; Putri</div>
+                <div class="sub-text">Satuan Pendidikan Muadalah Mu'allimien | Putra-Putri</div>
                 <div class="address-text">Jl. Cikopo Selatan, Gg. Yulias, Sukabirus, Desa Gadog, Kec. Megamendung, Kab. Bogor 16770</div>
                 <div class="address-text">WhatsApp: +62 856-9225-3516 | Email: info@ptqamsa.id | Web: www.ptqamsa.id</div>
             </td>
@@ -204,7 +204,7 @@
         <tr>
             <td class="label-col">Nama Santri</td>
             <td class="separator-col">:</td>
-            <td class="value-col">{{ $student->nama_lengkap }} (NIS: {{ $student->nis }} / Kelas: {{ $student->kelas }} / {{ $student->kelompok }})</td>
+            <td class="value-col">{{ $student->nama_lengkap }} (NIS: {{ $student->nis }} / Kelas: {{ $student->kelas }} / Marhalah: {{ $student->kelompok }})</td>
         </tr>
         <tr>
             <td class="label-col">Untuk Pembayaran</td>
@@ -256,7 +256,7 @@
                 </div>
                 <div class="qr-box" style="margin-top: 8px;">
                     <strong>Verifikasi Dokumen Resmi:</strong><br>
-                    Dokumen ini diterbitkan secara elektronik oleh Sistem Keuangan PTQ Amsa001.<br>
+                    Dokumen ini diterbitkan secara elektronik dan sah.<br>
                     Validasi keaslian dokumen dapat diakses melalui:<br>
                     <a href="{{ $verification_url }}" style="color: #2563eb; text-decoration: none;">{{ $verification_url }}</a>
                 </div>
@@ -264,10 +264,9 @@
             <td style="width: 20%;"></td>
             <td style="width: 35%; vertical-align: top;" class="sig-box">
                 <div>Gadog, {{ $payment->payment_date->translatedFormat('d F Y') }}</div>
-                <div>Bendahara / Kasir Keuangan</div>
+                <div>{{ $payment->recordedBy?->receiptTitle() ?? 'Bendahara / Kasir Keuangan' }}</div>
                 <div class="sig-space"></div>
                 <div style="font-weight: bold; text-decoration: underline;">{{ $payment->recordedBy->name ?? 'Usth. Yuni Permatasari' }}</div>
-                <div style="font-size: 8.5px; color: #6b7280;">Sistem Keuangan PTQ Amsa001</div>
             </td>
         </tr>
     </table>

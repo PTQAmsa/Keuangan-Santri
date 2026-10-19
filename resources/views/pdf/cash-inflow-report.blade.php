@@ -162,7 +162,7 @@
         <h2 class="report-title">Laporan Penerimaan Kas Keuangan</h2>
         <p class="report-period">
             Periode: <strong>{{ \Carbon\Carbon::parse($startDate)->translatedFormat('d F Y') }}</strong> s/d <strong>{{ \Carbon\Carbon::parse($endDate)->translatedFormat('d F Y') }}</strong>
-            @if(in_array($kelompok ?? null, ['putra', 'putri'], true)) | Kelompok: <strong>{{ ucfirst($kelompok) }}</strong> @endif
+            @if(in_array($kelompok ?? null, ['putra', 'putri'], true)) | Marhalah: <strong>{{ ucfirst($kelompok) }}</strong> @endif
         </p>
     </div>
 
@@ -204,7 +204,7 @@
                 <th style="width: 13%;">No Kuitansi</th>
                 <th style="width: 9%;">Tanggal</th>
                 <th style="width: 15%;">Nama Santri & Kelas</th>
-                <th style="width: 7%;" class="text-center">Kelompok</th>
+                <th style="width: 7%;" class="text-center">Marhalah</th>
                 <th style="width: 21%;">Komponen Tagihan</th>
                 <th style="width: 8%;" class="text-center">Metode</th>
                 <th style="width: 14%;" class="text-right">Nominal (Rp)</th>

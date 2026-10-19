@@ -232,7 +232,7 @@ class ActivityLogService
             studentId: $student->id,
             properties: [
                 'Santri' => $student->nama_lengkap.' (NIS '.$student->nis.')',
-                'Kelompok & Kelas' => $student->kelompok.' - '.$student->kelas,
+                'Marhalah & Kelas' => $student->kelompok.' - '.$student->kelas,
                 'Status' => self::studentStatusLabel($previousStatus).' → '.self::studentStatusLabel($student->status),
                 'Tunggakan Tercatat' => self::rupiah($student->total_tunggakan),
             ],
@@ -250,9 +250,9 @@ class ActivityLogService
         return [
             'NIS' => $student->nis,
             'Nama Santri' => $student->nama_lengkap,
-            'Kelompok & Kelas' => $student->kelompok.' - '.$student->kelas,
+            'Marhalah & Kelas' => $student->kelompok.' - '.$student->kelas,
             'Kamar Asrama' => $student->kamar_asrama ?: '-',
-            'Wali Santri' => trim(($student->nama_wali ?? '-').' ('.($student->hubungan_wali ?? '-').')'),
+            'Wali Santri' => trim(($student->nama_wali ?? '-').' ('.($student->hubungan_wali === 'Lainnya' && $student->hubungan_wali_detail ? 'Lainnya: '.$student->hubungan_wali_detail : ($student->hubungan_wali ?? '-')).')'),
             'No. WhatsApp Wali' => $student->no_whatsapp_wali ?: '-',
             'Potongan Beasiswa' => ((float) $student->diskon_beasiswa > 0 ? number_format((float) $student->diskon_beasiswa, 0) : '0').'%',
             'Bebas Wakaf' => $student->bebas_wakaf ? 'Ya' : 'Tidak',

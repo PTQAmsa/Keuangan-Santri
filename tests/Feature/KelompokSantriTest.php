@@ -59,16 +59,16 @@ class KelompokSantriTest extends TestCase
         $response->assertDontSee('NIS: 202601003');
     }
 
-    public function test_transaction_page_shows_kelompok_column_and_filter(): void
+    public function test_transaction_page_shows_marhalah_column_and_filter(): void
     {
         $response = $this->actingAs($this->userWithRole(UserRole::Bendahara))
             ->get(route('admin.transactions'));
 
         $response->assertOk();
-        $response->assertSee('Kelompok');
+        $response->assertSee('Marhalah');
     }
 
-    public function test_cash_report_shows_kelompok_column_and_filter(): void
+    public function test_cash_report_shows_marhalah_column_and_filter(): void
     {
         $response = $this->actingAs($this->userWithRole(UserRole::Bendahara))
             ->get(route('admin.reports.cash', [
@@ -77,7 +77,53 @@ class KelompokSantriTest extends TestCase
             ]));
 
         $response->assertOk();
-        $response->assertSee('Kelompok');
+        $response->assertSee('Marhalah');
+    }
+
+    public function test_wali_relation_lainnya_requires_detail(): void
+    {
+        $response = $this->actingAs($this->userWithRole(UserRole::Bendahara))
+            ->post(route('admin.students.store'), [
+                'nis' => '202601098',
+                'nama_lengkap' => 'Husain bin Ali',
+                'jenis_kelamin' => 'L',
+                'santri_group' => 'putra',
+                'kelas' => '7A',
+                'tahun_masuk' => 2026,
+                'status' => 'aktif',
+                'nama_wali' => 'Bpk. Ali',
+                'no_whatsapp_wali' => '081234567890',
+                'hubungan_wali' => 'Lainnya',
+                'pin_portal' => '654321',
+                'diskon_beasiswa' => 0,
+            ]);
+
+        $response->assertSessionHasErrors('hubungan_wali_detail');
+        $this->assertDatabaseMissing('students', ['nis' => '202601098']);
+
+        $response = $this->actingAs($this->userWithRole(UserRole::Bendahara))
+            ->post(route('admin.students.store'), [
+                'nis' => '202601098',
+                'nama_lengkap' => 'Husain bin Ali',
+                'jenis_kelamin' => 'L',
+                'santri_group' => 'putra',
+                'kelas' => '7A',
+                'tahun_masuk' => 2026,
+                'status' => 'aktif',
+                'nama_wali' => 'Bpk. Ali',
+                'no_whatsapp_wali' => '081234567890',
+                'hubungan_wali' => 'Lainnya',
+                'hubungan_wali_detail' => 'Kakek dari pihak ayah',
+                'pin_portal' => '654321',
+                'diskon_beasiswa' => 0,
+            ]);
+
+        $response->assertRedirect(route('admin.students'));
+        $this->assertDatabaseHas('students', [
+            'nis' => '202601098',
+            'hubungan_wali' => 'Lainnya',
+            'hubungan_wali_detail' => 'Kakek dari pihak ayah',
+        ]);
     }
 
     public function test_dashboard_splits_income_and_arrears_by_group(): void

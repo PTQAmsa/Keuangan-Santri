@@ -48,7 +48,7 @@
             </div>
 
             <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Kelompok</label>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Marhalah</label>
                 <select name="kelompok" class="w-full text-xs rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800 focus:border-brand-800 bg-gray-50/50">
                     <option value="">-- Putra &amp; Putri --</option>
                     <option value="putra" {{ $kelompok === 'putra' ? 'selected' : '' }}>Putra</option>
@@ -228,7 +228,7 @@
                                 <span>Santri</span>{!! $sortIcon('student_name', $sortBy, $sortOrder) !!}
                             </a>
                         </th>
-                        <th class="py-3 px-4 text-center">Kelompok</th>
+                        <th class="py-3 px-4 text-center">Marhalah</th>
                         <th class="py-3 px-4">
                             <a href="{{ $sortUrl('category', $sortBy, $sortOrder) }}" class="inline-flex items-center hover:text-brand-900 transition" title="Urutkan Komponen Tagihan">
                                 <span>Komponen Tagihan</span>{!! $sortIcon('category', $sortBy, $sortOrder) !!}

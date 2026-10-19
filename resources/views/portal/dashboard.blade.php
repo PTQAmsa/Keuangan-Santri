@@ -37,7 +37,7 @@
                     </div>
                     <p class="text-xs sm:text-sm text-blue-200 mt-1 flex flex-wrap gap-x-4 gap-y-1">
                         <span><i class="fa-solid fa-id-badge mr-1"></i> NIS: <strong>{{ $student->nis }}</strong></span>
-                        <span><i class="fa-solid fa-chalkboard-user mr-1"></i> Kelas: <strong>{{ $student->kelas }}</strong> &bull; {{ $student->kelompok }}</span>
+                        <span><i class="fa-solid fa-chalkboard-user mr-1"></i> Kelas: <strong>{{ $student->kelas }}</strong> &bull; Marhalah: <strong>{{ $student->kelompok }}</strong></span>
                         <span><i class="fa-solid fa-bed mr-1"></i> Asrama: <strong>{{ $student->kamar_asrama ?? 'Asrama Gadog' }}</strong></span>
                     </p>
                 </div>
@@ -46,7 +46,7 @@
             <!-- Identitas Wali Santri -->
             <div class="bg-white/10 rounded-xl px-4 py-3 border border-white/10 text-xs space-y-1 self-start md:self-auto">
                 <p class="text-blue-200">Wali Santri:</p>
-                <p class="font-semibold text-white text-sm">{{ $student->nama_wali }} ({{ $student->hubungan_wali }})</p>
+                <p class="font-semibold text-white text-sm">{{ $student->nama_wali }} ({{ $student->hubungan_wali === 'Lainnya' && $student->hubungan_wali_detail ? 'Lainnya: '.$student->hubungan_wali_detail : $student->hubungan_wali }})</p>
                 <p class="text-gold-400"><i class="fa-brands fa-whatsapp mr-1"></i> {{ $student->no_whatsapp_wali }}</p>
             </div>
         </div>

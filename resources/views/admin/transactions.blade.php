@@ -56,7 +56,7 @@
                 </div>
             </div>
             <div>
-                <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Kelompok</label>
+                <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Marhalah</label>
                 <select name="kelompok" class="w-full rounded-xl border-gray-300 py-1.5 px-3 bg-gray-50 text-xs">
                     <option value="">-- Putra &amp; Putri --</option>
                     <option value="putra" {{ $kelompok === 'putra' ? 'selected' : '' }}>Putra</option>
@@ -88,7 +88,7 @@
                         <th class="py-3 px-4 whitespace-nowrap">No. Kuitansi</th>
                         <th class="py-3 px-4 whitespace-nowrap">Tanggal</th>
                         <th class="py-3 px-4">Santri</th>
-                        <th class="py-3 px-4 text-center whitespace-nowrap">Kelompok</th>
+                        <th class="py-3 px-4 text-center whitespace-nowrap">Marhalah</th>
                         <th class="py-3 px-4">Uraian Tagihan</th>
                         <th class="py-3 px-4 text-right whitespace-nowrap">Nominal</th>
                         <th class="py-3 px-4 text-center whitespace-nowrap">Status</th>

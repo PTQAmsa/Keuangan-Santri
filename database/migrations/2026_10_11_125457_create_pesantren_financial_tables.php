@@ -31,6 +31,8 @@ return new class extends Migration
             $table->enum('hubungan_wali', [
                 'Ayah Kandung', 'Ibu Kandung', 'Ayah Angkat', 'Ibu Angkat', 'Wali', 'Lainnya',
             ])->default('Ayah Kandung');
+            // Keterangan wajib bila wali memilih hubungan "Lainnya" (mis. kakek, paman, kakak).
+            $table->string('hubungan_wali_detail', 100)->nullable();
             $table->string('pin_portal', 10)->default('123456');
             $table->decimal('diskon_beasiswa', 5, 2)->default(0.00); // 0.00 - 100.00 (%)
             $table->boolean('bebas_wakaf')->default(false);

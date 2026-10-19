@@ -44,13 +44,13 @@
         <div class="bg-white rounded-2xl p-5 border border-gray-200/80 shadow-sm">
             <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Santri Putra</p>
             <p class="text-2xl font-extrabold text-blue-700 mt-1">{{ $totalPutra }}</p>
-            <p class="text-xs text-gray-400 mt-1">Seluruh santri kelompok putra</p>
+            <p class="text-xs text-gray-400 mt-1">Seluruh santri marhalah putra</p>
         </div>
 
         <div class="bg-white rounded-2xl p-5 border border-gray-200/80 shadow-sm">
             <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Santri Putri</p>
             <p class="text-2xl font-extrabold text-fuchsia-700 mt-1">{{ $totalPutri }}</p>
-            <p class="text-xs text-gray-400 mt-1">Seluruh santri kelompok putri</p>
+            <p class="text-xs text-gray-400 mt-1">Seluruh santri marhalah putri</p>
         </div>
 
         <div class="bg-white rounded-2xl p-5 border border-gray-200/80 shadow-sm">
@@ -79,7 +79,7 @@
             </div>
 
             <div>
-                <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Kelompok</label>
+                <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Marhalah</label>
                 <select name="kelompok" class="w-full rounded-xl border-gray-300 py-1.5 px-3 bg-gray-50 text-xs">
                     <option value="">-- Putra &amp; Putri --</option>
                     <option value="putra" {{ $kelompok === 'putra' ? 'selected' : '' }}>Putra</option>
@@ -124,7 +124,7 @@
                     <tr>
                         <th class="py-3 px-4 text-center">No</th>
                         <th class="py-3 px-4">Santri</th>
-                        <th class="py-3 px-4">Kelompok, Kelas &amp; Kamar</th>
+                        <th class="py-3 px-4">Marhalah, Kelas &amp; Kamar</th>
                         <th class="py-3 px-4">Wali Santri & Kontak</th>
                         <th class="py-3 px-4 text-center">Beasiswa</th>
                         <th class="py-3 px-4 text-right">Sisa Tagihan</th>
@@ -159,7 +159,7 @@
                             </td>
                             <td class="py-3 px-4">
                                 <p class="font-semibold text-gray-800">{{ $s->nama_wali }}</p>
-                                <p class="text-[11px] text-gray-500 font-mono">{{ $s->no_whatsapp_wali }} ({{ $s->hubungan_wali }})</p>
+                                <p class="text-[11px] text-gray-500 font-mono">{{ $s->no_whatsapp_wali }} ({{ $s->hubungan_wali === 'Lainnya' && $s->hubungan_wali_detail ? 'Lainnya: '.$s->hubungan_wali_detail : $s->hubungan_wali }})</p>
                                 @if($s->pin_reset_requested_at)
                                     <span class="inline-flex items-center mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
                                         <i class="fa-solid fa-key mr-1"></i> Minta reset PIN
@@ -284,7 +284,7 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block font-semibold text-gray-600 mb-1">Kelompok Santri <span class="text-rose-500">*</span></label>
+                        <label class="block font-semibold text-gray-600 mb-1">Marhalah Santri <span class="text-rose-500">*</span></label>
                         <select name="santri_group" id="santriGroup" required class="w-full text-xs rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800">
                             <option value="putra" {{ old('santri_group', 'putra') === 'putra' ? 'selected' : '' }}>Putra</option>
                             <option value="putri" {{ old('santri_group') === 'putri' ? 'selected' : '' }}>Putri</option>
@@ -359,11 +359,19 @@
                     </div>
                     <div>
                         <label class="block font-semibold text-gray-600 mb-1">Hubungan <span class="text-rose-500">*</span></label>
-                        <select name="hubungan_wali" required class="w-full text-xs rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800">
+                        <select name="hubungan_wali" id="hubunganWali" required onchange="syncHubunganDetail()" class="w-full text-xs rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800">
                             @foreach(['Ayah Kandung', 'Ibu Kandung', 'Ayah Angkat', 'Ibu Angkat', 'Wali', 'Lainnya'] as $hubungan)
                                 <option value="{{ $hubungan }}" {{ old('hubungan_wali', 'Ayah Kandung') === $hubungan ? 'selected' : '' }}>{{ $hubungan }}</option>
                             @endforeach
                         </select>
+                    </div>
+
+                    <div id="hubunganWaliDetailWrap" class="{{ old('hubungan_wali') === 'Lainnya' ? '' : 'hidden' }} sm:col-span-3">
+                        <label class="block font-semibold text-gray-600 mb-1">Keterangan Hubungan <span class="text-rose-500">*</span></label>
+                        <input type="text" name="hubungan_wali_detail" id="hubunganWaliDetail" value="{{ old('hubungan_wali_detail') }}"
+                               placeholder="Contoh: Kakek dari pihak ayah, Paman, Kakak kandung, Yayasan..."
+                               class="w-full text-xs rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800">
+                        <p class="text-[10px] text-gray-400 mt-1">Wajib diisi bila Anda memilih hubungan <strong>Lainnya</strong>, agar keterangan hubungan wali lebih jelas.</p>
                     </div>
                 </div>
             </div>
@@ -412,10 +420,28 @@
         document.getElementById('studentModal').classList.add('hidden');
     }
 
-    // Kelompok santri mengikuti jenis kelamin, tetapi petugas tetap bisa mengubahnya.
+    // Marhalah santri mengikuti jenis kelamin, tetapi petugas tetap bisa mengubahnya.
     function syncSantriGroup(jenisKelamin) {
         document.getElementById('santriGroup').value = jenisKelamin === 'P' ? 'putri' : 'putra';
     }
+
+    // Tampilkan kolom keterangan hubungan hanya bila wali memilih "Lainnya".
+    function syncHubunganDetail() {
+        const nilai = document.getElementById('hubunganWali').value;
+        const wrap = document.getElementById('hubunganWaliDetailWrap');
+        const input = document.getElementById('hubunganWaliDetail');
+
+        if (nilai === 'Lainnya') {
+            wrap.classList.remove('hidden');
+            input.setAttribute('required', 'required');
+        } else {
+            wrap.classList.add('hidden');
+            input.removeAttribute('required');
+            input.value = '';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', syncHubunganDetail);
 
     // Bila validasi gagal, modal dibuka lagi agar petugas bisa memperbaiki isian.
     @if($errors->any())

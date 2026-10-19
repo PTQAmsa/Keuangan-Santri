@@ -40,4 +40,13 @@ class User extends Authenticatable
     {
         return $this->jabatan ?: ($this->role?->label() ?? '-');
     }
+
+    /**
+     * Gelar penanda tangan yang dicetak pada kuitansi.
+     * Bendahara 1 & 2 memakai jabatannya, sedangkan akun lain memakai sebutan umum.
+     */
+    public function receiptTitle(): string
+    {
+        return $this->jabatan ?: 'Bendahara / Kasir Keuangan';
+    }
 }

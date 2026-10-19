@@ -77,14 +77,18 @@ class StudentController
             'nama_wali' => ['required', 'string', 'max:100'],
             'no_whatsapp_wali' => ['required', 'string', 'max:25'],
             'hubungan_wali' => ['required', 'in:Ayah Kandung,Ibu Kandung,Ayah Angkat,Ibu Angkat,Wali,Lainnya'],
+            'hubungan_wali_detail' => ['nullable', 'required_if:hubungan_wali,Lainnya', 'string', 'max:100'],
             'pin_portal' => ['required', 'digits:6'],
             'diskon_beasiswa' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'bebas_wakaf' => ['nullable', 'boolean'],
-        ], [], [
+        ], [
+            'hubungan_wali_detail.required_if' => 'Keterangan hubungan wajib diisi bila Anda memilih "Lainnya".',
+        ], [
             'nis' => 'NIS',
             'nama_lengkap' => 'nama lengkap',
             'nama_wali' => 'nama wali',
             'no_whatsapp_wali' => 'nomor WhatsApp wali',
+            'hubungan_wali_detail' => 'keterangan hubungan',
             'pin_portal' => 'PIN portal',
         ]);
 

@@ -164,7 +164,7 @@
         <p class="report-period">
             Per Tanggal: <strong>{{ now()->translatedFormat('d F Y') }}</strong>
             @if($selectedClass) | Kelas: <strong>{{ $selectedClass }}</strong> @endif
-            @if(in_array($kelompok ?? null, ['putra', 'putri'], true)) | Kelompok: <strong>{{ ucfirst($kelompok) }}</strong> @endif
+            @if(in_array($kelompok ?? null, ['putra', 'putri'], true)) | Marhalah: <strong>{{ ucfirst($kelompok) }}</strong> @endif
         </p>
     </div>
 

@@ -42,7 +42,7 @@
             </div>
 
             <div>
-                <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Kelompok</label>
+                <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Marhalah</label>
                 <select name="kelompok" class="w-full rounded-xl border-gray-300 py-1.5 px-3 bg-gray-50 text-xs">
                     <option value="">-- Putra &amp; Putri --</option>
                     <option value="putra" {{ request('kelompok') === 'putra' ? 'selected' : '' }}>Putra</option>

@@ -25,6 +25,7 @@ class Student extends Model
         'nama_wali',
         'no_whatsapp_wali',
         'hubungan_wali',
+        'hubungan_wali_detail',
         'pin_portal',
         'must_change_pin',
         'pin_changed_at',
@@ -66,7 +67,7 @@ class Student extends Model
     }
 
     /**
-     * Nama tampilan kelompok santri (Putra / Putri).
+     * Nama tampilan marhalah santri (Putra / Putri).
      */
     public function getKelompokAttribute(): string
     {
@@ -74,7 +75,7 @@ class Student extends Model
     }
 
     /**
-     * Kelas badge warna kelompok santri.
+     * Kelas badge warna marhalah santri.
      */
     public function getKelompokBadgeAttribute(): string
     {
@@ -84,7 +85,7 @@ class Student extends Model
     }
 
     /**
-     * Saring santri berdasarkan kelompok: putra | putri | null (semua).
+     * Saring santri berdasarkan marhalah: putra | putri | null (semua).
      */
     public function scopeKelompok($query, ?string $kelompok)
     {

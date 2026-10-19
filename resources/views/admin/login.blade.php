@@ -26,7 +26,7 @@
 
                 <div>
                     <label for="email" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                        Email Pengurus
+                        Email
                     </label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gold-500">
