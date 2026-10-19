@@ -46,7 +46,7 @@
 
     <!-- Filter -->
     <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-        <form action="{{ route('admin.transactions') }}" method="GET" class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end text-xs">
+        <form action="{{ route('admin.transactions') }}" method="GET" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end text-xs">
             <div class="sm:col-span-2">
                 <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Cari Kuitansi / Santri / NIS / Diterima Dari</label>
                 <div class="relative">
@@ -54,6 +54,14 @@
                            class="w-full text-xs rounded-xl border-gray-300 py-1.5 pl-8 pr-3 focus:ring-brand-800 bg-gray-50">
                     <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2 text-gray-400 text-xs"></i>
                 </div>
+            </div>
+            <div>
+                <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Kelompok</label>
+                <select name="kelompok" class="w-full rounded-xl border-gray-300 py-1.5 px-3 bg-gray-50 text-xs">
+                    <option value="">-- Putra &amp; Putri --</option>
+                    <option value="putra" {{ $kelompok === 'putra' ? 'selected' : '' }}>Putra</option>
+                    <option value="putri" {{ $kelompok === 'putri' ? 'selected' : '' }}>Putri</option>
+                </select>
             </div>
             <div>
                 <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Status Kuitansi</label>
@@ -80,6 +88,7 @@
                         <th class="py-3 px-4 whitespace-nowrap">No. Kuitansi</th>
                         <th class="py-3 px-4 whitespace-nowrap">Tanggal</th>
                         <th class="py-3 px-4">Santri</th>
+                        <th class="py-3 px-4 text-center whitespace-nowrap">Kelompok</th>
                         <th class="py-3 px-4">Uraian Tagihan</th>
                         <th class="py-3 px-4 text-right whitespace-nowrap">Nominal</th>
                         <th class="py-3 px-4 text-center whitespace-nowrap">Status</th>
@@ -98,6 +107,13 @@
                             <td class="py-3.5 px-4">
                                 <p class="font-bold text-gray-900">{{ $pay->student->nama_lengkap ?? '-' }}</p>
                                 <p class="text-[11px] text-gray-400">NIS {{ $pay->student->nis ?? '-' }} • {{ $pay->student->kelas ?? '-' }}</p>
+                            </td>
+                            <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                                @if($pay->student)
+                                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold {{ $pay->student->kelompok_badge }}">{{ $pay->student->kelompok }}</span>
+                                @else
+                                    <span class="text-gray-400">-</span>
+                                @endif
                             </td>
                             <td class="py-3.5 px-4">
                                 <p class="text-xs font-medium text-gray-700">{{ $pay->invoice->title ?? '-' }}</p>
@@ -150,7 +166,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="p-8 text-center text-gray-400 text-xs">
+                            <td colspan="8" class="p-8 text-center text-gray-400 text-xs">
                                 Tidak ada transaksi yang sesuai dengan filter ini.
                             </td>
                         </tr>

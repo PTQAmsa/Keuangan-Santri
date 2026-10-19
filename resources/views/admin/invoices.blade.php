@@ -27,7 +27,7 @@
 
     <!-- Filter & Search Bar -->
     <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-        <form action="{{ route('admin.invoices') }}" method="GET" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end text-xs">
+        <form action="{{ route('admin.invoices') }}" method="GET" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end text-xs">
             <!-- Hidden sort fields to preserve order during filter -->
             <input type="hidden" name="sort_by" value="{{ $sortBy }}">
             <input type="hidden" name="sort_order" value="{{ $sortOrder }}">
@@ -39,6 +39,25 @@
                            class="w-full text-xs rounded-xl border-gray-300 py-1.5 pl-8 pr-3 focus:ring-brand-800 bg-gray-50">
                     <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2 text-gray-400 text-xs"></i>
                 </div>
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Kelompok</label>
+                <select name="kelompok" class="w-full rounded-xl border-gray-300 py-1.5 px-3 bg-gray-50 text-xs">
+                    <option value="">-- Putra &amp; Putri --</option>
+                    <option value="putra" {{ request('kelompok') === 'putra' ? 'selected' : '' }}>Putra</option>
+                    <option value="putri" {{ request('kelompok') === 'putri' ? 'selected' : '' }}>Putri</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Kelas</label>
+                <select name="kelas" class="w-full rounded-xl border-gray-300 py-1.5 px-3 bg-gray-50 text-xs">
+                    <option value="">-- Semua Kelas --</option>
+                    @foreach($classes as $kelas)
+                        <option value="{{ $kelas }}" {{ request('kelas') === $kelas ? 'selected' : '' }}>Kelas {{ $kelas }}</option>
+                    @endforeach
+                </select>
             </div>
 
             <div>
@@ -64,7 +83,7 @@
                 </select>
             </div>
 
-            <div class="flex items-center space-x-2 sm:col-span-2 lg:col-span-2">
+            <div class="flex items-center space-x-2">
                 <button type="submit" class="py-1.5 px-4 bg-brand-900 hover:bg-brand-800 text-white rounded-xl text-xs font-semibold shadow-sm transition">
                     <i class="fa-solid fa-filter mr-1"></i> Terapkan Filter
                 </button>
@@ -75,21 +94,23 @@
         </form>
     </div>
 
-    <!-- Helper Sort URL Macro -->
+    <!-- Helper Sort URL (closure agar tidak bentrok saat view dirender berulang) -->
     @php
-        function sortUrl($column, $currentSort, $currentOrder) {
+        $sortUrl = function ($column, $currentSort, $currentOrder) {
             $order = ($currentSort === $column && $currentOrder === 'asc') ? 'desc' : 'asc';
-            return request()->fullUrlWithQuery(['sort_by' => $column, 'sort_order' => $order]);
-        }
 
-        function sortIcon($column, $currentSort, $currentOrder) {
+            return request()->fullUrlWithQuery(['sort_by' => $column, 'sort_order' => $order]);
+        };
+
+        $sortIcon = function ($column, $currentSort, $currentOrder) {
             if ($currentSort !== $column) {
                 return '<i class="fa-solid fa-sort text-gray-300 ml-1"></i>';
             }
-            return $currentOrder === 'asc' 
-                ? '<i class="fa-solid fa-arrow-up-short-wide text-brand-900 ml-1"></i>' 
+
+            return $currentOrder === 'asc'
+                ? '<i class="fa-solid fa-arrow-up-short-wide text-brand-900 ml-1"></i>'
                 : '<i class="fa-solid fa-arrow-down-wide-short text-brand-900 ml-1"></i>';
-        }
+        };
     @endphp
 
     <!-- Tabel Invoices dengan Sorting Tiap Kolom -->
@@ -100,65 +121,65 @@
                     <tr class="bg-gray-50 text-gray-600 uppercase text-[11px] font-semibold border-b border-gray-200 select-none">
                         <!-- Kolom Tanggal Paling Kiri -->
                         <th class="py-3 px-4 whitespace-nowrap">
-                            <a href="{{ sortUrl('created_at', $sortBy, $sortOrder) }}" class="flex items-center hover:text-brand-900 transition" title="Urutkan Tanggal">
+                            <a href="{{ $sortUrl('created_at', $sortBy, $sortOrder) }}" class="flex items-center hover:text-brand-900 transition" title="Urutkan Tanggal">
                                 <span>Tanggal</span>
-                                {!! sortIcon('created_at', $sortBy, $sortOrder) !!}
+                                {!! $sortIcon('created_at', $sortBy, $sortOrder) !!}
                             </a>
                         </th>
 
                         <!-- No. Tagihan -->
                         <th class="py-3 px-4 whitespace-nowrap">
-                            <a href="{{ sortUrl('invoice_number', $sortBy, $sortOrder) }}" class="flex items-center hover:text-brand-900 transition" title="Urutkan No. Tagihan">
+                            <a href="{{ $sortUrl('invoice_number', $sortBy, $sortOrder) }}" class="flex items-center hover:text-brand-900 transition" title="Urutkan No. Tagihan">
                                 <span>No. Tagihan</span>
-                                {!! sortIcon('invoice_number', $sortBy, $sortOrder) !!}
+                                {!! $sortIcon('invoice_number', $sortBy, $sortOrder) !!}
                             </a>
                         </th>
 
                         <!-- Nama Santri / Kelas -->
                         <th class="py-3 px-4 whitespace-nowrap">
-                            <a href="{{ sortUrl('student_name', $sortBy, $sortOrder) }}" class="flex items-center hover:text-brand-900 transition" title="Urutkan Nama Santri">
+                            <a href="{{ $sortUrl('student_name', $sortBy, $sortOrder) }}" class="flex items-center hover:text-brand-900 transition" title="Urutkan Nama Santri">
                                 <span>Nama Santri / Kelas</span>
-                                {!! sortIcon('student_name', $sortBy, $sortOrder) !!}
+                                {!! $sortIcon('student_name', $sortBy, $sortOrder) !!}
                             </a>
                         </th>
 
                         <!-- Uraian Pos Tagihan -->
                         <th class="py-3 px-4 whitespace-nowrap">
-                            <a href="{{ sortUrl('title', $sortBy, $sortOrder) }}" class="flex items-center hover:text-brand-900 transition" title="Urutkan Uraian">
+                            <a href="{{ $sortUrl('title', $sortBy, $sortOrder) }}" class="flex items-center hover:text-brand-900 transition" title="Urutkan Uraian">
                                 <span>Uraian Pos Tagihan</span>
-                                {!! sortIcon('title', $sortBy, $sortOrder) !!}
+                                {!! $sortIcon('title', $sortBy, $sortOrder) !!}
                             </a>
                         </th>
 
                         <!-- Total Tagihan -->
                         <th class="py-3 px-4 whitespace-nowrap text-right">
-                            <a href="{{ sortUrl('amount', $sortBy, $sortOrder) }}" class="inline-flex items-center hover:text-brand-900 transition" title="Urutkan Total">
+                            <a href="{{ $sortUrl('amount', $sortBy, $sortOrder) }}" class="inline-flex items-center hover:text-brand-900 transition" title="Urutkan Total">
                                 <span>Total (Rp)</span>
-                                {!! sortIcon('amount', $sortBy, $sortOrder) !!}
+                                {!! $sortIcon('amount', $sortBy, $sortOrder) !!}
                             </a>
                         </th>
 
                         <!-- Sisa Tagihan -->
                         <th class="py-3 px-4 whitespace-nowrap text-right">
-                            <a href="{{ sortUrl('remaining_amount', $sortBy, $sortOrder) }}" class="inline-flex items-center hover:text-brand-900 transition" title="Urutkan Sisa Tagihan">
+                            <a href="{{ $sortUrl('remaining_amount', $sortBy, $sortOrder) }}" class="inline-flex items-center hover:text-brand-900 transition" title="Urutkan Sisa Tagihan">
                                 <span>Sisa Tagihan</span>
-                                {!! sortIcon('remaining_amount', $sortBy, $sortOrder) !!}
+                                {!! $sortIcon('remaining_amount', $sortBy, $sortOrder) !!}
                             </a>
                         </th>
 
                         <!-- Jatuh Tempo -->
                         <th class="py-3 px-4 whitespace-nowrap">
-                            <a href="{{ sortUrl('due_date', $sortBy, $sortOrder) }}" class="flex items-center hover:text-brand-900 transition" title="Urutkan Jatuh Tempo">
+                            <a href="{{ $sortUrl('due_date', $sortBy, $sortOrder) }}" class="flex items-center hover:text-brand-900 transition" title="Urutkan Jatuh Tempo">
                                 <span>Jatuh Tempo</span>
-                                {!! sortIcon('due_date', $sortBy, $sortOrder) !!}
+                                {!! $sortIcon('due_date', $sortBy, $sortOrder) !!}
                             </a>
                         </th>
 
                         <!-- Status -->
                         <th class="py-3 px-4 text-center whitespace-nowrap">
-                            <a href="{{ sortUrl('status', $sortBy, $sortOrder) }}" class="inline-flex items-center hover:text-brand-900 transition" title="Urutkan Status">
+                            <a href="{{ $sortUrl('status', $sortBy, $sortOrder) }}" class="inline-flex items-center hover:text-brand-900 transition" title="Urutkan Status">
                                 <span>Status</span>
-                                {!! sortIcon('status', $sortBy, $sortOrder) !!}
+                                {!! $sortIcon('status', $sortBy, $sortOrder) !!}
                             </a>
                         </th>
 
@@ -180,7 +201,12 @@
 
                             <!-- Nama Santri & Kelas -->
                             <td class="py-3.5 px-4">
-                                <p class="font-bold text-gray-900">{{ $inv->student->nama_lengkap ?? '-' }}</p>
+                                <p class="font-bold text-gray-900 flex items-center gap-1.5">
+                                    {{ $inv->student->nama_lengkap ?? '-' }}
+                                    @if($inv->student)
+                                        <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold {{ $inv->student->kelompok_badge }}">{{ $inv->student->kelompok }}</span>
+                                    @endif
+                                </p>
                                 <p class="text-[11px] text-gray-400">NIS: {{ $inv->student->nis ?? '-' }} • Kelas {{ $inv->student->kelas ?? '-' }}</p>
                             </td>
 

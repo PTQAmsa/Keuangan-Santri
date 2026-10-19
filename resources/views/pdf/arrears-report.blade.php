@@ -146,7 +146,7 @@
             </td>
             <td style="width: 56%; vertical-align: middle;">
                 <h1 class="logo-title">Pesantren Tadabbur Al-Qur'an Amsa001</h1>
-                <p class="logo-sub">Pendidikan Muadalah Tingkat Ula (SMP) & Wustha/Ulya (SMA)</p>
+                <p class="logo-sub">Pendidikan Muadalah Mu'allimien (Program 6 Tahun)</p>
                 <p class="logo-address">Jl. Cikopo Selatan, Gg. Yulias, Sukabirus, Desa Gadog, Kec. Megamendung, Bogor 16770 | Telp: +62 856-9225-3516</p>
             </td>
             <td style="width: 30%; text-align: right; vertical-align: middle;">
@@ -164,6 +164,7 @@
         <p class="report-period">
             Per Tanggal: <strong>{{ now()->translatedFormat('d F Y') }}</strong>
             @if($selectedClass) | Kelas: <strong>{{ $selectedClass }}</strong> @endif
+            @if(in_array($kelompok ?? null, ['putra', 'putri'], true)) | Kelompok: <strong>{{ ucfirst($kelompok) }}</strong> @endif
         </p>
     </div>
 
@@ -203,7 +204,7 @@
                     <td class="text-center">{{ $no++ }}</td>
                     <td>
                         <strong>{{ $item['student']->nama_lengkap ?? '-' }}</strong><br>
-                        <span style="font-size: 8.5px; color: #64748b;">NIS: {{ $item['student']->nis ?? '-' }} • Kelas {{ $item['student']->kelas ?? '-' }}</span>
+                        <span style="font-size: 8.5px; color: #64748b;">NIS: {{ $item['student']->nis ?? '-' }} • Kelas {{ $item['student']->kelas ?? '-' }} • {{ $item['student']->kelompok ?? '-' }}</span>
                     </td>
                     <td>
                         {{ $item['student']->nama_wali ?? '-' }}<br>

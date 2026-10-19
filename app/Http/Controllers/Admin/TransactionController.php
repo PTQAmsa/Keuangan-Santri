@@ -24,6 +24,7 @@ class TransactionController
     {
         $search = $request->input('search');
         $status = $request->input('status', 'active');
+        $kelompok = $request->input('kelompok');
 
         $query = Payment::with(['student', 'invoice.category', 'receipt', 'recordedBy', 'voidedBy'])
             ->latest('payment_date')
@@ -47,6 +48,10 @@ class TransactionController
             $query->whereNull('voided_at');
         }
 
+        if ($kelompok === 'putra' || $kelompok === 'putri') {
+            $query->whereHas('student', fn ($sub) => $sub->where('santri_group', $kelompok));
+        }
+
         $payments = $query->paginate(20)->withQueryString();
 
         $totalAktif = Payment::whereNull('voided_at')->sum('amount_paid');
@@ -57,6 +62,7 @@ class TransactionController
             'payments',
             'search',
             'status',
+            'kelompok',
             'totalAktif',
             'totalDibatalkan',
             'jumlahDibatalkan'

@@ -60,8 +60,8 @@
                     </div>
                 </div>
 
-                <!-- Navigation Links (Terpisah berdasarkan area) -->
-                <nav class="flex items-center space-x-1 sm:space-x-3 text-xs sm:text-sm font-medium">
+                <!-- Aksi Kanan (profil portal / akun pengurus / login publik) -->
+                <div class="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm font-medium">
                     @if(request()->is('portal*'))
                         {{-- NAV KHUSUS PORTAL WALI SANTRI --}}
                         @if(session('portal_student_id'))
@@ -80,33 +80,7 @@
                             </a>
                         @endif
                     @elseif(request()->is('admin*'))
-                        {{-- NAV KHUSUS ADMIN / BENDAHARA / PENGASUH --}}
                         @auth
-                            <a href="{{ route('admin.dashboard') }}" class="px-2.5 py-1.5 rounded-lg {{ request()->routeIs('admin.dashboard') ? 'bg-brand-800 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
-                                <i class="fa-solid fa-gauge mr-1"></i> Dashboard
-                            </a>
-                            @if(auth()->user()->role?->canManageFinances())
-                                <a href="{{ route('admin.cashier') }}" class="px-2.5 py-1.5 rounded-lg {{ request()->routeIs('admin.cashier') ? 'bg-gold-400 text-brand-900 font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
-                                    <i class="fa-solid fa-cash-register mr-1"></i> Kasir
-                                </a>
-                                <a href="{{ route('admin.invoices') }}" class="px-2.5 py-1.5 rounded-lg {{ request()->routeIs('admin.invoices') ? 'bg-brand-800 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
-                                    <i class="fa-solid fa-list-check mr-1"></i> Tagihan
-                                </a>
-                                <a href="{{ route('admin.transactions') }}" class="px-2.5 py-1.5 rounded-lg {{ request()->routeIs('admin.transactions') ? 'bg-brand-800 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
-                                    <i class="fa-solid fa-money-bill-transfer mr-1"></i> Transaksi
-                                </a>
-                            @endif
-                            <a href="{{ route('admin.reports.cash') }}" class="px-2.5 py-1.5 rounded-lg {{ request()->routeIs('admin.reports.*') ? 'bg-emerald-600 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }} transition">
-                                <i class="fa-solid fa-chart-column mr-1"></i> Laporan
-                            </a>
-                            @if(auth()->user()->role?->isAdmin())
-                                <a href="{{ route('admin.logs') }}" class="px-2.5 py-1.5 rounded-lg {{ request()->routeIs('admin.logs') ? 'bg-rose-600 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }} transition">
-                                    <i class="fa-solid fa-clipboard-list mr-1"></i> Log Aktivitas
-                                </a>
-                                <a href="{{ route('admin.accounts') }}" class="px-2.5 py-1.5 rounded-lg {{ request()->routeIs('admin.accounts') ? 'bg-brand-800 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
-                                    <i class="fa-solid fa-users-gear mr-1"></i> Akun
-                                </a>
-                            @endif
                             <a href="{{ route('admin.password.edit') }}" class="hidden sm:flex flex-col items-end leading-tight px-2 text-right rounded-lg hover:bg-brand-800 py-1" title="Ganti kata sandi">
                                 <span class="text-[11px] font-semibold text-white">{{ auth()->user()->name }}</span>
                                 <span class="text-[10px] text-gold-400 font-medium">{{ auth()->user()->displayTitle() }}</span>
@@ -128,9 +102,44 @@
                             <i class="fa-solid fa-lock mr-1"></i> Login Pengurus / Kasir
                         </a>
                     @endif
-                </nav>
+                </div>
             </div>
         </div>
+
+        @if(request()->is('admin*') && auth()->check())
+            {{-- MENU PANEL: baris bawah navbar agar baris atas tidak terlalu penuh --}}
+            <div class="border-t border-white/10 bg-brand-900/95">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <nav class="flex items-center space-x-1 overflow-x-auto py-1.5 text-xs font-medium whitespace-nowrap">
+                        <a href="{{ route('admin.dashboard') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.dashboard') ? 'bg-brand-800 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
+                            <i class="fa-solid fa-gauge mr-1"></i> Dashboard
+                        </a>
+                        @if(auth()->user()->role?->canManageFinances())
+                            <a href="{{ route('admin.cashier') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.cashier') ? 'bg-gold-400 text-brand-900 font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
+                                <i class="fa-solid fa-cash-register mr-1"></i> Kasir
+                            </a>
+                            <a href="{{ route('admin.invoices') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.invoices') ? 'bg-brand-800 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
+                                <i class="fa-solid fa-list-check mr-1"></i> Tagihan
+                            </a>
+                            <a href="{{ route('admin.transactions') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.transactions') ? 'bg-brand-800 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
+                                <i class="fa-solid fa-money-bill-transfer mr-1"></i> Transaksi
+                            </a>
+                        @endif
+                        <a href="{{ route('admin.reports.cash') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.reports.*') ? 'bg-emerald-600 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }} transition">
+                            <i class="fa-solid fa-chart-column mr-1"></i> Laporan
+                        </a>
+                        @if(auth()->user()->role?->isAdmin())
+                            <a href="{{ route('admin.logs') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.logs') ? 'bg-rose-600 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }} transition">
+                                <i class="fa-solid fa-clipboard-list mr-1"></i> Log Aktivitas
+                            </a>
+                            <a href="{{ route('admin.accounts') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.accounts') ? 'bg-brand-800 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
+                                <i class="fa-solid fa-users-gear mr-1"></i> Akun
+                            </a>
+                        @endif
+                    </nav>
+                </div>
+            </div>
+        @endif
     </header>
 
     <!-- Main Content Body -->

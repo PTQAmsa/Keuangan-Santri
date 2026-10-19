@@ -178,7 +178,7 @@ class PesantrenFinancialTest extends TestCase
 
         $this->assertStringContainsString('Bpk. Abdurrahman (Ayah Kandung)', $html);
         $this->assertStringContainsString('SPP Bulanan, Makan &amp; Laundry - Januari 2027', $html);
-        $this->assertStringNotContainsString('Diskon 50%', $html);
+        $this->assertStringNotContainsString('Potongan 50%', $html);
         $this->assertStringNotContainsString('Penerima Beasiswa', $html);
     }
 
@@ -193,7 +193,7 @@ class PesantrenFinancialTest extends TestCase
             Invoice::where('invoice_number', 'INV-202610-0001')->firstOrFail()->receipt_title
         );
 
-        // SPP dengan diskon: keterangan diskon dibuang
+        // SPP dengan potongan: keterangan potongan dibuang
         $this->assertSame(
             'SPP Bulanan, Makan & Laundry - Januari 2027',
             Invoice::where('invoice_number', 'INV-202701-0005')->firstOrFail()->receipt_title

@@ -177,7 +177,7 @@
             </td>
             <td style="width: 63%; vertical-align: middle;">
                 <div class="logo-text">PESANTREN TADABBUR AL-QUR'AN AMSA001</div>
-                <div class="sub-text">Satuan Pendidikan Muadalah Mu'allimien (SMP - SMA Sederajat) Putra & Putri</div>
+                <div class="sub-text">Satuan Pendidikan Muadalah Mu'allimien (Program 6 Tahun) Putra &amp; Putri</div>
                 <div class="address-text">Jl. Cikopo Selatan, Gg. Yulias, Sukabirus, Desa Gadog, Kec. Megamendung, Kab. Bogor 16770</div>
                 <div class="address-text">WhatsApp: +62 856-9225-3516 | Email: info@ptqamsa.id | Web: www.ptqamsa.id</div>
             </td>
@@ -204,7 +204,7 @@
         <tr>
             <td class="label-col">Nama Santri</td>
             <td class="separator-col">:</td>
-            <td class="value-col">{{ $student->nama_lengkap }} (NIS: {{ $student->nis }} / Kelas: {{ $student->kelas }})</td>
+            <td class="value-col">{{ $student->nama_lengkap }} (NIS: {{ $student->nis }} / Kelas: {{ $student->kelas }} / {{ $student->kelompok }})</td>
         </tr>
         <tr>
             <td class="label-col">Untuk Pembayaran</td>

@@ -36,7 +36,7 @@
 
     <!-- Filter Bar -->
     <div class="bg-white rounded-2xl p-5 border border-gray-200/80 shadow-sm">
-        <form method="GET" action="{{ route('admin.reports.arrears') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
+        <form method="GET" action="{{ route('admin.reports.arrears') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
             <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1">Cari Santri / NIS</label>
                 <div class="relative">
@@ -54,6 +54,15 @@
                             Kelas {{ $kls }}
                         </option>
                     @endforeach
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Kelompok</label>
+                <select name="kelompok" class="w-full text-xs rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800 focus:border-brand-800 bg-gray-50/50">
+                    <option value="">-- Putra &amp; Putri --</option>
+                    <option value="putra" {{ $kelompok === 'putra' ? 'selected' : '' }}>Putra</option>
+                    <option value="putri" {{ $kelompok === 'putri' ? 'selected' : '' }}>Putri</option>
                 </select>
             </div>
 
@@ -164,7 +173,10 @@
                         <tr class="hover:bg-rose-50/20 transition">
                             <td class="py-3 px-4 text-center text-gray-400 font-mono">{{ $no++ }}</td>
                             <td class="py-3 px-4">
-                                <p class="font-bold text-gray-900">{{ $item['student']->nama_lengkap }}</p>
+                                <p class="font-bold text-gray-900 flex items-center gap-1.5">
+                                    {{ $item['student']->nama_lengkap }}
+                                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold {{ $item['student']->kelompok_badge }}">{{ $item['student']->kelompok }}</span>
+                                </p>
                                 <p class="text-[11px] text-gray-400">NIS: {{ $item['student']->nis }} • Kelas {{ $item['student']->kelas }}</p>
                                 @if($item['student']->diskon_beasiswa > 0)
                                     <span class="inline-block mt-0.5 px-2 py-0.2 rounded text-[10px] font-semibold bg-blue-50 text-blue-700">

@@ -18,16 +18,19 @@ return new class extends Migration
             $table->string('nisn', 20)->nullable();
             $table->string('nama_lengkap', 100);
             $table->enum('jenis_kelamin', ['L', 'P'])->default('L');
-            $table->enum('jenjang', ['SMP', 'SMA'])->default('SMP');
-            $table->string('kelas', 20); // misal 7A, 8B, 10
-            $table->string('kamar_asrama', 50)->nullable(); // misal Kamar 01, Asrama Ali
+            // Pesantren melayani santri putra & putri dalam satu pembukuan kas.
+            $table->enum('santri_group', ['putra', 'putri'])->default('putra');
+            $table->string('kelas', 20); // misal 7A, 7 Putri, 8B
+            $table->string('kamar_asrama', 50)->nullable(); // misal Kamar 01, Asrama Banat
             $table->year('tahun_masuk')->default(2026);
             $table->enum('status', ['aktif', 'lulus', 'pindah', 'nonaktif'])->default('aktif');
             $table->string('kota_asal', 50)->nullable();
             $table->text('alamat_lengkap')->nullable();
             $table->string('nama_wali', 100);
             $table->string('no_whatsapp_wali', 25);
-            $table->enum('hubungan_wali', ['Ayah', 'Ibu', 'Wali'])->default('Ayah');
+            $table->enum('hubungan_wali', [
+                'Ayah Kandung', 'Ibu Kandung', 'Ayah Angkat', 'Ibu Angkat', 'Wali', 'Lainnya',
+            ])->default('Ayah Kandung');
             $table->string('pin_portal', 10)->default('123456');
             $table->decimal('diskon_beasiswa', 5, 2)->default(0.00); // 0.00 - 100.00 (%)
             $table->boolean('bebas_wakaf')->default(false);

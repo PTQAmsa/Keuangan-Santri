@@ -145,7 +145,7 @@
             </td>
             <td style="width: 58%; vertical-align: middle;">
                 <h1 class="logo-title">Pesantren Tadabbur Al-Qur'an Amsa001</h1>
-                <p class="logo-sub">Pendidikan Muadalah Tingkat Ula (SMP) & Wustha/Ulya (SMA)</p>
+                <p class="logo-sub">Pendidikan Muadalah Mu'allimien (Program 6 Tahun)</p>
                 <p class="logo-address">Jl. Cikopo Selatan, Gg. Yulias, Sukabirus, Desa Gadog, Kec. Megamendung, Bogor 16770 | Telp: +62 856-9225-3516 | Web: www.ptqamsa.id</p>
             </td>
             <td style="width: 30%; text-align: right; vertical-align: middle;">
@@ -162,6 +162,7 @@
         <h2 class="report-title">Laporan Penerimaan Kas Keuangan</h2>
         <p class="report-period">
             Periode: <strong>{{ \Carbon\Carbon::parse($startDate)->translatedFormat('d F Y') }}</strong> s/d <strong>{{ \Carbon\Carbon::parse($endDate)->translatedFormat('d F Y') }}</strong>
+            @if(in_array($kelompok ?? null, ['putra', 'putri'], true)) | Kelompok: <strong>{{ ucfirst($kelompok) }}</strong> @endif
         </p>
     </div>
 
@@ -200,13 +201,14 @@
         <thead>
             <tr>
                 <th style="width: 4%;" class="text-center">No</th>
-                <th style="width: 14%;">No Kuitansi</th>
-                <th style="width: 10%;">Tanggal</th>
-                <th style="width: 20%;">Nama Santri & Kelas</th>
-                <th style="width: 22%;">Komponen Tagihan</th>
+                <th style="width: 13%;">No Kuitansi</th>
+                <th style="width: 9%;">Tanggal</th>
+                <th style="width: 15%;">Nama Santri & Kelas</th>
+                <th style="width: 7%;" class="text-center">Kelompok</th>
+                <th style="width: 21%;">Komponen Tagihan</th>
                 <th style="width: 8%;" class="text-center">Metode</th>
                 <th style="width: 14%;" class="text-right">Nominal (Rp)</th>
-                <th style="width: 8%;">Catatan</th>
+                <th style="width: 9%;">Catatan</th>
             </tr>
         </thead>
         <tbody>
@@ -219,6 +221,7 @@
                         <strong>{{ $pay->student->nama_lengkap ?? '-' }}</strong><br>
                         <span style="font-size: 8.5px; color: #64748b;">NIS: {{ $pay->student->nis ?? '-' }} (Kelas {{ $pay->student->kelas ?? '-' }})</span>
                     </td>
+                    <td class="text-center">{{ $pay->student->kelompok ?? '-' }}</td>
                     <td>
                         <strong>{{ $pay->invoice->category->name ?? '-' }}</strong><br>
                         <span style="font-size: 8.5px; color: #64748b;">{{ $pay->invoice->title ?? '-' }}</span>
@@ -235,13 +238,13 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8" class="text-center" style="padding: 20px; color: #94a3b8;">
+                    <td colspan="9" class="text-center" style="padding: 20px; color: #94a3b8;">
                         Tidak ada transaksi pembayaran pada rentang periode ini.
                     </td>
                 </tr>
             @endforelse
             <tr class="total-row">
-                <td colspan="6" class="text-right" style="padding: 6px 8px; text-transform: uppercase;">
+                <td colspan="7" class="text-right" style="padding: 6px 8px; text-transform: uppercase;">
                     Total Seluruh Penerimaan:
                 </td>
                 <td class="text-right" style="color: #047857; font-size: 11px;">

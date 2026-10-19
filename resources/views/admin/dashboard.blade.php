@@ -14,49 +14,87 @@
     </div>
 
     <!-- Ringkasan Statistik -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <!-- Total Santri Aktif -->
-        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center justify-between">
-            <div>
-                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Santri Aktif Terdaftar</p>
-                <p class="text-3xl font-extrabold text-brand-900 mt-1">{{ $totalSantri }}</p>
-                <p class="text-xs text-gray-400 mt-1">Muadalah Mu'allimien</p>
+        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Santri Aktif Terdaftar</p>
+                    <p class="text-3xl font-extrabold text-brand-900 mt-1">{{ $totalSantri }}</p>
+                    <p class="text-xs text-gray-400 mt-1">Muadalah Mu'allimien &bull; 6 tahun</p>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-blue-50 text-brand-800 flex items-center justify-center text-2xl">
+                    <i class="fa-solid fa-users"></i>
+                </div>
             </div>
-            <div class="w-12 h-12 rounded-xl bg-blue-50 text-brand-800 flex items-center justify-center text-2xl">
-                <i class="fa-solid fa-users"></i>
+            <div class="grid grid-cols-2 gap-2 mt-4 text-center">
+                <div class="rounded-xl bg-blue-50/70 border border-blue-100 py-2">
+                    <p class="text-[10px] font-bold uppercase text-blue-700">Putra</p>
+                    <p class="text-lg font-extrabold text-blue-800">{{ $totalPutra }}</p>
+                </div>
+                <div class="rounded-xl bg-fuchsia-50/70 border border-fuchsia-100 py-2">
+                    <p class="text-[10px] font-bold uppercase text-fuchsia-700">Putri</p>
+                    <p class="text-lg font-extrabold text-fuchsia-800">{{ $totalPutri }}</p>
+                </div>
             </div>
         </div>
 
         <!-- Uang Masuk Bulan Ini -->
-        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center justify-between relative group">
-            <div>
-                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Pemasukan Bulan Ini</p>
-                <p class="text-3xl font-extrabold text-emerald-600 mt-1">
-                    Rp {{ number_format($totalMasukBulanIni, 0, ',', '.') }}
-                </p>
-                <a href="{{ route('admin.reports.cash') }}" class="text-xs text-emerald-700 font-semibold hover:underline mt-1 inline-flex items-center">
-                    Lihat Laporan Kas &rarr;
-                </a>
+        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Pemasukan Bulan Ini</p>
+                    <p class="text-2xl font-extrabold text-emerald-600 mt-1">
+                        Rp {{ number_format($totalMasukBulanIni, 0, ',', '.') }}
+                    </p>
+                    <p class="text-xs text-gray-400 mt-1">{{ now()->translatedFormat('F Y') }} &bull; keseluruhan</p>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl">
+                    <i class="fa-solid fa-hand-holding-dollar"></i>
+                </div>
             </div>
-            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl">
-                <i class="fa-solid fa-hand-holding-dollar"></i>
+            <div class="grid grid-cols-2 gap-2 mt-4">
+                <div class="rounded-xl bg-blue-50/70 border border-blue-100 px-3 py-2">
+                    <p class="text-[10px] font-bold uppercase text-blue-700">Putra</p>
+                    <p class="text-sm font-extrabold text-blue-800">Rp {{ number_format($masukPutra, 0, ',', '.') }}</p>
+                </div>
+                <div class="rounded-xl bg-fuchsia-50/70 border border-fuchsia-100 px-3 py-2">
+                    <p class="text-[10px] font-bold uppercase text-fuchsia-700">Putri</p>
+                    <p class="text-sm font-extrabold text-fuchsia-800">Rp {{ number_format($masukPutri, 0, ',', '.') }}</p>
+                </div>
             </div>
+            <a href="{{ route('admin.reports.cash') }}" class="text-xs text-emerald-700 font-semibold hover:underline mt-3 inline-flex items-center">
+                Lihat Laporan Kas &rarr;
+            </a>
         </div>
 
         <!-- Total Tunggakan Tagihan -->
-        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center justify-between relative group">
-            <div>
-                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Tunggakan Santri</p>
-                <p class="text-3xl font-extrabold text-rose-600 mt-1">
-                    Rp {{ number_format($totalTunggakan, 0, ',', '.') }}
-                </p>
-                <a href="{{ route('admin.reports.arrears') }}" class="text-xs text-rose-700 font-semibold hover:underline mt-1 inline-flex items-center">
-                    Lihat Rekap Tunggakan &rarr;
-                </a>
+        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Tunggakan Santri</p>
+                    <p class="text-2xl font-extrabold text-rose-600 mt-1">
+                        Rp {{ number_format($totalTunggakan, 0, ',', '.') }}
+                    </p>
+                    <p class="text-xs text-gray-400 mt-1">Seluruh tagihan belum lunas</p>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-2xl">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </div>
             </div>
-            <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-2xl">
-                <i class="fa-solid fa-clock-rotate-left"></i>
+            <div class="grid grid-cols-2 gap-2 mt-4">
+                <div class="rounded-xl bg-blue-50/70 border border-blue-100 px-3 py-2">
+                    <p class="text-[10px] font-bold uppercase text-blue-700">Putra</p>
+                    <p class="text-sm font-extrabold text-blue-800">Rp {{ number_format($tunggakanPutra, 0, ',', '.') }}</p>
+                </div>
+                <div class="rounded-xl bg-fuchsia-50/70 border border-fuchsia-100 px-3 py-2">
+                    <p class="text-[10px] font-bold uppercase text-fuchsia-700">Putri</p>
+                    <p class="text-sm font-extrabold text-fuchsia-800">Rp {{ number_format($tunggakanPutri, 0, ',', '.') }}</p>
+                </div>
             </div>
+            <a href="{{ route('admin.reports.arrears') }}" class="text-xs text-rose-700 font-semibold hover:underline mt-3 inline-flex items-center">
+                Lihat Rekap Tunggakan &rarr;
+            </a>
         </div>
     </div>
 
@@ -69,7 +107,7 @@
                     <i class="fa-solid fa-wand-magic-sparkles text-gold-500 mr-2"></i> Auto-Generate Tagihan SPP Bulanan Massal
                 </h2>
                 <p class="text-xs text-gray-600 max-w-2xl">
-                    Buat tagihan SPP rutin (Rp 1.350.000) otomatis untuk semua santri aktif dalam 1 klik. Sistem secara cerdas akan langsung memotong diskon beasiswa (misal santri yatim/dhuafa potong 50% = Rp 675.000).
+                    Buat tagihan SPP rutin (Rp 1.350.000) otomatis untuk semua santri aktif dalam 1 klik. Sistem secara cerdas akan langsung menerapkan potongan beasiswa (misal santri yatim/dhuafa potong 50% = Rp 675.000).
                 </p>
             </div>
             <form action="{{ route('admin.generate-spp') }}" method="POST" class="flex items-center gap-2 self-start md:self-auto">

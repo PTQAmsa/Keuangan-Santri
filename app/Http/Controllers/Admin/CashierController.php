@@ -20,13 +20,35 @@ class CashierController
     public function index()
     {
         $totalSantri = Student::where('status', 'aktif')->count();
-        $totalMasukBulanIni = Payment::whereNull('voided_at')
+        $totalPutra = Student::where('status', 'aktif')->where('santri_group', 'putra')->count();
+        $totalPutri = Student::where('status', 'aktif')->where('santri_group', 'putri')->count();
+
+        // Pemasukan bulan berjalan, dipisah keseluruhan / putra / putri (kas tetap satu atap).
+        $masukBulanIni = fn () => Payment::query()
+            ->whereNull('voided_at')
             ->whereYear('payment_date', now()->year)
-            ->whereMonth('payment_date', now()->month)
+            ->whereMonth('payment_date', now()->month);
+
+        $totalMasukBulanIni = $masukBulanIni()->sum('amount_paid');
+        $masukPutra = $masukBulanIni()
+            ->whereHas('student', fn ($q) => $q->where('santri_group', 'putra'))
             ->sum('amount_paid');
-        $totalTunggakan = Invoice::whereIn('status', ['unpaid', 'partial'])->get()->sum(function ($inv) {
-            return $inv->remaining_amount;
-        });
+        $masukPutri = $masukBulanIni()
+            ->whereHas('student', fn ($q) => $q->where('santri_group', 'putri'))
+            ->sum('amount_paid');
+
+        // Tunggakan aktif, dipisah keseluruhan / putra / putri.
+        $invoicesAktif = Invoice::with('student')
+            ->whereIn('status', ['unpaid', 'partial'])
+            ->get();
+
+        $totalTunggakan = $invoicesAktif->sum(fn ($inv) => $inv->remaining_amount);
+        $tunggakanPutra = $invoicesAktif
+            ->filter(fn ($inv) => $inv->student?->santri_group === 'putra')
+            ->sum(fn ($inv) => $inv->remaining_amount);
+        $tunggakanPutri = $invoicesAktif
+            ->filter(fn ($inv) => $inv->student?->santri_group === 'putri')
+            ->sum(fn ($inv) => $inv->remaining_amount);
 
         $recentPayments = Payment::with(['student', 'invoice', 'receipt'])
             ->whereNull('voided_at')
@@ -36,7 +58,19 @@ class CashierController
             ->get();
         $recentInvoices = Invoice::with(['student', 'category'])->whereIn('status', ['unpaid', 'partial'])->latest()->take(6)->get();
 
-        return view('admin.dashboard', compact('totalSantri', 'totalMasukBulanIni', 'totalTunggakan', 'recentPayments', 'recentInvoices'));
+        return view('admin.dashboard', compact(
+            'totalSantri',
+            'totalPutra',
+            'totalPutri',
+            'totalMasukBulanIni',
+            'masukPutra',
+            'masukPutri',
+            'totalTunggakan',
+            'tunggakanPutra',
+            'tunggakanPutri',
+            'recentPayments',
+            'recentInvoices'
+        ));
     }
 
     /**
@@ -280,6 +314,20 @@ class CashierController
         // Filter kategori
         if ($request->filled('category_id')) {
             $query->where('payment_category_id', $request->category_id);
+        }
+
+        // Filter kelompok (putra/putri)
+        if ($request->filled('kelompok')) {
+            $query->whereHas('student', function ($sub) use ($request) {
+                $sub->where('santri_group', $request->kelompok);
+            });
+        }
+
+        // Filter kelas — untuk memetakan siapa yang sudah/belum bayar per kelas
+        if ($request->filled('kelas')) {
+            $query->whereHas('student', function ($sub) use ($request) {
+                $sub->where('kelas', $request->kelas);
+            });
         }
 
         // Search nama atau nomor tagihan

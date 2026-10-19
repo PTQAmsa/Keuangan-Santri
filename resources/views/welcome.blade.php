@@ -117,7 +117,7 @@
             </div>
             <h3 class="font-bold text-gray-900 text-base">Skema Cicilan & Beasiswa</h3>
             <p class="text-xs text-gray-500 leading-relaxed">
-                Mendukung pembayaran wakaf dicicil 2 tahap serta pemotongan otomatis beasiswa santri yatim/dhuafa (diskon 50% & bebas wakaf).
+                Mendukung pembayaran wakaf dicicil 2 tahap serta pemotongan otomatis beasiswa santri yatim/dhuafa (potongan beasiswa 50% & bebas wakaf).
             </p>
         </div>
 

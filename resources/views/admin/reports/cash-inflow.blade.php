@@ -32,7 +32,7 @@
 
     <!-- Filter Form Bar -->
     <div class="bg-white rounded-2xl p-5 border border-gray-200/80 shadow-sm">
-        <form method="GET" action="{{ route('admin.reports.cash') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+        <form method="GET" action="{{ route('admin.reports.cash') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
             <!-- Menjaga urutan kolom tetap tersimpan saat filter diterapkan -->
             <input type="hidden" name="sort_by" value="{{ $sortBy }}">
             <input type="hidden" name="sort_order" value="{{ $sortOrder }}">
@@ -45,6 +45,15 @@
             <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1">Sampai Tanggal</label>
                 <input type="date" name="end_date" value="{{ $endDate }}" class="w-full text-xs rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800 focus:border-brand-800 bg-gray-50/50">
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Kelompok</label>
+                <select name="kelompok" class="w-full text-xs rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800 focus:border-brand-800 bg-gray-50/50">
+                    <option value="">-- Putra &amp; Putri --</option>
+                    <option value="putra" {{ $kelompok === 'putra' ? 'selected' : '' }}>Putra</option>
+                    <option value="putri" {{ $kelompok === 'putri' ? 'selected' : '' }}>Putri</option>
+                </select>
             </div>
 
             <div>
@@ -219,6 +228,7 @@
                                 <span>Santri</span>{!! $sortIcon('student_name', $sortBy, $sortOrder) !!}
                             </a>
                         </th>
+                        <th class="py-3 px-4 text-center">Kelompok</th>
                         <th class="py-3 px-4">
                             <a href="{{ $sortUrl('category', $sortBy, $sortOrder) }}" class="inline-flex items-center hover:text-brand-900 transition" title="Urutkan Komponen Tagihan">
                                 <span>Komponen Tagihan</span>{!! $sortIcon('category', $sortBy, $sortOrder) !!}
@@ -250,6 +260,13 @@
                             <td class="py-3 px-4">
                                 <p class="font-bold text-gray-900">{{ $pay->student->nama_lengkap ?? '-' }}</p>
                                 <p class="text-[11px] text-gray-400">NIS: {{ $pay->student->nis ?? '-' }} • Kelas {{ $pay->student->kelas ?? '-' }}</p>
+                            </td>
+                            <td class="py-3 px-4 text-center whitespace-nowrap">
+                                @if($pay->student)
+                                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold {{ $pay->student->kelompok_badge }}">{{ $pay->student->kelompok }}</span>
+                                @else
+                                    <span class="text-gray-400">-</span>
+                                @endif
                             </td>
                             <td class="py-3 px-4">
                                 <span class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-700 mb-0.5">
@@ -283,7 +300,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="py-12 text-center text-gray-400">
+                            <td colspan="9" class="py-12 text-center text-gray-400">
                                 <i class="fa-solid fa-inbox text-4xl mb-2 text-gray-300 block"></i>
                                 Tidak ditemukan data transaksi pada periode filter yang dipilih.
                             </td>
@@ -293,7 +310,7 @@
                 @if($payments->isNotEmpty())
                     <tfoot class="bg-gray-50 border-t-2 border-gray-200 font-bold text-gray-800 text-xs">
                         <tr>
-                            <td colspan="6" class="py-3 px-4 text-right uppercase tracking-wider">Total Penerimaan Kas:</td>
+                            <td colspan="7" class="py-3 px-4 text-right uppercase tracking-wider">Total Penerimaan Kas:</td>
                             <td class="py-3 px-4 text-right text-emerald-700 font-extrabold text-sm">
                                 Rp {{ number_format($totalPenerimaan, 0, ',', '.') }}
                             </td>

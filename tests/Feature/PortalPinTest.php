@@ -60,7 +60,10 @@ class PortalPinTest extends TestCase
 
         $response = $this->get(route('portal.dashboard'));
         $response->assertSee('Wajib Ganti PIN');
-        $response->assertDontSee('Nanti Saja');
+        // Wali boleh menunda ("Nanti Saja"), tetapi banner peringatan tetap tampil.
+        $response->assertSee('Nanti Saja');
+        $response->assertSee('PIN Anda belum diganti');
+        $response->assertSee('pinWarningBanner');
     }
 
     /**

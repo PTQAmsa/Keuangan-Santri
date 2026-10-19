@@ -31,7 +31,7 @@
                     <option value="">-- Pilih Santri Berdasarkan Nama / NIS --</option>
                     @foreach($students as $s)
                         <option value="{{ $s->id }}" {{ $selectedStudent && $selectedStudent->id == $s->id ? 'selected' : '' }}>
-                            {{ $s->nama_lengkap }} (NIS: {{ $s->nis }} - Kelas {{ $s->kelas }})
+                            {{ $s->nama_lengkap }} (NIS: {{ $s->nis }} - {{ $s->kelompok }} - Kelas {{ $s->kelas }})
                         </option>
                     @endforeach
                 </select>
@@ -47,7 +47,7 @@
                 <div>
                     <span class="text-gray-500 text-xs">Nama Lengkap:</span>
                     <p class="font-bold text-gray-900">{{ $selectedStudent->nama_lengkap }}</p>
-                    <p class="text-xs text-gray-500">NIS: {{ $selectedStudent->nis }} | Kelas: {{ $selectedStudent->kelas }}</p>
+                    <p class="text-xs text-gray-500">NIS: {{ $selectedStudent->nis }} | Kelas: {{ $selectedStudent->kelas }} | {{ $selectedStudent->kelompok }}</p>
                 </div>
                 <div>
                     <span class="text-gray-500 text-xs">Wali Santri:</span>

@@ -22,6 +22,7 @@ class ReportController
         $endDate = $request->input('end_date', Carbon::now()->toDateString());
         $categoryId = $request->input('category_id');
         $paymentMethod = $request->input('payment_method');
+        $kelompok = $request->input('kelompok');
 
         // Kolom tabel yang boleh diurutkan (whitelist mencegah kolom tak dikenal).
         $allowedSorts = [
@@ -54,6 +55,10 @@ class ReportController
 
         if ($paymentMethod && in_array($paymentMethod, ['cash', 'transfer'])) {
             $query->where('payment_method', $paymentMethod);
+        }
+
+        if (in_array($kelompok, ['putra', 'putri'], true)) {
+            $query->whereHas('student', fn ($q) => $q->where('santri_group', $kelompok));
         }
 
         // Urutan kolom. Sebagian kolom berasal dari tabel relasi sehingga perlu join.
@@ -105,6 +110,7 @@ class ReportController
             'endDate',
             'categoryId',
             'paymentMethod',
+            'kelompok',
             'totalPenerimaan',
             'totalTransaksi',
             'totalCash',
@@ -125,6 +131,7 @@ class ReportController
         $endDate = $request->input('end_date', Carbon::now()->toDateString());
         $categoryId = $request->input('category_id');
         $paymentMethod = $request->input('payment_method');
+        $kelompok = $request->input('kelompok');
 
         $query = Payment::with(['student', 'invoice.category', 'receipt'])
             ->whereNull('voided_at')
@@ -140,6 +147,10 @@ class ReportController
 
         if ($paymentMethod && in_array($paymentMethod, ['cash', 'transfer'])) {
             $query->where('payment_method', $paymentMethod);
+        }
+
+        if (in_array($kelompok, ['putra', 'putri'], true)) {
+            $query->whereHas('student', fn ($q) => $q->where('santri_group', $kelompok));
         }
 
         $payments = $query->get();
@@ -164,6 +175,7 @@ class ReportController
                 'NIS',
                 'Nama Santri',
                 'Kelas',
+                'Kelompok',
                 'Kategori Tagihan',
                 'Keterangan Tagihan',
                 'Metode',
@@ -181,6 +193,7 @@ class ReportController
                     "'".($pay->student->nis ?? '-'),
                     $pay->student->nama_lengkap ?? '-',
                     $pay->student->kelas ?? '-',
+                    $pay->student->kelompok ?? '-',
                     $pay->invoice->category->name ?? '-',
                     $pay->invoice->title ?? '-',
                     strtoupper($pay->payment_method),
@@ -190,7 +203,7 @@ class ReportController
             }
 
             fputcsv($handle, []);
-            fputcsv($handle, ['', '', '', '', '', '', '', '', 'TOTAL PENERIMAAN:', $totalNominal]);
+            fputcsv($handle, ['', '', '', '', '', '', '', '', '', 'TOTAL PENERIMAAN:', $totalNominal]);
 
             fclose($handle);
         }, $filename, [
@@ -208,6 +221,7 @@ class ReportController
         $endDate = $request->input('end_date', Carbon::now()->toDateString());
         $categoryId = $request->input('category_id');
         $paymentMethod = $request->input('payment_method');
+        $kelompok = $request->input('kelompok');
 
         $query = Payment::with(['student', 'invoice.category', 'receipt'])
             ->whereNull('voided_at')
@@ -223,6 +237,10 @@ class ReportController
 
         if ($paymentMethod && in_array($paymentMethod, ['cash', 'transfer'])) {
             $query->where('payment_method', $paymentMethod);
+        }
+
+        if (in_array($kelompok, ['putra', 'putri'], true)) {
+            $query->whereHas('student', fn ($q) => $q->where('santri_group', $kelompok));
         }
 
         $payments = $query->get();
@@ -245,6 +263,7 @@ class ReportController
             'payments',
             'startDate',
             'endDate',
+            'kelompok',
             'totalPenerimaan',
             'totalTransaksi',
             'totalCash',
@@ -265,6 +284,7 @@ class ReportController
         $selectedClass = $request->input('kelas');
         $categoryId = $request->input('category_id');
         $search = $request->input('search');
+        $kelompok = $request->input('kelompok');
 
         // Query tagihan yang belum lunas
         $invoiceQuery = Invoice::with(['student', 'category'])
@@ -278,6 +298,10 @@ class ReportController
             $invoiceQuery->whereHas('student', function ($q) use ($selectedClass) {
                 $q->where('kelas', $selectedClass);
             });
+        }
+
+        if (in_array($kelompok, ['putra', 'putri'], true)) {
+            $invoiceQuery->whereHas('student', fn ($q) => $q->where('santri_group', $kelompok));
         }
 
         if ($search) {
@@ -321,7 +345,8 @@ class ReportController
             'categories',
             'selectedClass',
             'categoryId',
-            'search'
+            'search',
+            'kelompok'
         ));
     }
 
@@ -332,6 +357,7 @@ class ReportController
     {
         $selectedClass = $request->input('kelas');
         $categoryId = $request->input('category_id');
+        $kelompok = $request->input('kelompok');
 
         $invoiceQuery = Invoice::with(['student', 'category'])
             ->whereIn('status', ['unpaid', 'partial']);
@@ -344,6 +370,10 @@ class ReportController
             $invoiceQuery->whereHas('student', function ($q) use ($selectedClass) {
                 $q->where('kelas', $selectedClass);
             });
+        }
+
+        if (in_array($kelompok, ['putra', 'putri'], true)) {
+            $invoiceQuery->whereHas('student', fn ($q) => $q->where('santri_group', $kelompok));
         }
 
         $unpaidInvoices = $invoiceQuery->get();
@@ -375,6 +405,7 @@ class ReportController
                 'NIS',
                 'Nama Lengkap Santri',
                 'Kelas',
+                'Kelompok',
                 'Nama Wali',
                 'No WhatsApp Wali',
                 'Rincian Tagihan Tertunggak',
@@ -394,6 +425,7 @@ class ReportController
                     "'".($item['student']->nis ?? '-'),
                     $item['student']->nama_lengkap ?? '-',
                     $item['student']->kelas ?? '-',
+                    $item['student']->kelompok ?? '-',
                     $item['student']->nama_wali ?? '-',
                     "'".($item['student']->no_whatsapp_wali ?? '-'),
                     $rincian,
@@ -402,7 +434,7 @@ class ReportController
             }
 
             fputcsv($handle, []);
-            fputcsv($handle, ['', '', '', '', '', '', 'TOTAL SELURUH TUNGGAKAN:', $totalSemua]);
+            fputcsv($handle, ['', '', '', '', '', '', '', 'TOTAL SELURUH TUNGGAKAN:', $totalSemua]);
 
             fclose($handle);
         }, $filename, [
@@ -418,6 +450,7 @@ class ReportController
     {
         $selectedClass = $request->input('kelas');
         $categoryId = $request->input('category_id');
+        $kelompok = $request->input('kelompok');
 
         $invoiceQuery = Invoice::with(['student', 'category'])
             ->whereIn('status', ['unpaid', 'partial']);
@@ -430,6 +463,10 @@ class ReportController
             $invoiceQuery->whereHas('student', function ($q) use ($selectedClass) {
                 $q->where('kelas', $selectedClass);
             });
+        }
+
+        if (in_array($kelompok, ['putra', 'putri'], true)) {
+            $invoiceQuery->whereHas('student', fn ($q) => $q->where('santri_group', $kelompok));
         }
 
         $unpaidInvoices = $invoiceQuery->get();
@@ -453,7 +490,8 @@ class ReportController
             'studentArrears',
             'totalSantriMenunggak',
             'totalNilaiTunggakan',
-            'selectedClass'
+            'selectedClass',
+            'kelompok'
         ))->setPaper('a4', 'portrait');
 
         $filename = 'Laporan-Tunggakan-Santri-PTQ-Amsa-'.Carbon::now()->format('Ymd').'.pdf';

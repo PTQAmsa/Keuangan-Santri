@@ -112,12 +112,12 @@ class Invoice extends Model
     }
 
     /**
-     * Judul ringkas untuk kuitansi: keterangan diskon/beasiswa tidak dicetak
+     * Judul ringkas untuk kuitansi: keterangan potongan/beasiswa tidak dicetak
      * dan nama pos SPP diseragamkan menjadi "SPP Bulanan, ...".
      */
     public function getReceiptTitleAttribute(): string
     {
-        $title = (string) preg_replace('/\s*\(diskon\s*\d+(?:[.,]\d+)?%\)\s*$/i', '', (string) $this->title);
+        $title = (string) preg_replace('/\s*\((?:diskon|potongan)\s*\d+(?:[.,]\d+)?%\)\s*$/i', '', (string) $this->title);
         $title = (string) preg_replace('/^(?:iuran rutin spp|spp)\s*,/i', 'SPP Bulanan,', $title);
 
         return trim($title);

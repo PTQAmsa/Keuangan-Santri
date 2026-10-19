@@ -15,11 +15,13 @@ class StudentController
     {
         $search = $request->input('search');
         $status = $request->input('status');
+        $kelompok = $request->input('kelompok');
 
         $query = Student::query()
             ->with(['invoices' => function ($query) {
                 $query->whereIn('status', ['unpaid', 'partial']);
             }])
+            ->kelompok($kelompok)
             ->orderBy('nama_lengkap');
 
         if ($search) {
@@ -40,14 +42,19 @@ class StudentController
         $totalAktif = Student::where('status', 'aktif')->count();
         $totalNonaktif = Student::where('status', '!=', 'aktif')->count();
         $totalBeasiswa = Student::where('diskon_beasiswa', '>', 0)->count();
+        $totalPutra = Student::where('santri_group', 'putra')->count();
+        $totalPutri = Student::where('santri_group', 'putri')->count();
 
         return view('admin.students', compact(
             'students',
             'search',
             'status',
+            'kelompok',
             'totalAktif',
             'totalNonaktif',
-            'totalBeasiswa'
+            'totalBeasiswa',
+            'totalPutra',
+            'totalPutri'
         ));
     }
 
@@ -61,7 +68,7 @@ class StudentController
             'nisn' => ['nullable', 'string', 'max:20'],
             'nama_lengkap' => ['required', 'string', 'max:100'],
             'jenis_kelamin' => ['required', 'in:L,P'],
-            'jenjang' => ['required', 'in:SMP,SMA'],
+            'santri_group' => ['required', 'in:putra,putri'],
             'kelas' => ['required', 'string', 'max:20'],
             'kamar_asrama' => ['nullable', 'string', 'max:50'],
             'tahun_masuk' => ['required', 'integer', 'min:2000', 'max:2100'],
@@ -69,7 +76,7 @@ class StudentController
             'kota_asal' => ['nullable', 'string', 'max:50'],
             'nama_wali' => ['required', 'string', 'max:100'],
             'no_whatsapp_wali' => ['required', 'string', 'max:25'],
-            'hubungan_wali' => ['required', 'in:Ayah,Ibu,Wali'],
+            'hubungan_wali' => ['required', 'in:Ayah Kandung,Ibu Kandung,Ayah Angkat,Ibu Angkat,Wali,Lainnya'],
             'pin_portal' => ['required', 'digits:6'],
             'diskon_beasiswa' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'bebas_wakaf' => ['nullable', 'boolean'],

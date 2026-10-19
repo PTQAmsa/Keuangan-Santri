@@ -12,6 +12,13 @@
 @endphp
 <div class="space-y-6">
 
+    @if($forcePinChange)
+        <div id="pinWarningBanner" class="hidden bg-amber-50 border border-amber-200 text-amber-900 text-xs rounded-xl p-3 flex items-center justify-between shadow-sm">
+            <span><i class="fa-solid fa-triangle-exclamation mr-1.5"></i> PIN Anda belum diganti. Demi keamanan data keuangan, segera buat PIN baru.</span>
+            <a href="{{ route('portal.change-pin') }}" class="font-bold underline whitespace-nowrap ml-3">Ganti PIN &rarr;</a>
+        </div>
+    @endif
+
     <!-- 1. Header Profil Santri Card -->
     <div class="bg-gradient-to-r from-brand-900 via-brand-800 to-blue-900 rounded-2xl p-6 text-white shadow-xl">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -30,7 +37,7 @@
                     </div>
                     <p class="text-xs sm:text-sm text-blue-200 mt-1 flex flex-wrap gap-x-4 gap-y-1">
                         <span><i class="fa-solid fa-id-badge mr-1"></i> NIS: <strong>{{ $student->nis }}</strong></span>
-                        <span><i class="fa-solid fa-chalkboard-user mr-1"></i> Kelas: <strong>{{ $student->kelas }}</strong> ({{ $student->jenjang }})</span>
+                        <span><i class="fa-solid fa-chalkboard-user mr-1"></i> Kelas: <strong>{{ $student->kelas }}</strong> &bull; {{ $student->kelompok }}</span>
                         <span><i class="fa-solid fa-bed mr-1"></i> Asrama: <strong>{{ $student->kamar_asrama ?? 'Asrama Gadog' }}</strong></span>
                     </p>
                 </div>
@@ -265,12 +272,10 @@
                 </div>
 
                 <div class="flex items-center justify-end space-x-2 pt-1">
-                    @unless($forcePinChange)
-                        <button type="button" onclick="document.getElementById('pinReminder').classList.add('hidden')"
-                                class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold transition">
-                            Nanti Saja
-                        </button>
-                    @endunless
+                    <button type="button" onclick="dismissPinReminder()"
+                            class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold transition">
+                        Nanti Saja
+                    </button>
                     <a href="{{ route('portal.change-pin') }}"
                        class="px-5 py-2 bg-brand-900 hover:bg-brand-800 text-white rounded-xl font-bold shadow-md transition inline-flex items-center">
                         <i class="fa-solid fa-lock mr-1.5"></i> {{ $forcePinChange ? 'Buat PIN Baru' : 'Ganti PIN Sekarang' }}
@@ -279,5 +284,18 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // "Nanti Saja" menutup popup. Bila PIN wajib diganti, banner peringatan
+        // tetap tampil di dashboard sampai wali benar-benar mengganti PIN.
+        function dismissPinReminder() {
+            document.getElementById('pinReminder').classList.add('hidden');
+            const banner = document.getElementById('pinWarningBanner');
+            if (banner) {
+                banner.classList.remove('hidden');
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
 @endif
 @endsection

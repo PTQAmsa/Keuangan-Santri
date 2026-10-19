@@ -34,11 +34,23 @@
     </div>
 
     <!-- Ringkasan Statistik -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div class="bg-white rounded-2xl p-5 border border-gray-200/80 shadow-sm">
             <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Santri Aktif</p>
             <p class="text-2xl font-extrabold text-emerald-700 mt-1">{{ $totalAktif }}</p>
             <p class="text-xs text-gray-400 mt-1">Mendapat tagihan rutin bulanan</p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-gray-200/80 shadow-sm">
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Santri Putra</p>
+            <p class="text-2xl font-extrabold text-blue-700 mt-1">{{ $totalPutra }}</p>
+            <p class="text-xs text-gray-400 mt-1">Seluruh santri kelompok putra</p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-gray-200/80 shadow-sm">
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Santri Putri</p>
+            <p class="text-2xl font-extrabold text-fuchsia-700 mt-1">{{ $totalPutri }}</p>
+            <p class="text-xs text-gray-400 mt-1">Seluruh santri kelompok putri</p>
         </div>
 
         <div class="bg-white rounded-2xl p-5 border border-gray-200/80 shadow-sm">
@@ -56,7 +68,7 @@
 
     <!-- Filter & Pencarian -->
     <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-        <form action="{{ route('admin.students') }}" method="GET" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end text-xs">
+        <form action="{{ route('admin.students') }}" method="GET" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end text-xs">
             <div>
                 <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Cari Santri / NIS / Wali</label>
                 <div class="relative">
@@ -64,6 +76,15 @@
                            class="w-full text-xs rounded-xl border-gray-300 py-1.5 pl-8 pr-3 focus:ring-brand-800 bg-gray-50">
                     <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2 text-gray-400 text-xs"></i>
                 </div>
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Kelompok</label>
+                <select name="kelompok" class="w-full rounded-xl border-gray-300 py-1.5 px-3 bg-gray-50 text-xs">
+                    <option value="">-- Putra &amp; Putri --</option>
+                    <option value="putra" {{ $kelompok === 'putra' ? 'selected' : '' }}>Putra</option>
+                    <option value="putri" {{ $kelompok === 'putri' ? 'selected' : '' }}>Putri</option>
+                </select>
             </div>
 
             <div>
@@ -103,7 +124,7 @@
                     <tr>
                         <th class="py-3 px-4 text-center">No</th>
                         <th class="py-3 px-4">Santri</th>
-                        <th class="py-3 px-4">Jenjang & Kamar</th>
+                        <th class="py-3 px-4">Kelompok, Kelas &amp; Kamar</th>
                         <th class="py-3 px-4">Wali Santri & Kontak</th>
                         <th class="py-3 px-4 text-center">Beasiswa</th>
                         <th class="py-3 px-4 text-right">Sisa Tagihan</th>
@@ -130,7 +151,10 @@
                                 <p class="text-[11px] text-gray-400 font-mono">NIS: {{ $s->nis }}</p>
                             </td>
                             <td class="py-3 px-4">
-                                <p class="font-semibold text-gray-700">{{ $s->jenjang }} - {{ $s->kelas }}</p>
+                                <p class="font-semibold text-gray-700 flex items-center gap-1.5">
+                                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold {{ $s->kelompok_badge }}">{{ $s->kelompok }}</span>
+                                    <span>{{ $s->kelas }}</span>
+                                </p>
                                 <p class="text-[11px] text-gray-400">{{ $s->kamar_asrama ?: 'Belum ada kamar' }}</p>
                             </td>
                             <td class="py-3 px-4">
@@ -240,7 +264,7 @@
             <!-- Data Diri Santri -->
             <div>
                 <p class="font-bold text-gray-700 uppercase mb-2 text-[11px] tracking-wider">1. Data Diri Santri</p>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
                     <div>
                         <label class="block font-semibold text-gray-600 mb-1">NIS <span class="text-rose-500">*</span></label>
                         <input type="text" name="nis" value="{{ old('nis') }}" required placeholder="202601009"
@@ -253,9 +277,17 @@
                     </div>
                     <div>
                         <label class="block font-semibold text-gray-600 mb-1">Jenis Kelamin <span class="text-rose-500">*</span></label>
-                        <select name="jenis_kelamin" required class="w-full text-xs rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800">
+                        <select name="jenis_kelamin" required onchange="syncSantriGroup(this.value)"
+                                class="w-full text-xs rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800">
                             <option value="L" {{ old('jenis_kelamin') === 'L' ? 'selected' : '' }}>Laki-laki</option>
                             <option value="P" {{ old('jenis_kelamin') === 'P' ? 'selected' : '' }}>Perempuan</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-gray-600 mb-1">Kelompok Santri <span class="text-rose-500">*</span></label>
+                        <select name="santri_group" id="santriGroup" required class="w-full text-xs rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800">
+                            <option value="putra" {{ old('santri_group', 'putra') === 'putra' ? 'selected' : '' }}>Putra</option>
+                            <option value="putri" {{ old('santri_group') === 'putri' ? 'selected' : '' }}>Putri</option>
                         </select>
                     </div>
                 </div>
@@ -276,18 +308,11 @@
 
             <!-- Data Akademik -->
             <div>
-                <p class="font-bold text-gray-700 uppercase mb-2 text-[11px] tracking-wider">2. Jenjang, Kelas &amp; Status</p>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div>
-                        <label class="block font-semibold text-gray-600 mb-1">Jenjang <span class="text-rose-500">*</span></label>
-                        <select name="jenjang" required class="w-full text-xs rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800">
-                            <option value="SMP" {{ old('jenjang') === 'SMP' ? 'selected' : '' }}>SMP</option>
-                            <option value="SMA" {{ old('jenjang') === 'SMA' ? 'selected' : '' }}>SMA</option>
-                        </select>
-                    </div>
+                <p class="font-bold text-gray-700 uppercase mb-2 text-[11px] tracking-wider">2. Kelas &amp; Status</p>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     <div>
                         <label class="block font-semibold text-gray-600 mb-1">Kelas <span class="text-rose-500">*</span></label>
-                        <input type="text" name="kelas" value="{{ old('kelas') }}" required placeholder="7A"
+                        <input type="text" name="kelas" value="{{ old('kelas') }}" required placeholder="7A / 7 Putri"
                                class="w-full text-xs rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800">
                     </div>
                     <div>
@@ -335,9 +360,9 @@
                     <div>
                         <label class="block font-semibold text-gray-600 mb-1">Hubungan <span class="text-rose-500">*</span></label>
                         <select name="hubungan_wali" required class="w-full text-xs rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800">
-                            <option value="Ayah" {{ old('hubungan_wali') === 'Ayah' ? 'selected' : '' }}>Ayah</option>
-                            <option value="Ibu" {{ old('hubungan_wali') === 'Ibu' ? 'selected' : '' }}>Ibu</option>
-                            <option value="Wali" {{ old('hubungan_wali') === 'Wali' ? 'selected' : '' }}>Wali</option>
+                            @foreach(['Ayah Kandung', 'Ibu Kandung', 'Ayah Angkat', 'Ibu Angkat', 'Wali', 'Lainnya'] as $hubungan)
+                                <option value="{{ $hubungan }}" {{ old('hubungan_wali', 'Ayah Kandung') === $hubungan ? 'selected' : '' }}>{{ $hubungan }}</option>
+                            @endforeach
                         </select>
                     </div>
                 </div>
@@ -348,7 +373,7 @@
                 <p class="font-bold text-gray-700 uppercase mb-2 text-[11px] tracking-wider">4. Ketentuan Keuangan</p>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
                     <div>
-                        <label class="block font-semibold text-gray-600 mb-1">Diskon Beasiswa (%)</label>
+                        <label class="block font-semibold text-gray-600 mb-1">Potongan Beasiswa (%)</label>
                         <input type="number" name="diskon_beasiswa" value="{{ old('diskon_beasiswa', 0) }}" min="0" max="100" step="0.01"
                                class="w-full text-xs rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800">
                     </div>
@@ -385,6 +410,11 @@
 
     function closeStudentModal() {
         document.getElementById('studentModal').classList.add('hidden');
+    }
+
+    // Kelompok santri mengikuti jenis kelamin, tetapi petugas tetap bisa mengubahnya.
+    function syncSantriGroup(jenisKelamin) {
+        document.getElementById('santriGroup').value = jenisKelamin === 'P' ? 'putri' : 'putra';
     }
 
     // Bila validasi gagal, modal dibuka lagi agar petugas bisa memperbaiki isian.

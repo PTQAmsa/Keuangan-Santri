@@ -15,7 +15,7 @@ class Student extends Model
         'nisn',
         'nama_lengkap',
         'jenis_kelamin',
-        'jenjang',
+        'santri_group',
         'kelas',
         'kamar_asrama',
         'tahun_masuk',
@@ -63,5 +63,31 @@ class Student extends Model
             ->sum(function ($invoice) {
                 return $invoice->remaining_amount;
             });
+    }
+
+    /**
+     * Nama tampilan kelompok santri (Putra / Putri).
+     */
+    public function getKelompokAttribute(): string
+    {
+        return $this->santri_group === 'putri' ? 'Putri' : 'Putra';
+    }
+
+    /**
+     * Kelas badge warna kelompok santri.
+     */
+    public function getKelompokBadgeAttribute(): string
+    {
+        return $this->santri_group === 'putri'
+            ? 'bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200'
+            : 'bg-blue-50 text-blue-700 border border-blue-200';
+    }
+
+    /**
+     * Saring santri berdasarkan kelompok: putra | putri | null (semua).
+     */
+    public function scopeKelompok($query, ?string $kelompok)
+    {
+        return $kelompok ? $query->where('santri_group', $kelompok) : $query;
     }
 }
