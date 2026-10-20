@@ -196,6 +196,12 @@
                             </td>
                             <td class="py-3 px-4 text-center whitespace-nowrap">
                                 <div class="inline-flex items-center space-x-1.5">
+                                    <a href="{{ route('admin.students.card', $s) }}"
+                                       class="inline-flex items-center px-2.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 text-[11px] font-semibold transition border border-blue-200"
+                                       title="Lihat kartu keuangan santri">
+                                        <i class="fa-solid fa-address-card mr-1"></i> Kartu
+                                    </a>
+
                                     <form action="{{ route('admin.students.reset-pin', $s) }}" method="POST" class="inline"
                                           onsubmit="return confirm('Reset PIN portal {{ $s->nama_lengkap }} ke 123456? Wali akan diminta mengganti PIN saat login berikutnya.');">
                                         @csrf

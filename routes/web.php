@@ -26,6 +26,12 @@ Route::prefix('portal')->name('portal.')->group(function () {
     Route::get('/dashboard', [PortalController::class, 'dashboard'])
         ->middleware(EnsurePortalPinIsChanged::class)
         ->name('dashboard');
+    Route::get('/kartu-keuangan', [PortalController::class, 'card'])
+        ->middleware(EnsurePortalPinIsChanged::class)
+        ->name('card');
+    Route::get('/kartu-keuangan/pdf', [PortalController::class, 'cardPdf'])
+        ->middleware(EnsurePortalPinIsChanged::class)
+        ->name('card.pdf');
     Route::get('/ganti-pin', [PortalController::class, 'showChangePin'])->name('change-pin');
     Route::post('/ganti-pin', [PortalController::class, 'changePin'])->name('change-pin.post');
     Route::get('/logout', [PortalController::class, 'logout'])->name('logout');
@@ -89,6 +95,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
             // Data santri: santri masuk (tambah) & santri keluar (nonaktifkan).
             Route::get('/santri', [StudentController::class, 'index'])->name('students');
+            Route::get('/santri/{student}/kartu', [StudentController::class, 'card'])->name('students.card');
+            Route::get('/santri/{student}/kartu/pdf', [StudentController::class, 'cardPdf'])->name('students.card.pdf');
             Route::post('/santri', [StudentController::class, 'store'])->name('students.store');
             Route::patch('/santri/{student}/status', [StudentController::class, 'toggleStatus'])->name('students.toggle');
             Route::post('/santri/{student}/reset-pin', [StudentController::class, 'resetPin'])->name('students.reset-pin');

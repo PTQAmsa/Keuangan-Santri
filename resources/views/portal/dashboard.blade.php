@@ -173,7 +173,13 @@
             <h2 class="text-base font-bold text-gray-800 flex items-center">
                 <i class="fa-solid fa-receipt text-brand-800 mr-2"></i> Riwayat Pembayaran & Kuitansi Digital
             </h2>
-            <span class="text-xs text-gray-500">Total: {{ $payments->count() }} Kuitansi</span>
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-500 hidden sm:inline">Total: {{ $payments->count() }} Kuitansi</span>
+                <a href="{{ route('portal.card') }}"
+                   class="inline-flex items-center px-3 py-1.5 rounded-lg bg-brand-900 hover:bg-brand-800 text-white text-[11px] font-semibold transition shadow-sm">
+                    <i class="fa-solid fa-address-card mr-1.5 text-gold-400"></i> Kartu Keuangan
+                </a>
+            </div>
         </div>
 
         @if($payments->isEmpty())

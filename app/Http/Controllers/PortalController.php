@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Student;
 use App\Services\ActivityLogService;
+use App\Services\StudentFinancialCardService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
@@ -133,6 +135,37 @@ class PortalController
         $payments = $student->payments()->with(['receipt', 'invoice'])->latest()->get();
 
         return view('portal.dashboard', compact('student', 'activeInvoices', 'paidInvoices', 'payments'));
+    }
+
+    /**
+     * Kartu keuangan santri untuk wali yang sedang login.
+     */
+    public function card(StudentFinancialCardService $cardService)
+    {
+        $student = $this->currentStudent();
+
+        if (! $student) {
+            return redirect()->route('portal.login');
+        }
+
+        return view('student-card', $cardService->build($student));
+    }
+
+    /**
+     * Unduh kartu keuangan santri (versi wali) dalam bentuk PDF.
+     */
+    public function cardPdf(StudentFinancialCardService $cardService)
+    {
+        $student = $this->currentStudent();
+
+        if (! $student) {
+            return redirect()->route('portal.login');
+        }
+
+        $pdf = Pdf::loadView('pdf.student-card', $cardService->build($student))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->stream('Kartu-Keuangan-'.$student->nis.'.pdf');
     }
 
     /**

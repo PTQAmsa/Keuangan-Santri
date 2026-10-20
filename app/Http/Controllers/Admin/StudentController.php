@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Student;
 use App\Services\ActivityLogService;
+use App\Services\StudentFinancialCardService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class StudentController
@@ -139,5 +141,24 @@ class StudentController
             : 'Santri '.$student->nama_lengkap.' dinonaktifkan (keluar). Tagihan barunya tidak akan dibuat lagi.';
 
         return back()->with('success', $message);
+    }
+
+    /**
+     * Kartu keuangan santri: riwayat tagihan, pembayaran, dan kuitansi.
+     */
+    public function card(Student $student, StudentFinancialCardService $cardService)
+    {
+        return view('student-card', $cardService->build($student));
+    }
+
+    /**
+     * Unduh kartu keuangan santri dalam bentuk PDF.
+     */
+    public function cardPdf(Student $student, StudentFinancialCardService $cardService)
+    {
+        $pdf = Pdf::loadView('pdf.student-card', $cardService->build($student))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->stream('Kartu-Keuangan-'.$student->nis.'.pdf');
     }
 }
