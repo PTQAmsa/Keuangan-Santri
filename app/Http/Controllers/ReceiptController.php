@@ -16,7 +16,7 @@ class ReceiptController
 
         $pdf = $receiptService->generateReceiptPdf($receipt);
 
-        $filename = 'Kuitansi-' . str_replace('/', '-', $receipt->receipt_number) . '.pdf';
+        $filename = 'Kuitansi-'.str_replace('/', '-', $receipt->receipt_number).'.pdf';
 
         return $pdf->stream($filename);
     }

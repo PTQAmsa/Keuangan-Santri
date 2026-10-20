@@ -146,6 +146,7 @@ class DatabaseSeeder extends Seeder
             'no_whatsapp_wali' => '085692253516', // Nomor kontak pesantren untuk test notifikasi
             'hubungan_wali' => 'Ayah Kandung',
             'pin_portal' => '123456',
+            'must_change_pin' => true,
             'diskon_beasiswa' => 0.00,
             'bebas_wakaf' => false,
         ]);
@@ -166,6 +167,7 @@ class DatabaseSeeder extends Seeder
             'no_whatsapp_wali' => '081234567891',
             'hubungan_wali' => 'Ibu Kandung',
             'pin_portal' => '123456',
+            'must_change_pin' => true,
             'diskon_beasiswa' => 50.00, // Program dhuafa / yatim (Potongan 50%)
             'bebas_wakaf' => true,      // Bebas wakaf
         ]);
@@ -186,6 +188,7 @@ class DatabaseSeeder extends Seeder
             'no_whatsapp_wali' => '081398765432',
             'hubungan_wali' => 'Ayah Kandung',
             'pin_portal' => '123456',
+            'must_change_pin' => true,
             'diskon_beasiswa' => 0.00,
             'bebas_wakaf' => false,
         ]);
@@ -207,6 +210,7 @@ class DatabaseSeeder extends Seeder
             'no_whatsapp_wali' => '085712345678',
             'hubungan_wali' => 'Ayah Kandung',
             'pin_portal' => '123456',
+            'must_change_pin' => true,
             'diskon_beasiswa' => 50.00, // Beasiswa 50%
             'bebas_wakaf' => true,      // Bebas wakaf
         ]);
@@ -228,6 +232,7 @@ class DatabaseSeeder extends Seeder
             'no_whatsapp_wali' => '085898765432',
             'hubungan_wali' => 'Ibu Kandung',
             'pin_portal' => '123456',
+            'must_change_pin' => true,
             'diskon_beasiswa' => 50.00, // Beasiswa 50%
             'bebas_wakaf' => true,      // Bebas wakaf
         ]);

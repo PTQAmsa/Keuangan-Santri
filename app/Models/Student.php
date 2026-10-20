@@ -34,10 +34,15 @@ class Student extends Model
         'bebas_wakaf',
     ];
 
+    protected $hidden = [
+        'pin_portal',
+    ];
+
     protected $casts = [
         'diskon_beasiswa' => 'decimal:2',
         'bebas_wakaf' => 'boolean',
         'tahun_masuk' => 'integer',
+        'pin_portal' => 'hashed',
         'must_change_pin' => 'boolean',
         'pin_changed_at' => 'datetime',
         'pin_reset_requested_at' => 'datetime',

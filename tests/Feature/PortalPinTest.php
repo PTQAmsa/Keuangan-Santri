@@ -9,6 +9,7 @@ use App\Models\ActivityLog;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class PortalPinTest extends TestCase
@@ -29,21 +30,26 @@ class PortalPinTest extends TestCase
     }
 
     /**
-     * Test 1: Setelah wali berhasil login dengan PIN bawaan, muncul popup saran ganti PIN.
+     * Test 1: PIN bawaan disimpan sebagai hash dan login pertama wajib ganti PIN.
      */
-    public function test_first_login_shows_pin_change_suggestion(): void
+    public function test_first_login_with_default_pin_is_forced_to_change_pin(): void
     {
+        $student = $this->student();
+        $this->assertNotSame('123456', $student->pin_portal);
+        $this->assertTrue(Hash::check('123456', $student->pin_portal));
+
         $this->post(route('portal.login.post'), [
             'nis' => '202601001',
             'identifier' => '123456',
         ])->assertRedirect(route('portal.dashboard'));
 
-        $response = $this->get(route('portal.dashboard'));
+        $this->get(route('portal.dashboard'))
+            ->assertRedirect(route('portal.change-pin'));
 
-        $response->assertOk();
-        $response->assertSee('Amankan Akun Anda');
-        $response->assertSee('Nanti Saja');
-        $response->assertSee('Ganti PIN Sekarang');
+        $this->get(route('portal.change-pin'))
+            ->assertOk()
+            ->assertSee('wajib diganti')
+            ->assertSee('PIN Lama');
     }
 
     /**
@@ -58,12 +64,13 @@ class PortalPinTest extends TestCase
 
         $this->assertTrue($this->student()->fresh()->must_change_pin);
 
-        $response = $this->get(route('portal.dashboard'));
-        $response->assertSee('Wajib Ganti PIN');
-        // Wali boleh menunda ("Nanti Saja"), tetapi banner peringatan tetap tampil.
-        $response->assertSee('Nanti Saja');
-        $response->assertSee('PIN Anda belum diganti');
-        $response->assertSee('pinWarningBanner');
+        $this->get(route('portal.dashboard'))
+            ->assertRedirect(route('portal.change-pin'));
+
+        $this->get(route('portal.change-pin'))
+            ->assertOk()
+            ->assertSee('nomor WhatsApp wali')
+            ->assertSee('tidak perlu memasukkan PIN lama');
     }
 
     /**
@@ -83,7 +90,8 @@ class PortalPinTest extends TestCase
         ])->assertRedirect(route('portal.dashboard'));
 
         $student = $this->student()->fresh();
-        $this->assertSame('654321', $student->pin_portal);
+        $this->assertTrue(Hash::check('654321', $student->pin_portal));
+        $this->assertFalse(Hash::check('123456', $student->pin_portal));
         $this->assertFalse($student->must_change_pin);
         $this->assertNotNull($student->pin_changed_at);
 
@@ -101,15 +109,17 @@ class PortalPinTest extends TestCase
             'identifier' => '123456',
         ])->assertSessionHasErrors('identifier');
 
-        // PIN baru berhasil.
+        // PIN baru berhasil dan dashboard dapat dibuka.
         $this->post(route('portal.login.post'), [
             'nis' => '202601001',
             'identifier' => '654321',
         ])->assertRedirect(route('portal.dashboard'));
+
+        $this->get(route('portal.dashboard'))->assertOk();
     }
 
     /**
-     * Test 4: PIN baru harus 6 angka dan tidak sama dengan PIN lama.
+     * Test 4: PIN baru harus 6 angka, tidak sama dengan PIN lama, dan bukan 123456.
      */
     public function test_new_pin_must_be_six_digits_and_different(): void
     {
@@ -130,7 +140,7 @@ class PortalPinTest extends TestCase
             'pin_confirmation' => '123456',
         ])->assertSessionHasErrors('pin');
 
-        $this->assertSame('123456', $this->student()->pin_portal);
+        $this->assertTrue(Hash::check('123456', $this->student()->pin_portal));
     }
 
     /**
@@ -149,7 +159,7 @@ class PortalPinTest extends TestCase
             'pin_confirmation' => '654321',
         ])->assertSessionHasErrors('current_pin');
 
-        $this->assertSame('123456', $this->student()->pin_portal);
+        $this->assertTrue(Hash::check('123456', $this->student()->pin_portal));
     }
 
     /**
@@ -200,7 +210,8 @@ class PortalPinTest extends TestCase
             ->assertRedirect();
 
         $student->refresh();
-        $this->assertSame('123456', $student->pin_portal);
+        $this->assertTrue(Hash::check('123456', $student->pin_portal));
+        $this->assertNotSame('123456', $student->pin_portal);
         $this->assertTrue($student->must_change_pin);
         $this->assertNull($student->pin_reset_requested_at);
 
@@ -229,6 +240,9 @@ class PortalPinTest extends TestCase
             'nis' => '202601001',
             'identifier' => '085692253516',
         ])->assertRedirect(route('portal.dashboard'));
+
+        $this->get(route('portal.dashboard'))
+            ->assertRedirect(route('portal.change-pin'));
     }
 
     /**
@@ -244,5 +258,28 @@ class PortalPinTest extends TestCase
         ])->assertSessionHasErrors('nis');
 
         $this->assertNull(session('portal_student_id'));
+    }
+
+    /**
+     * Test 10: Login via WhatsApp dapat membuat PIN baru tanpa PIN lama.
+     */
+    public function test_login_via_whatsapp_can_create_pin_without_current_pin(): void
+    {
+        $this->post(route('portal.login.post'), [
+            'nis' => '202601001',
+            'identifier' => '085692253516',
+        ])->assertRedirect(route('portal.dashboard'));
+
+        $this->post(route('portal.change-pin.post'), [
+            'pin' => '654321',
+            'pin_confirmation' => '654321',
+        ])->assertRedirect(route('portal.dashboard'));
+
+        $student = $this->student()->fresh();
+        $this->assertTrue(Hash::check('654321', $student->pin_portal));
+        $this->assertFalse($student->must_change_pin);
+        $this->assertNull(session('portal_login_via_wa'));
+
+        $this->get(route('portal.dashboard'))->assertOk();
     }
 }

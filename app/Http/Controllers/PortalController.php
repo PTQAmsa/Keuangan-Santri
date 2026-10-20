@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Student;
 use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 
 class PortalController
@@ -70,7 +71,8 @@ class PortalController
 
         // Nomor WA harus diketik lengkap (minimal 9 digit) agar tidak bisa ditebak dari 1-2 digit terakhir.
         $isPhoneMatch = strlen($normalizedInput) >= 9 && $normalizedInput === $normalizedPhone;
-        $isPinMatch = hash_equals((string) $student->pin_portal, (string) $request->identifier);
+        $isPinMatch = preg_match('/^\d{6}$/', (string) $request->identifier) === 1
+            && Hash::check((string) $request->identifier, (string) $student->pin_portal);
 
         if (! $isPhoneMatch && ! $isPinMatch) {
             RateLimiter::hit($throttleKey, 60);
@@ -158,16 +160,25 @@ class PortalController
             return redirect()->route('portal.login');
         }
 
-        $data = $request->validate([
-            'current_pin' => ['required', 'string'],
-            'pin' => ['required', 'string', 'digits:6', 'confirmed', 'different:current_pin'],
-        ], [
+        $viaWhatsApp = (bool) session('portal_login_via_wa');
+
+        $rules = [
+            'pin' => ['required', 'string', 'digits:6', 'confirmed', 'not_in:123456'],
+        ];
+
+        if (! $viaWhatsApp) {
+            $rules['current_pin'] = ['required', 'string'];
+            $rules['pin'][] = 'different:current_pin';
+        }
+
+        $data = $request->validate($rules, [
             'pin.digits' => 'PIN baru harus terdiri dari 6 angka.',
             'pin.confirmed' => 'Konfirmasi PIN baru tidak sama.',
             'pin.different' => 'PIN baru harus berbeda dari PIN lama.',
+            'pin.not_in' => 'PIN baru tidak boleh menggunakan 123456.',
         ]);
 
-        if (! hash_equals((string) $student->pin_portal, (string) $data['current_pin'])) {
+        if (! $viaWhatsApp && ! Hash::check((string) $data['current_pin'], (string) $student->pin_portal)) {
             return back()->withErrors(['current_pin' => 'PIN lama tidak sesuai.']);
         }
 
@@ -176,6 +187,9 @@ class PortalController
         $student->pin_changed_at = now();
         $student->pin_reset_requested_at = null;
         $student->save();
+
+        // Setelah PIN baru dibuat, sesi tidak lagi berstatus login-via-WA.
+        session()->forget('portal_login_via_wa');
 
         ActivityLogService::pinChanged($student);
 

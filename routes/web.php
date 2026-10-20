@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\ReceiptController;
+use App\Http\Middleware\EnsurePortalPinIsChanged;
 use Illuminate\Support\Facades\Route;
 
 // Halaman Beranda Utama
@@ -22,7 +23,9 @@ Route::prefix('portal')->name('portal.')->group(function () {
     Route::post('/login', [PortalController::class, 'login'])->middleware('throttle:10,1')->name('login.post');
     Route::get('/lupa-pin', [PortalController::class, 'forgotPin'])->name('forgot-pin');
     Route::post('/lupa-pin', [PortalController::class, 'requestPinReset'])->middleware('throttle:5,1')->name('forgot-pin.post');
-    Route::get('/dashboard', [PortalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/dashboard', [PortalController::class, 'dashboard'])
+        ->middleware(EnsurePortalPinIsChanged::class)
+        ->name('dashboard');
     Route::get('/ganti-pin', [PortalController::class, 'showChangePin'])->name('change-pin');
     Route::post('/ganti-pin', [PortalController::class, 'changePin'])->name('change-pin.post');
     Route::get('/logout', [PortalController::class, 'logout'])->name('logout');

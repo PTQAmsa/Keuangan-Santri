@@ -3,6 +3,7 @@
 @section('title', 'Login Portal Wali Santri - PTQ Amsa001')
 
 @section('content')
+@php($demoMode = config('app.demo_mode'))
 <div class="max-w-md mx-auto my-8">
     <div class="bg-white rounded-3xl shadow-xl overflow-hidden border-2 border-gold-400/40">
         <!-- Header Card dengan sentuhan gradient brand dan list emas -->
@@ -33,7 +34,7 @@
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gold-500">
                             <i class="fa-solid fa-id-card"></i>
                         </span>
-                        <input type="text" name="nis" id="nis" value="{{ old('nis', '202601001') }}" required
+                        <input type="text" name="nis" id="nis" value="{{ old('nis', $demoMode ? '202601001' : '') }}" required
                             placeholder="Contoh: 202601001"
                             class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gold-400 focus:border-gold-400 text-sm transition font-medium">
                     </div>
@@ -47,12 +48,13 @@
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gold-500">
                             <i class="fa-brands fa-whatsapp text-base"></i>
                         </span>
-                        <input type="password" name="identifier" id="identifier" value="{{ old('identifier', '085692253516') }}" required
+                        <input type="password" name="identifier" id="identifier" value="{{ old('identifier', $demoMode ? '085692253516' : '') }}" required
                             placeholder="Nomor WA terdaftar atau PIN 6 digit"
                             class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gold-400 focus:border-gold-400 text-sm transition">
                     </div>
                     <p class="text-[11px] text-gray-500 mt-1.5">
-                        *Masukkan no. WA wali yang terdaftar atau PIN 6 digit (default: <code>123456</code>).
+                        *Masukkan no. WA wali yang terdaftar atau PIN 6 digit.
+                        @if($demoMode) PIN awal demo: <code>123456</code>.@endif
                     </p>
                 </div>
 
@@ -66,6 +68,7 @@
 
             <!-- Bantuan / Quick Test Box -->
             <div class="pt-5 border-t border-gray-100">
+                @if($demoMode)
                 <div class="bg-amber-50/70 border border-gold-400/40 rounded-2xl p-4 text-xs text-brand-900 space-y-2.5">
                     <p class="font-bold flex items-center text-amber-900">
                         <span class="w-5 h-5 rounded-full bg-gold-400 text-brand-900 flex items-center justify-center text-[10px] mr-1.5 shadow-sm">
@@ -97,6 +100,7 @@
                         </div>
                     </div>
                 </div>
+                @endif
 
                 <div class="text-center mt-4 text-xs text-gray-500 space-y-1.5">
                     <p>

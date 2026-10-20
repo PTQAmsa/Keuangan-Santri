@@ -9,6 +9,7 @@ use App\Models\ActivityLog;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class StudentManagementTest extends TestCase
@@ -68,6 +69,8 @@ class StudentManagementTest extends TestCase
         $this->assertSame('Ahmad Fauzan', $student->nama_lengkap);
         $this->assertSame('aktif', $student->status);
         $this->assertFalse($student->bebas_wakaf);
+        $this->assertNotSame('654321', $student->pin_portal);
+        $this->assertTrue(Hash::check('654321', $student->pin_portal));
 
         $log = ActivityLog::sole();
         $this->assertSame($bendahara->id, $log->user_id);

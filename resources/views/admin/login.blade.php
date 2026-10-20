@@ -3,6 +3,7 @@
 @section('title', 'Login Pengurus - Keuangan PTQ Amsa001')
 
 @section('content')
+@php($demoMode = config('app.demo_mode'))
 <div class="max-w-md mx-auto my-8">
     <div class="bg-white rounded-3xl shadow-xl overflow-hidden border-2 border-brand-900/20">
         <!-- Header Card dengan sentuhan gradient brand dan list emas -->
@@ -20,7 +21,7 @@
 
         <!-- Form Login -->
         <div class="p-6 sm:p-8 space-y-6">
-            {{-- Nilai default di bawah hanya untuk mempermudah demo; hapus sebelum produksi. --}}
+            {{-- Isi otomatis hanya aktif bila APP_DEMO_MODE=true. --}}
             <form action="{{ route('admin.login.post') }}" method="POST" class="space-y-5">
                 @csrf
 
@@ -32,7 +33,7 @@
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gold-500">
                             <i class="fa-solid fa-envelope"></i>
                         </span>
-                        <input type="email" name="email" id="email" value="{{ old('email', 'admin@ptqamsa.id') }}" required autofocus
+                        <input type="email" name="email" id="email" value="{{ old('email', $demoMode ? 'admin@ptqamsa.id' : '') }}" required autofocus
                             placeholder="nama@ptqamsa.id"
                             class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gold-400 focus:border-gold-400 text-sm transition font-medium">
                     </div>
@@ -46,7 +47,7 @@
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gold-500">
                             <i class="fa-solid fa-lock"></i>
                         </span>
-                        <input type="password" name="password" id="password" value="{{ old('password', 'password') }}" required
+                        <input type="password" name="password" id="password" value="{{ old('password', $demoMode ? 'password' : '') }}" required
                             placeholder="••••••••"
                             class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gold-400 focus:border-gold-400 text-sm transition">
                     </div>
@@ -67,6 +68,7 @@
 
             <!-- Bantuan / Quick Test Box -->
             <div class="pt-5 border-t border-gray-100">
+                @if($demoMode)
                 <div class="bg-blue-50/70 border border-brand-800/20 rounded-2xl p-4 text-xs text-brand-900 space-y-2.5">
                     <p class="font-bold flex items-center text-brand-900">
                         <span class="w-5 h-5 rounded-full bg-brand-900 text-gold-400 flex items-center justify-center text-[10px] mr-1.5 shadow-sm">
@@ -119,6 +121,7 @@
                         </div>
                     </div>
                 </div>
+                @endif
 
                 <div class="text-center mt-4 text-xs text-gray-500">
                     <a href="{{ url('/') }}" class="text-brand-900 font-bold hover:text-gold-600 hover:underline inline-flex items-center">

@@ -1,8 +1,9 @@
 <?php
 
 use App\Providers\AppServiceProvider;
+use Laravel\Boost\BoostServiceProvider;
 
 return [
     AppServiceProvider::class,
-    Laravel\Boost\BoostServiceProvider::class,
+    BoostServiceProvider::class,
 ];

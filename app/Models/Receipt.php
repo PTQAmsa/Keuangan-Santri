@@ -31,6 +31,6 @@ class Receipt extends Model
      */
     public function getVerificationUrlAttribute(): string
     {
-        return url('/kuitansi/verifikasi/' . $this->qr_verification_token);
+        return url('/kuitansi/verifikasi/'.$this->qr_verification_token);
     }
 }

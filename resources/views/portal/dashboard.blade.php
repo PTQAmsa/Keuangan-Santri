@@ -4,11 +4,10 @@
 
 @section('content')
 @php
-    // Popup pengingat ganti PIN: wajib bila login lewat nomor WA, dan
-    // disarankan sekali bila PIN masih bawaan (belum pernah diganti).
-    $pinIsDefault = (string) $student->pin_portal === '123456';
+    // Popup pengingat ganti PIN: disarankan bila PIN belum pernah diganti.
+    // PIN yang wajib diganti sudah dialihkan middleware ke halaman ganti PIN.
     $forcePinChange = $student->must_change_pin;
-    $suggestPinChange = ! $forcePinChange && $pinIsDefault && $student->pin_changed_at === null;
+    $suggestPinChange = ! $forcePinChange && $student->pin_changed_at === null;
 @endphp
 <div class="space-y-6">
 
@@ -254,7 +253,7 @@
                 <div>
                     <h3 class="font-bold text-base">{{ $forcePinChange ? 'Wajib Ganti PIN' : 'Amankan Akun Anda' }}</h3>
                     <p class="text-[11px] text-blue-200">
-                        {{ $forcePinChange ? 'Anda login memakai nomor WhatsApp' : 'PIN Anda masih PIN bawaan' }}
+                        {{ $forcePinChange ? 'Anda login memakai nomor WhatsApp' : 'PIN Anda belum pernah diganti' }}
                     </p>
                 </div>
             </div>
@@ -263,7 +262,7 @@
                 @if($forcePinChange)
                     <p>Demi keamanan data keuangan santri, Anda <strong>wajib membuat PIN baru</strong> sebelum memakai portal.</p>
                 @else
-                    <p>PIN Anda saat ini masih <strong>PIN bawaan (123456)</strong> yang diketahui banyak orang. Kami menyarankan Anda menggantinya dengan PIN 6 angka yang hanya Anda ketahui.</p>
+                    <p>PIN Anda belum pernah diganti sejak diberikan petugas. Kami menyarankan Anda menggantinya dengan PIN 6 angka yang hanya Anda ketahui.</p>
                 @endif
 
                 <div class="p-3 bg-blue-50 border border-blue-100 rounded-xl text-[11px] text-blue-900">

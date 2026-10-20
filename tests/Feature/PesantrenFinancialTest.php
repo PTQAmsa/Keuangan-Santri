@@ -35,6 +35,13 @@ class PesantrenFinancialTest extends TestCase
         $response->assertRedirect(route('portal.dashboard'));
         $this->assertEquals(1, session('portal_student_id'));
 
+        // Login via WhatsApp wajib membuat PIN baru terlebih dahulu.
+        $this->get(route('portal.dashboard'))->assertRedirect(route('portal.change-pin'));
+        $this->post(route('portal.change-pin.post'), [
+            'pin' => '654321',
+            'pin_confirmation' => '654321',
+        ])->assertRedirect(route('portal.dashboard'));
+
         // Cek akses dashboard santri
         $dashboardResponse = $this->get(route('portal.dashboard'));
         $dashboardResponse->assertStatus(200);

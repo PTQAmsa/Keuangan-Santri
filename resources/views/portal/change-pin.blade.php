@@ -3,6 +3,7 @@
 @section('title', 'Ganti PIN Portal - PTQ Amsa001')
 
 @section('content')
+@php($viaWhatsApp = (bool) session('portal_login_via_wa'))
 <div class="max-w-md mx-auto my-8">
     <div class="bg-white rounded-3xl shadow-xl overflow-hidden border-2 border-gold-400/40">
         <div class="bg-gradient-to-br from-brand-900 via-brand-800 to-brand-900 px-6 py-7 text-center text-white border-b-4 border-gold-400">
@@ -17,7 +18,13 @@
             @if($student->must_change_pin)
                 <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-900 flex items-start space-x-2">
                     <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
-                    <p>Anda login memakai nomor WhatsApp. Untuk keamanan, <strong>wajib ganti PIN</strong> sebelum melanjutkan.</p>
+                    <p>Demi keamanan data keuangan, <strong>PIN wajib diganti</strong> sebelum melanjutkan ke portal.</p>
+                </div>
+            @endif
+
+            @if($viaWhatsApp)
+                <div class="p-3 bg-emerald-50 border border-emerald-100 rounded-xl text-[11px] text-emerald-900">
+                    <p><i class="fa-brands fa-whatsapp mr-1"></i> Anda login memakai nomor WhatsApp wali, jadi tidak perlu memasukkan PIN lama.</p>
                 </div>
             @endif
 
@@ -29,11 +36,13 @@
             <form action="{{ route('portal.change-pin.post') }}" method="POST" class="space-y-4">
                 @csrf
 
-                <div>
-                    <label for="current_pin" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">PIN Lama</label>
-                    <input type="password" name="current_pin" id="current_pin" required inputmode="numeric"
-                           class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gold-400 focus:border-gold-400 text-sm">
-                </div>
+                @unless($viaWhatsApp)
+                    <div>
+                        <label for="current_pin" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">PIN Lama</label>
+                        <input type="password" name="current_pin" id="current_pin" required inputmode="numeric"
+                               class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gold-400 focus:border-gold-400 text-sm">
+                    </div>
+                @endunless
 
                 <div>
                     <label for="pin" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">PIN Baru (6 angka)</label>
@@ -53,11 +62,13 @@
                 </button>
             </form>
 
-            <div class="text-center text-xs text-gray-500 pt-2 border-t border-gray-100">
-                <a href="{{ route('portal.dashboard') }}" class="text-brand-900 font-bold hover:underline">
-                    <i class="fa-solid fa-arrow-left mr-1"></i> Kembali ke Dashboard
-                </a>
-            </div>
+            @unless($student->must_change_pin)
+                <div class="text-center text-xs text-gray-500 pt-2 border-t border-gray-100">
+                    <a href="{{ route('portal.dashboard') }}" class="text-brand-900 font-bold hover:underline">
+                        <i class="fa-solid fa-arrow-left mr-1"></i> Kembali ke Dashboard
+                    </a>
+                </div>
+            @endunless
         </div>
     </div>
 </div>
