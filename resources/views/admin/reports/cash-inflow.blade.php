@@ -27,6 +27,11 @@
             <a href="{{ route('admin.reports.arrears') }}" class="px-4 py-2 rounded-lg text-gray-600 hover:text-brand-900 transition">
                 <i class="fa-solid fa-clock-rotate-left mr-1 text-rose-500"></i> Rekap Tunggakan
             </a>
+            @if(auth()->user()->role?->canManageFinances())
+                <a href="{{ route('admin.expenses') }}" class="px-4 py-2 rounded-lg text-gray-600 hover:text-brand-900 transition">
+                    <i class="fa-solid fa-money-bill-trend-up mr-1 text-rose-500"></i> Kas Keluar
+                </a>
+            @endif
         </div>
     </div>
 

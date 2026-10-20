@@ -56,6 +56,7 @@ class ActivityLogController
         $totalFinancial = ActivityLog::whereIn('module', [
             ActivityModule::Invoice->value,
             ActivityModule::Payment->value,
+            ActivityModule::Expense->value,
         ])->count();
 
         return view('admin.activity-logs', compact(

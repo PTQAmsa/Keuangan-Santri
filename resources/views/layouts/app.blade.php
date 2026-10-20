@@ -124,6 +124,9 @@
                             <a href="{{ route('admin.transactions') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.transactions') ? 'bg-brand-800 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
                                 <i class="fa-solid fa-money-bill-transfer mr-1"></i> Transaksi
                             </a>
+                            <a href="{{ route('admin.expenses') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.expenses*') ? 'bg-rose-600 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
+                                <i class="fa-solid fa-money-bill-trend-up mr-1"></i> Kas Keluar
+                            </a>
                         @endif
                         <a href="{{ route('admin.reports.cash') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.reports.*') ? 'bg-emerald-600 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }} transition">
                             <i class="fa-solid fa-chart-column mr-1"></i> Laporan

@@ -546,5 +546,8 @@ class DatabaseSeeder extends Seeder
                 createdAt: $seededPayment->payment_date->copy()->setTime(9, 15),
             );
         }
+
+        // Contoh pengeluaran operasional untuk halaman Kas Keluar.
+        $this->call(ExpenseDemoSeeder::class);
     }
 }

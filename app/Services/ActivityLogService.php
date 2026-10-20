@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\ActivityAction;
 use App\Enums\ActivityModule;
 use App\Models\ActivityLog;
+use App\Models\Expense;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Student;
@@ -348,6 +349,67 @@ class ActivityLogService
                 'Alasan Pembatalan' => $reason,
                 'Status Tagihan' => self::statusLabel($previousStatus).' → '.self::statusLabel($invoice->status),
                 'Total Terbayar' => self::rupiah($previousPaidAmount).' → '.self::rupiah($invoice->paid_amount),
+            ],
+            userId: $userId,
+        );
+    }
+
+    /**
+     * Catat pengeluaran operasional pesantren (kas keluar).
+     */
+    public static function expenseRecorded(Expense $expense, ?int $userId = null): ActivityLog
+    {
+        $expense->loadMissing('recordedBy');
+
+        return self::record(
+            module: ActivityModule::Expense,
+            action: ActivityAction::Created,
+            description: sprintf(
+                'Mencatat kas keluar %s sebesar %s untuk %s.',
+                $expense->expense_code,
+                self::rupiah($expense->amount),
+                $expense->description
+            ),
+            subjectId: $expense->id,
+            properties: [
+                'Kode Pengeluaran' => $expense->expense_code,
+                'Kategori' => $expense->category->label(),
+                'Uraian' => $expense->description,
+                'Nominal' => self::rupiah($expense->amount),
+                'Tanggal' => $expense->expense_date?->format('d/m/Y') ?? '-',
+                'Metode' => $expense->payment_method === 'cash' ? 'Tunai' : 'Transfer',
+                'Penerima' => $expense->recipient ?: '-',
+                'Dicatat Oleh' => $expense->recordedBy->name ?? '-',
+            ],
+            userId: $userId,
+        );
+    }
+
+    /**
+     * Catat pembatalan pengeluaran operasional (kas keluar).
+     */
+    public static function expenseVoided(Expense $expense, string $reason, ?int $userId = null): ActivityLog
+    {
+        $expense->loadMissing(['recordedBy', 'voidedBy']);
+
+        return self::record(
+            module: ActivityModule::Expense,
+            action: ActivityAction::Cancelled,
+            description: sprintf(
+                'Membatalkan kas keluar %s sebesar %s (%s). Alasan: %s',
+                $expense->expense_code,
+                self::rupiah($expense->amount),
+                $expense->description,
+                $reason
+            ),
+            subjectId: $expense->id,
+            properties: [
+                'Kode Pengeluaran' => $expense->expense_code,
+                'Kategori' => $expense->category->label(),
+                'Uraian' => $expense->description,
+                'Nominal Dibatalkan' => self::rupiah($expense->amount),
+                'Tanggal' => $expense->expense_date?->format('d/m/Y') ?? '-',
+                'Alasan Pembatalan' => $reason,
             ],
             userId: $userId,
         );

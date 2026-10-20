@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CashierController;
+use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\TransactionController;
@@ -100,6 +101,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/santri', [StudentController::class, 'store'])->name('students.store');
             Route::patch('/santri/{student}/status', [StudentController::class, 'toggleStatus'])->name('students.toggle');
             Route::post('/santri/{student}/reset-pin', [StudentController::class, 'resetPin'])->name('students.reset-pin');
+
+            // Kas keluar: pengeluaran operasional pesantren.
+            Route::get('/kas-keluar', [ExpenseController::class, 'index'])->name('expenses');
+            Route::post('/kas-keluar', [ExpenseController::class, 'store'])->name('expenses.store');
+            Route::patch('/kas-keluar/{expense}/batal', [ExpenseController::class, 'void'])->name('expenses.void');
 
             // Perbaikan & pembatalan transaksi keuangan.
             Route::get('/transaksi', [TransactionController::class, 'index'])->name('transactions');
