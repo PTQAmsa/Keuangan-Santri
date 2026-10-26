@@ -257,9 +257,5 @@
             </div>
         @endif
     </div>
-
-    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg shadow-sm text-xs sm:text-sm text-blue-900">
-        <p><strong>Catatan:</strong> Pemasukan di sini langsung dihitung di laporan arus kas, dashboard, dan tutup buku bersama pembayaran santri. Pemasukan yang dibatalkan tetap tersimpan untuk audit, tetapi tidak dihitung dalam total. Klik judul kolom untuk mengurutkan data.</p>
-    </div>
 </div>
 @endsection
