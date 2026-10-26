@@ -77,12 +77,6 @@
 
         <main class="flex-1 px-4 py-6 sm:px-6 lg:px-8">
             <div class="mx-auto w-full max-w-7xl">
-                @if($isReadOnlyViewer)
-                    <div class="mb-5 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-sm">
-                        <i class="fas fa-eye mt-0.5 text-amber-600"></i>
-                        <p><strong>Mode lihat saja.</strong> Akun Pengasuh dapat membuka seluruh data dan laporan, tetapi tidak dapat mencatat, mengubah, atau membatalkan transaksi.</p>
-                    </div>
-                @endif
                 @include('layouts.partials.flash')
                 @yield('content')
             </div>

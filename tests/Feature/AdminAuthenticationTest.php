@@ -95,7 +95,6 @@ class AdminAuthenticationTest extends TestCase
             ->get(route('admin.cashier'));
 
         $response->assertOk()
-            ->assertSee('Mode lihat saja')
             ->assertSee('readonly-mode', false);
     }
 

@@ -101,7 +101,7 @@
     @endif
 
     <!-- Form Catat Pemasukan -->
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div data-write class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="px-6 py-4 bg-gray-50/70 border-b border-gray-100">
             <h2 class="text-base font-bold text-gray-800 flex items-center">
                 <i class="fa-solid fa-plus-circle text-brand-800 mr-2"></i> Catat Pemasukan Baru

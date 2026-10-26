@@ -159,7 +159,7 @@ class StudentManagementTest extends TestCase
         $this->actingAs($pengasuh)
             ->get(route('admin.students'))
             ->assertOk()
-            ->assertSee('Mode lihat saja');
+            ->assertSee('readonly-mode', false);
 
         $this->actingAs($pengasuh)
             ->post(route('admin.students.store'), $this->validPayload())

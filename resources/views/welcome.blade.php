@@ -24,6 +24,7 @@
     </script>
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
 </head>
+@php($demoMode = (bool) config('app.demo_mode'))
 <body class="min-h-screen bg-white font-sans text-slate-800 antialiased">
 
     <!-- 1. Top Navigation Bar -->
@@ -38,16 +39,11 @@
             </a>
 
             <nav class="flex items-center gap-2" aria-label="Navigasi utama">
-                <a href="{{ route('admin.login') }}"
-                   class="hidden items-center gap-2 rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 sm:inline-flex">
-                    <i class="fa-solid fa-lock text-xs"></i> Login Pengurus / Bendahara
+                <a href="#skema-biaya" class="hidden items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 sm:inline-flex">
+                    <i class="fa-solid fa-list-ol text-xs"></i> Skema Biaya
                 </a>
-                <a href="{{ route('portal.login') }}"
-                   class="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-amber-600">
-                    <i class="fa-solid fa-user-shield text-xs"></i> Masuk Portal Wali Santri
-                </a>
-                <a href="{{ route('admin.login') }}" class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-300 text-slate-700 transition hover:bg-slate-100 sm:hidden" aria-label="Login Pengurus / Bendahara" title="Login Pengurus / Bendahara">
-                    <i class="fa-solid fa-lock text-xs"></i>
+                <a href="#login-wali" class="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-amber-600">
+                    <i class="fa-solid fa-right-to-bracket text-xs"></i> Cek Tagihan
                 </a>
             </nav>
         </div>
@@ -89,33 +85,63 @@
                     </div>
                 </div>
 
-                <!-- Kolom Kanan: Quick Action Wali Santri -->
-                <div class="lg:justify-self-end lg:w-full lg:max-w-md">
+                <!-- Kolom Kanan: Login Wali Santri langsung dari halaman depan -->
+                <div id="login-wali" class="scroll-mt-20 lg:justify-self-end lg:w-full lg:max-w-md">
                     <div class="rounded-2xl border border-white/10 bg-white p-6 text-slate-800 shadow-2xl shadow-blue-950/50 sm:p-7">
                         <div class="mb-5 flex items-center gap-3">
                             <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
-                                <i class="fa-solid fa-magnifying-glass-dollar text-lg"></i>
+                                <i class="fa-solid fa-user-shield text-lg"></i>
                             </span>
                             <div>
-                                <h2 class="text-base font-bold text-slate-900">Cek Tagihan Santri</h2>
-                                <p class="text-xs text-slate-500">Khusus wali santri PTQ Amsa001</p>
+                                <h2 class="text-base font-bold text-slate-900">Masuk Portal Wali Santri</h2>
+                                <p class="text-xs text-slate-500">Cek tagihan, riwayat pembayaran &amp; kuitansi digital</p>
                             </div>
                         </div>
 
-                        <form action="{{ route('portal.login') }}" method="GET" class="space-y-3" id="quick-check-form">
-                            <label for="quick-check-input" class="block text-xs font-semibold text-slate-700">Masukkan NIS / No. WhatsApp Santri</label>
-                            <div class="relative">
-                                <i class="fa-solid fa-id-card pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i>
-                                <input type="text" name="q" id="quick-check-input" required autocomplete="off" inputmode="text"
-                                       placeholder="Contoh: 2026001 atau 0812xxxxxxx"
-                                       class="h-11 w-full rounded-xl border border-slate-300 bg-slate-50 pl-10 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/30">
+                        @if($errors->any())
+                            <div class="mb-4 flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800" role="alert">
+                                <i class="fa-solid fa-circle-exclamation mt-0.5 text-rose-600"></i>
+                                <div>
+                                    <p class="font-semibold">Belum bisa masuk.</p>
+                                    <ul class="mt-0.5 list-inside list-disc space-y-0.5">
+                                        @foreach($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
                             </div>
-                            <p id="quick-check-hint" class="text-[11px] text-slate-500">
-                                Anda akan diarahkan ke Portal Wali untuk memasukkan PIN.
-                            </p>
+                        @endif
+
+                        @if(session('info'))
+                            <div class="mb-4 rounded-xl border border-blue-200 bg-blue-50 p-3 text-xs text-blue-800">{{ session('info') }}</div>
+                        @endif
+
+                        <form action="{{ route('portal.login.post') }}" method="POST" class="space-y-4" id="landing-login-form">
+                            @csrf
+                            <div>
+                                <label for="nis" class="mb-1.5 block text-xs font-semibold text-slate-700">Nomor Induk Santri (NIS)</label>
+                                <div class="relative">
+                                    <i class="fa-solid fa-id-card pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i>
+                                    <input type="text" name="nis" id="nis" required autocomplete="off"
+                                           value="{{ old('nis', $demoMode ? 'DMY00001' : '') }}"
+                                           placeholder="Contoh: DMY00001"
+                                           class="h-11 w-full rounded-xl border border-slate-300 bg-slate-50 pl-10 pr-3 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/30">
+                                </div>
+                            </div>
+                            <div>
+                                <label for="identifier" class="mb-1.5 block text-xs font-semibold text-slate-700">No. WhatsApp Wali / PIN</label>
+                                <div class="relative">
+                                    <i class="fa-brands fa-whatsapp pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-base text-slate-400"></i>
+                                    <input type="password" name="identifier" id="identifier" required
+                                           value="{{ old('identifier', $demoMode ? '100001' : '') }}"
+                                           placeholder="Nomor WA terdaftar atau PIN 6 digit"
+                                           class="h-11 w-full rounded-xl border border-slate-300 bg-slate-50 pl-10 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/30">
+                                </div>
+                                <p class="mt-1.5 text-[11px] text-slate-500">Masukkan nomor WhatsApp wali yang terdaftar atau PIN 6 digit.</p>
+                            </div>
                             <button type="submit"
                                     class="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-amber-500 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-amber-600">
-                                <i class="fa-solid fa-arrow-right-to-bracket"></i> Cek Tagihan / Masuk
+                                <i class="fa-solid fa-right-to-bracket"></i> Masuk ke Dasbor Santri
                             </button>
                         </form>
 
@@ -136,6 +162,32 @@
         <!-- 3. Section Skema Pembiayaan Resmi -->
         <section id="skema-biaya" class="scroll-mt-20 bg-slate-50 py-12 sm:py-16">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                @if($demoMode)
+                    {{-- Sementara: akun santri uji coba untuk demo. Dihapus saat produksi (APP_DEMO_MODE=false). --}}
+                    <div class="mx-auto mb-10 max-w-3xl rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-slate-800 shadow-sm sm:p-5">
+                        <p class="mb-3 flex items-center gap-2 font-bold text-amber-900">
+                            <span class="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] text-slate-900"><i class="fa-solid fa-key"></i></span>
+                            Akun Santri untuk Uji Coba:
+                        </p>
+                        <div class="grid gap-2 sm:grid-cols-3">
+                            @foreach([
+                                ['Maulana Rahman Yusuf', 'Putra - 1 Reguler', 'DMY00001', '100001', 'Akun Utama', 'bg-amber-100 text-amber-700'],
+                                ['Tian Saputra', 'Beasiswa 50%', 'DMY00010', '100010', 'Beasiswa Putra', 'bg-emerald-100 text-emerald-700'],
+                                ['Aira Syhanaz Zaneta', 'Beasiswa 50%', 'DMY00059', '100059', 'Beasiswa Putri', 'bg-purple-100 text-purple-700'],
+                            ] as [$name, $info, $nis, $pin, $badge, $badgeClass])
+                                <div class="rounded-lg border border-amber-200 bg-white p-3">
+                                    <div class="mb-1 flex items-start justify-between gap-2">
+                                        <strong class="text-slate-900">{{ $name }}</strong>
+                                        <span class="shrink-0 rounded px-2 py-0.5 text-[10px] font-bold {{ $badgeClass }}">{{ $badge }}</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-500">({{ $info }})</p>
+                                    <p class="mt-1 text-[11px] text-slate-600">NIS: <code class="font-semibold text-slate-900">{{ $nis }}</code> | PIN: <code class="font-semibold text-slate-900">{{ $pin }}</code></p>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
                 <div class="mx-auto mb-8 max-w-2xl space-y-2 text-center">
                     <span class="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-blue-700">
                         <i class="fa-solid fa-scroll"></i> Ketetapan resmi
@@ -298,34 +350,53 @@
         </div>
     </footer>
 
+    <!-- Tombol kembali ke atas: muncul setelah digulir cukup jauh, biru, berubah kuning saat ditekan -->
+    <button type="button" id="back-to-top" aria-label="Kembali ke atas" title="Kembali ke atas"
+            class="pointer-events-none fixed bottom-5 right-5 z-40 flex h-12 w-12 translate-y-4 items-center justify-center rounded-full bg-blue-600 text-white opacity-0 shadow-lg shadow-blue-900/30 transition-all duration-200 hover:bg-blue-700 active:bg-amber-500 active:text-slate-900 sm:bottom-6 sm:right-6">
+        <i class="fa-solid fa-arrow-up text-lg"></i>
+    </button>
+
     <script>
         (function () {
             'use strict';
 
             // Bayangan navbar muncul setelah halaman digulir.
             var header = document.getElementById('site-header');
-            function syncHeaderShadow() {
-                if (!header) return;
-                header.classList.toggle('shadow-md', window.scrollY > 8);
-            }
-            window.addEventListener('scroll', syncHeaderShadow, { passive: true });
-            syncHeaderShadow();
+            var backToTop = document.getElementById('back-to-top');
 
-            // Petunjuk isian cepat: bedakan NIS dan nomor WhatsApp secara langsung.
-            var input = document.getElementById('quick-check-input');
-            var hint = document.getElementById('quick-check-hint');
-            if (input && hint) {
-                input.addEventListener('input', function () {
-                    var value = input.value.trim();
-                    if (value === '') {
-                        hint.textContent = 'Anda akan diarahkan ke Portal Wali untuk memasukkan PIN.';
-                    } else if (/^\+?\d{9,}$/.test(value)) {
-                        hint.textContent = 'Terbaca sebagai nomor WhatsApp wali. Di portal, lengkapi NIS santri lalu masuk.';
-                    } else {
-                        hint.textContent = 'Terbaca sebagai NIS. Di portal, masukkan PIN atau nomor WhatsApp wali.';
-                    }
+            function onScroll() {
+                var y = window.scrollY || document.documentElement.scrollTop;
+                if (header) header.classList.toggle('shadow-md', y > 8);
+
+                if (backToTop) {
+                    var show = y > window.innerHeight * 0.6;
+                    backToTop.classList.toggle('opacity-0', !show);
+                    backToTop.classList.toggle('translate-y-4', !show);
+                    backToTop.classList.toggle('pointer-events-none', !show);
+                }
+            }
+
+            window.addEventListener('scroll', onScroll, { passive: true });
+            onScroll();
+
+            if (backToTop) {
+                backToTop.addEventListener('click', function () {
+                    // Warna kuning dipertahankan sebentar sebagai umpan balik sentuhan di HP.
+                    backToTop.classList.remove('bg-blue-600', 'text-white', 'hover:bg-blue-700');
+                    backToTop.classList.add('bg-amber-500', 'text-slate-900');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    setTimeout(function () {
+                        backToTop.classList.remove('bg-amber-500', 'text-slate-900');
+                        backToTop.classList.add('bg-blue-600', 'text-white', 'hover:bg-blue-700');
+                    }, 900);
                 });
             }
+
+            // Bila login gagal, gulir ke kartu login agar pesan kesalahannya langsung terlihat.
+            @if($errors->any())
+                var loginCard = document.getElementById('login-wali');
+                if (loginCard) loginCard.scrollIntoView({ block: 'center' });
+            @endif
         })();
     </script>
 </body>

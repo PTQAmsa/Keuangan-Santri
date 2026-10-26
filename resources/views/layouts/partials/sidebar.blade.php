@@ -11,14 +11,21 @@
             'label' => 'Dashboard', 'icon' => 'fa-chart-pie',
             'route' => 'admin.dashboard', 'match' => ['admin.dashboard'],
         ],
-        [
-            'label' => 'Kas Masuk', 'hint' => 'Kasir & pemasukan', 'icon' => 'fa-wallet',
-            'route' => 'admin.cashier', 'match' => ['admin.cashier*', 'admin.incomes*'],
-            'children' => [
-                ['label' => 'Kasir Santri', 'icon' => 'fa-cash-register', 'url' => route('admin.cashier'), 'match' => ['admin.cashier*']],
-                ['label' => 'Pemasukan Lainnya', 'icon' => 'fa-hand-holding-heart', 'url' => route('admin.incomes'), 'match' => ['admin.incomes*']],
+        // Pengasuh (lihat saja) tidak mencatat kas masuk, jadi menu ini langsung
+        // membuka laporan Kas Masuk tanpa submenu kasir/pemasukan.
+        $isViewer
+            ? [
+                'label' => 'Kas Masuk', 'hint' => 'Laporan penerimaan', 'icon' => 'fa-wallet',
+                'route' => 'admin.reports.cash', 'match' => ['admin.reports.cash', 'admin.reports.cash.*'],
+            ]
+            : [
+                'label' => 'Kas Masuk', 'hint' => 'Kasir & pemasukan', 'icon' => 'fa-wallet',
+                'route' => 'admin.cashier', 'match' => ['admin.cashier*', 'admin.incomes*'],
+                'children' => [
+                    ['label' => 'Kasir Santri', 'icon' => 'fa-cash-register', 'url' => route('admin.cashier'), 'match' => ['admin.cashier*']],
+                    ['label' => 'Pemasukan Lainnya', 'icon' => 'fa-hand-holding-heart', 'url' => route('admin.incomes'), 'match' => ['admin.incomes*']],
+                ],
             ],
-        ],
         [
             'label' => 'Tagihan Santri', 'icon' => 'fa-file-invoice-dollar',
             'route' => 'admin.invoices', 'match' => ['admin.invoices*'],
@@ -32,9 +39,9 @@
             'label' => 'Riwayat Transaksi', 'icon' => 'fa-clock-rotate-left',
             'route' => 'admin.transactions', 'match' => ['admin.transactions*'],
             'children' => [
+                ['label' => 'Semua Transaksi', 'icon' => 'fa-layer-group', 'url' => route('admin.transactions', ['status' => 'all']), 'match' => ['admin.transactions'], 'query' => ['status' => 'all']],
                 ['label' => 'Transaksi Aktif', 'icon' => 'fa-circle-check', 'url' => route('admin.transactions'), 'match' => ['admin.transactions'], 'query' => []],
                 ['label' => 'Transaksi Dibatalkan', 'icon' => 'fa-ban', 'url' => route('admin.transactions', ['status' => 'voided']), 'match' => ['admin.transactions'], 'query' => ['status' => 'voided']],
-                ['label' => 'Semua Transaksi', 'icon' => 'fa-layer-group', 'url' => route('admin.transactions', ['status' => 'all']), 'match' => ['admin.transactions'], 'query' => ['status' => 'all']],
             ],
         ],
         [
@@ -47,9 +54,15 @@
         ],
         [
             'label' => 'Laporan Keuangan', 'icon' => 'fa-chart-column',
-            'route' => 'admin.reports.cash', 'match' => ['admin.reports.*'],
+            // Untuk Pengasuh, laporan Kas Masuk sudah diwakili menu "Kas Masuk" di atas.
+            'route' => $isViewer ? 'admin.reports.cash-flow' : 'admin.reports.cash',
+            'match' => $isViewer
+                ? ['admin.reports.cash-flow', 'admin.reports.arrears*', 'admin.reports.closing*']
+                : ['admin.reports.*'],
             'children' => [
-                ['label' => 'Kas Masuk', 'icon' => 'fa-money-bill-wave', 'url' => route('admin.reports.cash'), 'match' => ['admin.reports.cash', 'admin.reports.cash.*']],
+                ...($isViewer ? [] : [
+                    ['label' => 'Kas Masuk', 'icon' => 'fa-money-bill-wave', 'url' => route('admin.reports.cash'), 'match' => ['admin.reports.cash', 'admin.reports.cash.*']],
+                ]),
                 ['label' => 'Arus Kas', 'icon' => 'fa-scale-balanced', 'url' => route('admin.reports.cash-flow'), 'match' => ['admin.reports.cash-flow']],
                 ['label' => 'Rekap Tunggakan', 'icon' => 'fa-clock-rotate-left', 'url' => route('admin.reports.arrears'), 'match' => ['admin.reports.arrears*']],
                 ['label' => 'Tutup Buku', 'icon' => 'fa-lock', 'url' => route('admin.reports.closing'), 'match' => ['admin.reports.closing*']],

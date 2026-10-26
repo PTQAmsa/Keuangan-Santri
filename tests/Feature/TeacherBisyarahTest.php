@@ -629,7 +629,7 @@ class TeacherBisyarahTest extends TestCase
         $this->actingAs($pengasuh)
             ->get(route('admin.bisyarah'))
             ->assertOk()
-            ->assertSee('Mode lihat saja');
+            ->assertSee('readonly-mode', false);
 
         $this->actingAs($pengasuh)
             ->post(route('admin.bisyarah.store'), [

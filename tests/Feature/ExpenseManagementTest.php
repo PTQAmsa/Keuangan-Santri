@@ -133,7 +133,7 @@ class ExpenseManagementTest extends TestCase
         $this->actingAs($pengasuh)
             ->get(route('admin.expenses'))
             ->assertOk()
-            ->assertSee('Mode lihat saja');
+            ->assertSee('readonly-mode', false);
 
         $this->actingAs($pengasuh)
             ->post(route('admin.expenses.store'), [

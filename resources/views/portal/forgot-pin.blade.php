@@ -59,8 +59,8 @@
                     <i class="fa-brands fa-whatsapp"></i> Hubungi Bendahara via WhatsApp
                 </a>
                 <div>
-                    <a href="{{ route('portal.login') }}" class="inline-flex items-center gap-1.5 font-semibold text-slate-700 hover:text-slate-900 hover:underline">
-                        <i class="fa-solid fa-arrow-left"></i> Kembali ke Login
+                    <a href="{{ url('/') }}" class="inline-flex items-center gap-1.5 font-semibold text-slate-700 hover:text-slate-900 hover:underline">
+                        <i class="fa-solid fa-arrow-left"></i> Kembali ke Halaman Depan
                     </a>
                 </div>
             </div>

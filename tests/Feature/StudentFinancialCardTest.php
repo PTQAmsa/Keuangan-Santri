@@ -104,7 +104,7 @@ class StudentFinancialCardTest extends TestCase
         $this->actingAs($this->userWithRole(UserRole::Pengasuh))
             ->get(route('admin.students.card', $this->student()))
             ->assertOk()
-            ->assertSee('Mode lihat saja');
+            ->assertSee('readonly-mode', false);
     }
 
     public function test_ledger_running_balance_matches_visible_arrears(): void

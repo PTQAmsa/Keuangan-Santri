@@ -40,9 +40,6 @@
                     <i class="fa-solid fa-right-from-bracket"></i> Keluar
                 </a>
             @elseif($isPortal)
-                <a href="{{ route('admin.login') }}" class="hidden items-center gap-2 rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 sm:inline-flex">
-                    <i class="fa-solid fa-lock text-xs"></i> Login Pengurus / Bendahara
-                </a>
                 <a href="{{ url('/') }}" class="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-amber-600">
                     <i class="fa-solid fa-house text-xs"></i> Halaman Depan
                 </a>

@@ -253,7 +253,7 @@ class TransactionCorrectionTest extends TestCase
         $pengasuh = $this->userWithRole(UserRole::Pengasuh);
         $payment = Payment::firstOrFail();
 
-        $this->actingAs($pengasuh)->get(route('admin.transactions'))->assertOk()->assertSee('Mode lihat saja');
+        $this->actingAs($pengasuh)->get(route('admin.transactions'))->assertOk()->assertSee('readonly-mode', false);
         $this->actingAs($pengasuh)
             ->patch(route('admin.transactions.void', $payment), ['void_reason' => 'Coba batalkan'])
             ->assertForbidden();

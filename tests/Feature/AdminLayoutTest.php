@@ -58,17 +58,37 @@ class AdminLayoutTest extends TestCase
     {
         $pengasuh = $this->userWithRole(UserRole::Pengasuh);
 
-        $this->actingAs($pengasuh)->get(route('admin.dashboard'))
-            ->assertOk()
-            ->assertSee('Mode lihat saja')
+        $dashboard = $this->actingAs($pengasuh)->get(route('admin.dashboard'));
+        $dashboard->assertOk()
             ->assertSee('readonly-mode', false)
+            ->assertDontSee('Mode lihat saja')
             ->assertSee('Laporan Keuangan')
             ->assertSee('Kas Keluar')
             ->assertSee('Data Santri')
             ->assertSee('Bisyarah Bulanan')
+            ->assertDontSee('Kasir Santri')
+            ->assertDontSee('Pemasukan Lainnya')
             ->assertDontSee('Tambah Santri Baru')
             ->assertDontSee('Buat Tagihan Baru')
+            ->assertDontSee('Catat Pengeluaran')
             ->assertDontSee('Akun Pengurus');
+
+        // Menu Kas Masuk untuk Pengasuh langsung menuju laporan Kas Masuk,
+        // dan submenu Laporan tidak lagi memuat Kas Masuk.
+        $this->assertStringContainsString('href="'.route('admin.reports.cash').'"', $dashboard->getContent());
+        $this->assertStringNotContainsString('data-submenu-href="'.route('admin.cashier').'"', $dashboard->getContent());
+        $this->assertDoesNotMatchRegularExpression(
+            '/href="'.preg_quote(route('admin.reports.cash'), '/').'"\s+role="menuitem"/',
+            $dashboard->getContent(),
+        );
+
+        // Form catat di halaman kas keluar dan pemasukan lainnya ikut disembunyikan.
+        $this->actingAs($pengasuh)->get(route('admin.expenses'))
+            ->assertOk()
+            ->assertSee('id="catat" data-write', false);
+        $this->actingAs($pengasuh)->get(route('admin.incomes'))
+            ->assertOk()
+            ->assertSee('<div data-write', false);
 
         $admin = $this->userWithRole(UserRole::Admin);
 
@@ -176,7 +196,7 @@ class AdminLayoutTest extends TestCase
         $this->actingAs($pengasuh)
             ->get($result['groups'][0]['items'][0]['url'])
             ->assertOk()
-            ->assertSee('Mode lihat saja');
+            ->assertSee('readonly-mode', false);
     }
 
     public function test_sidebar_submenus_open_target_pages_and_modals(): void
@@ -226,15 +246,20 @@ class AdminLayoutTest extends TestCase
             ->assertSee('id="catat"', false);
     }
 
-    public function test_landing_page_has_new_navbar_hero_and_quick_check(): void
+    public function test_landing_page_logs_guardian_in_directly(): void
     {
-        $this->get('/')
-            ->assertOk()
-            ->assertSee('Masuk Portal Wali Santri')
-            ->assertSee('Login Pengurus / Bendahara')
+        config(['app.demo_mode' => true]);
+
+        $page = $this->get('/');
+        $page->assertOk()
             ->assertSee('Sistem Keuangan &amp; Tagihan Santri Terpadu', false)
-            ->assertSee('Masukkan NIS / No. WhatsApp Santri')
-            ->assertSee('Cek Tagihan / Masuk')
+            ->assertSee('Nomor Induk Santri (NIS)')
+            ->assertSee('No. WhatsApp Wali / PIN')
+            ->assertSee('Masuk ke Dasbor Santri')
+            ->assertSee('action="'.route('portal.login.post').'"', false)
+            ->assertSee('Akun Santri untuk Uji Coba')
+            ->assertSee('DMY00059')
+            ->assertSee('id="back-to-top"', false)
             ->assertSee('Total Paket Iuran Bulanan')
             ->assertSee('Rp 1.350.000')
             ->assertSee('Skema Cicilan &amp; Beasiswa', false)
@@ -242,16 +267,43 @@ class AdminLayoutTest extends TestCase
             ->assertSee('Notifikasi WhatsApp Gateway')
             ->assertSee('+62 856-9225-3516')
             ->assertSee('www.ptqamsa.id')
+            ->assertDontSee('Masuk Portal Wali Santri</a>', false)
+            ->assertDontSee('Masukkan NIS / No. WhatsApp Santri')
             ->assertDontSee('id="app-sidebar"', false);
 
-        // Isian cepat diteruskan ke portal: NIS ke kolom NIS, nomor WA ke kolom identitas.
-        $this->get(route('portal.login', ['q' => 'ABC123']))
-            ->assertOk()
-            ->assertSee('name="nis" id="nis" value="ABC123"', false);
+        // Tombol Login Pengurus tidak ada di navbar (hanya tautan kecil di hero dan footer).
+        $this->assertSame(0, substr_count(
+            substr($page->getContent(), 0, strpos($page->getContent(), '</header>')),
+            'Login Pengurus / Bendahara',
+        ));
 
-        $this->get(route('portal.login', ['q' => '081234567890']))
-            ->assertOk()
-            ->assertSee('name="identifier" id="identifier" value="081234567890"', false);
+        // Akun uji coba tampil di atas badge "Ketetapan resmi".
+        $this->assertLessThan(
+            strpos($page->getContent(), 'Ketetapan resmi'),
+            strpos($page->getContent(), 'Akun Santri untuk Uji Coba'),
+        );
+
+        // Login dari halaman depan langsung masuk ke dasbor santri.
+        $student = Student::where('status', 'aktif')->firstOrFail();
+        $student->forceFill(['pin_portal' => '246810', 'must_change_pin' => false])->save();
+
+        $this->from('/')
+            ->post(route('portal.login.post'), ['nis' => $student->nis, 'identifier' => '246810'])
+            ->assertRedirect(route('portal.dashboard'));
+        $this->assertSame($student->id, session('portal_student_id'));
+
+        // Bila PIN salah, kembali ke halaman depan dengan pesan kesalahan di kartu login.
+        session()->forget('portal_student_id');
+        $this->from('/')
+            ->post(route('portal.login.post'), ['nis' => $student->nis, 'identifier' => '000000'])
+            ->assertRedirect('/')
+            ->assertSessionHasErrors('identifier');
+
+        // Halaman portal: tanpa tombol Login Pengurus; lupa PIN kembali ke halaman depan.
+        $this->get(route('portal.login'))->assertOk()->assertDontSee('Login Pengurus / Bendahara');
+        $this->get(route('portal.forgot-pin'))->assertOk()
+            ->assertSee('Kembali ke Halaman Depan')
+            ->assertDontSee('Kembali ke Login');
     }
 
     public function test_notification_center_counts_overdue_invoices(): void

@@ -196,7 +196,7 @@ class OtherIncomeTest extends TestCase
     {
         $pengasuh = $this->userWithRole(UserRole::Pengasuh);
 
-        $this->actingAs($pengasuh)->get(route('admin.incomes'))->assertOk()->assertSee('Mode lihat saja');
+        $this->actingAs($pengasuh)->get(route('admin.incomes'))->assertOk()->assertSee('readonly-mode', false);
         $this->actingAs($pengasuh)->post(route('admin.incomes.store'), $this->payload())->assertForbidden();
 
         $this->assertSame(0, OtherIncome::count());
