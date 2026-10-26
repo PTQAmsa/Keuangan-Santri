@@ -26,20 +26,20 @@
 
 <div class="space-y-6">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <a href="{{ $backUrl }}" class="inline-flex items-center text-sm font-semibold text-brand-900 hover:underline">
+        <a href="{{ $backUrl }}" class="inline-flex items-center text-sm font-semibold text-slate-900 hover:underline">
             <i class="fa-solid fa-arrow-left mr-2"></i> Kembali
         </a>
     </div>
 
     <div class="print-card bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="bg-gradient-to-r from-brand-900 via-brand-800 to-blue-900 px-6 py-5 text-white border-b-4 border-gold-400">
+        <div class="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 px-6 py-5 text-white border-b-4 border-amber-400">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div class="flex items-center gap-4">
                     <div class="w-14 h-14 rounded-2xl bg-white p-1.5 shadow">
                         <img src="{{ asset('images/logo-pesantren.png') }}" alt="Logo PTQ Amsa001" class="w-full h-full object-contain">
                     </div>
                     <div>
-                        <p class="text-[11px] uppercase tracking-widest text-gold-300 font-bold">Pesantren Tadabbur Al-Qur'an Amsa001</p>
+                        <p class="text-[11px] uppercase tracking-widest text-amber-300 font-bold">Pesantren Tadabbur Al-Qur'an Amsa001</p>
                         <h1 class="text-xl sm:text-2xl font-bold tracking-tight">Kartu Keuangan Santri</h1>
                         <p class="text-xs text-blue-200 mt-0.5">Satuan Pendidikan Muadalah Mu'allimien | Putra-Putri</p>
                     </div>
@@ -106,7 +106,7 @@
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="px-6 py-4 bg-gray-50/70 border-b border-gray-100 flex items-center justify-between">
             <h2 class="text-base font-bold text-gray-800 flex items-center">
-                <i class="fa-solid fa-file-invoice-dollar text-brand-800 mr-2"></i> Daftar Tagihan & Sisa Kewajiban
+                <i class="fa-solid fa-file-invoice-dollar text-blue-700 mr-2"></i> Daftar Tagihan & Sisa Kewajiban
             </h2>
             <span class="text-xs text-gray-500">{{ $invoices->count() }} dokumen</span>
         </div>
@@ -175,8 +175,8 @@
                 <span class="text-gray-400">Dokumen ini adalah daftar tagihan, bukan bukti pembayaran.</span>
             </p>
             <a href="{{ $invoicesPdfUrl }}" target="_blank"
-               class="inline-flex items-center justify-center px-4 py-2 bg-brand-900 hover:bg-brand-800 text-white rounded-xl text-xs font-semibold shadow-sm transition">
-                <i class="fa-solid fa-file-pdf mr-2 text-gold-400"></i> Unduh Daftar Tagihan (PDF)
+               class="inline-flex items-center justify-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 rounded-xl text-xs font-semibold shadow-sm transition">
+                <i class="fa-solid fa-file-pdf mr-2"></i> Unduh Daftar Tagihan (PDF)
             </a>
         </div>
     </div>
@@ -185,7 +185,7 @@
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="px-6 py-4 bg-gray-50/70 border-b border-gray-100 flex items-center justify-between">
             <h2 class="text-base font-bold text-gray-800 flex items-center">
-                <i class="fa-solid fa-receipt text-brand-800 mr-2"></i> Riwayat Pembayaran & Kuitansi
+                <i class="fa-solid fa-receipt text-blue-700 mr-2"></i> Riwayat Pembayaran & Kuitansi
             </h2>
             <span class="text-xs text-gray-500">{{ $payments->count() }} pembayaran</span>
         </div>
@@ -231,8 +231,8 @@
                             <td class="py-3 px-3 text-center">
                                 @if($payment->receipt)
                                     <a href="{{ route('receipt.download', $payment->receipt->id) }}" target="_blank"
-                                       class="inline-flex items-center px-2.5 py-1.5 bg-brand-900 hover:bg-brand-800 text-white rounded-lg text-[11px] font-semibold transition">
-                                        <i class="fa-solid fa-file-pdf mr-1 text-gold-400"></i> PDF
+                                       class="inline-flex items-center px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-900 rounded-lg text-[11px] font-semibold transition">
+                                        <i class="fa-solid fa-file-pdf mr-1"></i> PDF
                                     </a>
                                 @else
                                     <span class="text-gray-400">-</span>
@@ -253,8 +253,8 @@
                 <span class="text-gray-400">Dokumen ini adalah bukti pembayaran.</span>
             </p>
             <a href="{{ $paymentsPdfUrl }}" target="_blank"
-               class="inline-flex items-center justify-center px-4 py-2 bg-brand-900 hover:bg-brand-800 text-white rounded-xl text-xs font-semibold shadow-sm transition">
-                <i class="fa-solid fa-file-pdf mr-2 text-gold-400"></i> Unduh Riwayat Pembayaran (PDF)
+               class="inline-flex items-center justify-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 rounded-xl text-xs font-semibold shadow-sm transition">
+                <i class="fa-solid fa-file-pdf mr-2"></i> Unduh Riwayat Pembayaran (PDF)
             </a>
         </div>
     </div>
@@ -263,7 +263,7 @@
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="px-6 py-4 bg-gray-50/70 border-b border-gray-100 flex items-center justify-between gap-3">
             <h2 class="text-base font-bold text-gray-800 flex items-center">
-                <i class="fa-solid fa-book-open text-brand-800 mr-2"></i> Buku Kas Santri
+                <i class="fa-solid fa-book-open text-blue-700 mr-2"></i> Buku Kas Santri
             </h2>
             <div class="text-right">
                 <span class="text-xs text-gray-500 block">Tagihan = debit, pembayaran = kredit &bull; s.d. {{ $batasTunggakanLabel }}</span>

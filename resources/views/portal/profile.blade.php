@@ -6,10 +6,10 @@
 <div class="max-w-4xl mx-auto space-y-6">
 
     <!-- Header Profil -->
-    <div class="bg-gradient-to-r from-brand-900 via-brand-800 to-blue-900 rounded-2xl p-6 text-white shadow-xl">
+    <div class="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 rounded-2xl p-6 text-white shadow-xl">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div class="flex items-center space-x-4">
-                <div class="w-16 h-16 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-3xl text-gold-400 shadow-inner">
+                <div class="w-16 h-16 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-3xl text-amber-400 shadow-inner">
                     <i class="fa-solid fa-user-graduate"></i>
                 </div>
                 <div>
@@ -131,7 +131,7 @@
                 @endif
             </p>
         </div>
-        <a href="{{ route('portal.change-pin') }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-brand-900 hover:bg-brand-800 text-white rounded-xl text-xs font-bold shadow-sm transition whitespace-nowrap">
+        <a href="{{ route('portal.change-pin') }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-900 rounded-xl text-xs font-bold shadow-sm transition whitespace-nowrap">
             <i class="fa-solid fa-lock mr-1.5"></i> Ganti PIN
         </a>
     </div>

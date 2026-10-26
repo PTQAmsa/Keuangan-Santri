@@ -4,33 +4,33 @@
 
 @section('content')
 @php($viaWhatsApp = (bool) session('portal_login_via_wa'))
-<div class="max-w-md mx-auto my-8">
-    <div class="bg-white rounded-3xl shadow-xl overflow-hidden border-2 border-gold-400/40">
-        <div class="bg-gradient-to-br from-brand-900 via-brand-800 to-brand-900 px-6 py-7 text-center text-white border-b-4 border-gold-400">
-            <div class="w-12 h-12 mx-auto rounded-2xl bg-gold-400 text-brand-900 flex items-center justify-center text-xl mb-2 shadow">
-                <i class="fa-solid fa-lock"></i>
-            </div>
+<div class="mx-auto my-6 max-w-md sm:my-10">
+    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
+        <div class="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 px-6 py-7 text-center text-white">
+            <span class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500 text-slate-900 shadow">
+                <i class="fa-solid fa-lock text-lg"></i>
+            </span>
             <h1 class="text-lg font-bold">Ganti PIN Portal</h1>
-            <p class="text-xs text-blue-200 mt-1">Amankan akun portal wali santri Anda</p>
+            <p class="mt-1 text-xs text-blue-200">Amankan akun portal wali santri Anda</p>
         </div>
 
-        <div class="p-6 sm:p-8 space-y-5">
+        <div class="space-y-5 p-6 sm:p-8">
             @if($student->must_change_pin)
-                <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-900 flex items-start space-x-2">
-                    <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
+                <div class="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+                    <i class="fa-solid fa-triangle-exclamation mt-0.5 text-amber-600"></i>
                     <p>Demi keamanan data keuangan, <strong>PIN wajib diganti</strong> sebelum melanjutkan ke portal.</p>
                 </div>
             @endif
 
             @if($viaWhatsApp)
-                <div class="p-3 bg-emerald-50 border border-emerald-100 rounded-xl text-[11px] text-emerald-900">
-                    <p><i class="fa-brands fa-whatsapp mr-1"></i> Anda login memakai nomor WhatsApp wali, jadi tidak perlu memasukkan PIN lama.</p>
+                <div class="rounded-xl border border-emerald-100 bg-emerald-50 p-3 text-xs text-emerald-900">
+                    <p><i class="fa-brands fa-whatsapp mr-1 text-emerald-600"></i> Anda login memakai nomor WhatsApp wali, jadi tidak perlu memasukkan PIN lama.</p>
                 </div>
             @endif
 
-            <div class="p-3 bg-blue-50 border border-blue-100 rounded-xl text-[11px] text-blue-900">
+            <div class="rounded-xl border border-blue-100 bg-blue-50 p-3 text-xs text-blue-900">
                 <p class="font-semibold">{{ $student->nama_lengkap }} (NIS {{ $student->nis }})</p>
-                <p class="text-blue-700 mt-0.5">PIN dipakai untuk login ke Portal Wali Santri. Gunakan 6 angka yang tidak mudah ditebak (hindari 123456 atau tanggal lahir).</p>
+                <p class="mt-0.5 text-blue-700">PIN dipakai untuk login ke Portal Wali Santri. Gunakan 6 angka yang tidak mudah ditebak (hindari 123456 atau tanggal lahir).</p>
             </div>
 
             <form action="{{ route('portal.change-pin.post') }}" method="POST" class="space-y-4">
@@ -38,34 +38,42 @@
 
                 @unless($viaWhatsApp)
                     <div>
-                        <label for="current_pin" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">PIN Lama</label>
-                        <input type="password" name="current_pin" id="current_pin" required inputmode="numeric"
-                               class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gold-400 focus:border-gold-400 text-sm">
+                        <label for="current_pin" class="mb-1.5 block text-xs font-semibold text-slate-700">PIN Lama</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-key pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i>
+                            <input type="password" name="current_pin" id="current_pin" required inputmode="numeric"
+                                   class="h-11 w-full rounded-xl border border-slate-300 bg-slate-50 pl-10 pr-3 text-sm text-slate-900 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/30">
+                        </div>
                     </div>
                 @endunless
 
                 <div>
-                    <label for="pin" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">PIN Baru (6 angka)</label>
-                    <input type="password" name="pin" id="pin" required inputmode="numeric" maxlength="6"
-                           class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gold-400 focus:border-gold-400 text-sm">
+                    <label for="pin" class="mb-1.5 block text-xs font-semibold text-slate-700">PIN Baru (6 angka)</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i>
+                        <input type="password" name="pin" id="pin" required inputmode="numeric" maxlength="6"
+                               class="h-11 w-full rounded-xl border border-slate-300 bg-slate-50 pl-10 pr-3 text-sm text-slate-900 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/30">
+                    </div>
                 </div>
 
                 <div>
-                    <label for="pin_confirmation" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Ulangi PIN Baru</label>
-                    <input type="password" name="pin_confirmation" id="pin_confirmation" required inputmode="numeric" maxlength="6"
-                           class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gold-400 focus:border-gold-400 text-sm">
+                    <label for="pin_confirmation" class="mb-1.5 block text-xs font-semibold text-slate-700">Ulangi PIN Baru</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i>
+                        <input type="password" name="pin_confirmation" id="pin_confirmation" required inputmode="numeric" maxlength="6"
+                               class="h-11 w-full rounded-xl border border-slate-300 bg-slate-50 pl-10 pr-3 text-sm text-slate-900 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/30">
+                    </div>
                 </div>
 
-                <button type="submit" class="w-full py-3 px-4 bg-gradient-to-r from-gold-400 via-gold-500 to-amber-500 hover:from-gold-500 hover:to-amber-600 text-brand-900 font-extrabold rounded-xl shadow-md transition flex items-center justify-center space-x-2 text-sm border border-gold-300">
-                    <i class="fa-solid fa-floppy-disk"></i>
-                    <span>Simpan PIN Baru</span>
+                <button type="submit" class="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-amber-500 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-amber-600">
+                    <i class="fa-solid fa-floppy-disk"></i> Simpan PIN Baru
                 </button>
             </form>
 
             @unless($student->must_change_pin)
-                <div class="text-center text-xs text-gray-500 pt-2 border-t border-gray-100">
-                    <a href="{{ route('portal.dashboard') }}" class="text-brand-900 font-bold hover:underline">
-                        <i class="fa-solid fa-arrow-left mr-1"></i> Kembali ke Dashboard
+                <div class="border-t border-slate-100 pt-4 text-center text-xs text-slate-500">
+                    <a href="{{ route('portal.dashboard') }}" class="inline-flex items-center gap-1.5 font-semibold text-slate-700 hover:text-slate-900 hover:underline">
+                        <i class="fa-solid fa-arrow-left"></i> Kembali ke Dashboard
                     </a>
                 </div>
             @endunless

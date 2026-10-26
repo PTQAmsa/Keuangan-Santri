@@ -19,10 +19,10 @@
     @endif
 
     <!-- 1. Header Profil Santri Card -->
-    <div class="bg-gradient-to-r from-brand-900 via-brand-800 to-blue-900 rounded-2xl p-6 text-white shadow-xl">
+    <div class="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 rounded-2xl p-6 text-white shadow-xl">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div class="flex items-center space-x-4">
-                <div class="w-16 h-16 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-3xl text-gold-400 shadow-inner">
+                <div class="w-16 h-16 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-3xl text-amber-400 shadow-inner">
                     <i class="fa-solid fa-user-graduate"></i>
                 </div>
                 <div>
@@ -46,7 +46,7 @@
             <div class="bg-white/10 rounded-xl px-4 py-3 border border-white/10 text-xs space-y-1 self-start md:self-auto">
                 <p class="text-blue-200">Wali Santri:</p>
                 <p class="font-semibold text-white text-sm">{{ $student->nama_wali }} ({{ $student->hubungan_wali === 'Lainnya' && $student->hubungan_wali_detail ? 'Lainnya: '.$student->hubungan_wali_detail : $student->hubungan_wali }})</p>
-                <p class="text-gold-400"><i class="fa-brands fa-whatsapp mr-1"></i> {{ $student->no_whatsapp_wali }}</p>
+                <p class="text-amber-400"><i class="fa-brands fa-whatsapp mr-1"></i> {{ $student->no_whatsapp_wali }}</p>
             </div>
         </div>
     </div>
@@ -86,7 +86,7 @@
         <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-5 border border-amber-200/60 shadow-sm flex items-center justify-between">
             <div>
                 <p class="text-xs font-semibold text-amber-800 uppercase tracking-wider">Rekening Resmi Pesantren</p>
-                <p class="text-lg font-bold text-brand-900 mt-1">Bank Syariah Indonesia (BSI) 1202020212</p>
+                <p class="text-lg font-bold text-slate-900 mt-1">Bank Syariah Indonesia (BSI) 1202020212</p>
                 <p class="text-[11px] text-amber-700">a/n Pesantren Tadabbur Al-Qur'an</p>
             </div>
             <div class="w-12 h-12 rounded-xl bg-amber-200/50 text-amber-800 flex items-center justify-center text-xl">
@@ -99,7 +99,7 @@
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="px-6 py-4 bg-gray-50/70 border-b border-gray-100 flex items-center justify-between">
             <h2 class="text-base font-bold text-gray-800 flex items-center">
-                <i class="fa-solid fa-bell text-gold-500 mr-2"></i> Tagihan Aktif s.d. {{ $batasTunggakanLabel }}
+                <i class="fa-solid fa-bell text-amber-500 mr-2"></i> Tagihan Aktif s.d. {{ $batasTunggakanLabel }}
             </h2>
             <span class="text-xs px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 font-semibold">
                 {{ $activeInvoices->count() }} Tagihan
@@ -176,7 +176,7 @@
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="px-6 py-4 bg-gray-50/70 border-b border-gray-100 flex items-center justify-between">
             <h2 class="text-base font-bold text-gray-800 flex items-center">
-                <i class="fa-solid fa-receipt text-brand-800 mr-2"></i> Riwayat Pembayaran & Kuitansi Digital
+                <i class="fa-solid fa-receipt text-blue-700 mr-2"></i> Riwayat Pembayaran & Kuitansi Digital
             </h2>
             <span class="text-xs text-gray-500">Total: {{ $payments->count() }} Kuitansi</span>
         </div>
@@ -201,7 +201,7 @@
                     <tbody class="divide-y divide-gray-100">
                         @foreach($payments as $pay)
                             <tr class="hover:bg-gray-50/50 {{ $pay->isVoided() ? 'opacity-60' : '' }}">
-                                <td class="py-3.5 px-4 font-mono font-bold text-brand-900">
+                                <td class="py-3.5 px-4 font-mono font-bold text-slate-900">
                                     {{ $pay->receipt->receipt_number ?? '-' }}
                                     @if($pay->isVoided())
                                         <span class="block mt-0.5 text-[10px] font-bold text-rose-700 bg-rose-100 px-1.5 py-0.5 rounded w-max">DIBATALKAN</span>
@@ -224,8 +224,8 @@
                                 <td class="py-3.5 px-4 text-center">
                                     @if($pay->receipt)
                                         <a href="{{ route('receipt.download', $pay->receipt->id) }}" target="_blank" rel="noopener"
-                                           class="inline-flex items-center px-2.5 py-1.5 bg-brand-900 hover:bg-brand-800 text-white rounded-lg text-xs font-semibold shadow-sm transition">
-                                            <i class="fa-solid fa-file-pdf mr-1 text-gold-400"></i> Unduh PDF
+                                           class="inline-flex items-center px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-900 rounded-lg text-xs font-semibold shadow-sm transition">
+                                            <i class="fa-solid fa-file-pdf mr-1"></i> Unduh PDF
                                         </a>
                                     @else
                                         <span class="text-gray-400 text-xs">-</span>
@@ -245,8 +245,8 @@
     <!-- Popup saran/wajib ganti PIN setelah login -->
     <div id="pinReminder" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-100">
-            <div class="bg-gradient-to-r from-brand-900 to-brand-800 px-6 py-5 text-white flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-gold-400 text-brand-900 flex items-center justify-center text-lg shadow">
+            <div class="bg-gradient-to-r from-slate-900 to-blue-950 px-6 py-5 text-white flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-500 text-slate-900 flex items-center justify-center text-lg shadow">
                     <i class="fa-solid fa-shield-halved"></i>
                 </div>
                 <div>
@@ -275,7 +275,7 @@
                         Nanti Saja
                     </button>
                     <a href="{{ route('portal.change-pin') }}"
-                       class="px-5 py-2 bg-brand-900 hover:bg-brand-800 text-white rounded-xl font-bold shadow-md transition inline-flex items-center">
+                       class="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 rounded-xl font-bold shadow-md transition inline-flex items-center">
                         <i class="fa-solid fa-lock mr-1.5"></i> {{ $forcePinChange ? 'Buat PIN Baru' : 'Ganti PIN Sekarang' }}
                     </a>
                 </div>
