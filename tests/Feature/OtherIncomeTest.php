@@ -57,14 +57,14 @@ class OtherIncomeTest extends TestCase
             ->assertSee('Kasir Santri')
             ->assertSee('Pemasukan Lainnya')
             ->assertSee(route('admin.incomes'), false)
-            ->assertSee('bg-emerald-600 text-white font-bold', false)
+            ->assertSee('href="'.route('admin.cashier').'" aria-current="page"', false)
             ->assertDontSee('bg-gold-400 text-brand-900 font-bold', false);
 
         $incomes = $this->actingAs($bendahara)->get(route('admin.incomes'));
         $incomes->assertOk()
             ->assertSee('Pemasukan Lainnya')
             ->assertSee('Catat Pemasukan Baru')
-            ->assertSee('bg-emerald-600 text-white font-bold', false);
+            ->assertSee('href="'.route('admin.cashier').'" aria-current="page"', false);
     }
 
     public function test_bendahara_can_record_other_income_and_it_flows_into_cash_reports(): void

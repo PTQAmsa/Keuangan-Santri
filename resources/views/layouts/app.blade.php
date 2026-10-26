@@ -1,3 +1,8 @@
+@php
+    // Panel pengurus (sudah login) memakai sidebar kiri + header atas.
+    // Halaman publik, login, dan portal wali tetap memakai navbar atas.
+    $usesAdminShell = request()->is('admin*') && auth()->check();
+@endphp
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -8,7 +13,7 @@
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <link rel="alternate icon" type="image/png" sizes="64x64" href="{{ asset('favicon.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('images/apple-touch-icon.png') }}">
-    <!-- Tailwind CSS (di-host lokal agar demo tetap berjalan tanpa internet) -->
+    <!-- Tailwind CSS v3 (di-host lokal agar demo tetap berjalan tanpa internet) -->
     <script src="{{ asset('vendor/tailwind/tailwind.min.js') }}"></script>
     <script>
         tailwind.config = {
@@ -34,181 +39,66 @@
         }
     </script>
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
+    @if($usesAdminShell)
+        <script>
+            // Terapkan status "ringkas" sebelum render agar sidebar tidak berkedip.
+            try {
+                if (window.matchMedia('(min-width: 1024px)').matches && localStorage.getItem('ptq.sidebar.collapsed') === '1') {
+                    document.documentElement.classList.add('sidebar-collapsed');
+                }
+            } catch (e) {}
+        </script>
+        <style>
+            .sidebar-collapsed #app-sidebar { width: 5rem; }
+            .sidebar-collapsed #app-sidebar [data-sidebar-label] { display: none; }
+            @media (min-width: 1024px) { .sidebar-collapsed #app-shell { padding-left: 5rem; } }
+        </style>
+    @endif
 </head>
-<body class="bg-gray-50 text-gray-800 antialiased font-sans min-h-screen flex flex-col justify-between">
 
-    <!-- Top Navigation Bar -->
-    <header class="bg-brand-900 text-white shadow-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <!-- Brand / Logo -->
-                <div class="flex items-center space-x-3">
-                    <img src="{{ asset('images/logo-pesantren.png') }}" alt="Logo PTQ Amsa001" class="w-10 h-10 object-contain rounded-full bg-white p-0.5 shadow">
-                    <div>
-                        <a href="{{ url('/') }}" class="text-sm sm:text-base font-bold tracking-tight hover:text-gold-400 transition">
-                            Pesantren Tadabbur Al-Qur'an Amsa001
-                        </a>
-                        <p class="text-xs text-blue-200 hidden sm:block">
-                            @if(request()->is('admin*'))
-                                Panel Bendahara & Kasir Pesantren
-                            @elseif(request()->is('portal*'))
-                                Portal Khusus Wali Santri
-                            @else
-                                Sistem Keuangan & Tagihan Santri
-                            @endif
-                        </p>
-                    </div>
-                </div>
+@if($usesAdminShell)
+<body class="min-h-screen bg-slate-100 font-sans text-slate-800 antialiased">
 
-                <!-- Aksi Kanan (profil portal / akun pengurus / login publik) -->
-                <div class="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm font-medium">
-                    @if(request()->is('portal*'))
-                        {{-- NAV KHUSUS PORTAL WALI SANTRI --}}
-                        @if(session('portal_student_id'))
-                            <a href="{{ route('portal.dashboard') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('portal.dashboard') ? 'bg-brand-800 text-gold-400 border border-brand-700' : 'text-gray-300 hover:text-white hover:bg-brand-800' }}">
-                                <i class="fa-solid fa-user-graduate mr-1"></i> Dashboard Santri
-                            </a>
-                            <a href="{{ route('portal.card') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('portal.card') ? 'bg-brand-800 text-gold-400 border border-brand-700' : 'text-gray-300 hover:text-white hover:bg-brand-800' }}">
-                                <i class="fa-solid fa-address-card mr-1"></i> Kartu Keuangan
-                            </a>
-                            <a href="{{ route('portal.profile') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('portal.profile', 'portal.change-pin') ? 'bg-brand-800 text-gold-400 border border-brand-700' : 'text-gray-300 hover:text-white hover:bg-brand-800' }}">
-                                <i class="fa-solid fa-user mr-1"></i> Profil
-                            </a>
-                            <a href="{{ route('portal.logout') }}" class="px-3 py-1.5 rounded-lg text-gray-300 hover:text-white hover:bg-brand-800">
-                                <i class="fa-solid fa-right-from-bracket mr-1"></i> Keluar
-                            </a>
-                        @endif
-                    @elseif(request()->is('admin*'))
-                        @auth
-                            <a href="{{ route('admin.password.edit') }}" class="hidden sm:flex flex-col items-end leading-tight px-2 text-right rounded-lg hover:bg-brand-800 py-1" title="Ganti kata sandi">
-                                <span class="text-[11px] font-semibold text-white">{{ auth()->user()->name }}</span>
-                                <span class="text-[10px] text-gold-400 font-medium">{{ auth()->user()->displayTitle() }}</span>
-                            </a>
-                            <form method="POST" action="{{ route('admin.logout') }}" class="ml-1">
-                                @csrf
-                                <button type="submit" class="px-2.5 py-1.5 rounded-lg text-xs text-gray-300 hover:text-white hover:bg-brand-800 border border-brand-700/60 transition" title="Keluar dari panel">
-                                    <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> Keluar
-                                </button>
-                            </form>
-                        @else
-                            <a href="{{ url('/') }}" class="px-3 py-1.5 rounded-lg text-gray-200 hover:text-white hover:bg-brand-800">
-                                <i class="fa-solid fa-house mr-1"></i> Beranda Utama
-                            </a>
-                        @endauth
-                    @elseif(request()->is('/'))
-                        {{-- Login pengurus hanya ditawarkan di beranda, bukan di halaman publik lain. --}}
-                        <a href="{{ route('admin.login') }}" class="px-3.5 py-1.5 rounded-lg bg-gold-400 text-brand-900 font-bold hover:bg-gold-500 shadow-sm transition">
-                            <i class="fa-solid fa-lock mr-1"></i> Login Pengurus / Bendahara
-                        </a>
-                    @endif
-                </div>
+    @include('layouts.partials.sidebar')
+
+    <!-- Area konten: bergeser mengikuti lebar sidebar di desktop -->
+    <div id="app-shell" class="flex min-h-screen flex-col transition-[padding] duration-200 lg:pl-64">
+
+        @include('layouts.partials.header')
+
+        <main class="flex-1 px-4 py-6 sm:px-6 lg:px-8">
+            <div class="mx-auto w-full max-w-7xl">
+                @include('layouts.partials.flash')
+                @yield('content')
             </div>
-        </div>
+        </main>
 
-        @if(request()->is('admin*') && auth()->check())
-            {{-- MENU PANEL: baris bawah navbar agar baris atas tidak terlalu penuh --}}
-            <div class="border-t border-white/10 bg-brand-900/95">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <nav class="flex items-center space-x-1 overflow-x-auto py-1.5 text-xs font-medium whitespace-nowrap">
-                        <a href="{{ route('admin.dashboard') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.dashboard') ? 'bg-brand-800 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
-                            <i class="fa-solid fa-gauge mr-1"></i> Dashboard
-                        </a>
-                        @if(auth()->user()->role?->canManageFinances())
-                            <a href="{{ route('admin.cashier') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.cashier*', 'admin.incomes*') ? 'bg-emerald-600 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
-                                <i class="fa-solid fa-hand-holding-dollar mr-1"></i> Kas Masuk
-                            </a>
-                            <a href="{{ route('admin.invoices') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.invoices') ? 'bg-brand-800 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
-                                <i class="fa-solid fa-list-check mr-1"></i> Tagihan
-                            </a>
-                            <a href="{{ route('admin.transactions') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.transactions') ? 'bg-brand-800 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
-                                <i class="fa-solid fa-money-bill-transfer mr-1"></i> Transaksi
-                            </a>
-                            <a href="{{ route('admin.expenses') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.expenses*') ? 'bg-rose-600 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
-                                <i class="fa-solid fa-money-bill-trend-up mr-1"></i> Kas Keluar
-                            </a>
-                        @endif
-                        <a href="{{ route('admin.reports.cash') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.reports.*') ? 'bg-emerald-600 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }} transition">
-                            <i class="fa-solid fa-chart-column mr-1"></i> Laporan
-                        </a>
-                        @if(auth()->user()->role?->canManageFinances())
-                            <a href="{{ route('admin.students') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.students*') ? 'bg-amber-500 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
-                                <i class="fa-solid fa-user-graduate mr-1"></i> Data Santri
-                            </a>
-                            <a href="{{ route('admin.teachers') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.teachers*', 'admin.bisyarah*') ? 'bg-amber-500 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
-                                <i class="fa-solid fa-user-tie mr-1"></i> Data Guru
-                            </a>
-                        @endif
-                        @if(auth()->user()->role?->isAdmin())
-                            <a href="{{ route('admin.logs') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.logs') ? 'bg-rose-600 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }} transition">
-                                <i class="fa-solid fa-clipboard-list mr-1"></i> Log Aktivitas
-                            </a>
-                            <a href="{{ route('admin.accounts') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.accounts') ? 'bg-brand-800 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
-                                <i class="fa-solid fa-users-gear mr-1"></i> Akun
-                            </a>
-                        @endif
-                    </nav>
-                </div>
-            </div>
-        @endif
-    </header>
+        <footer class="border-t border-slate-200 bg-white px-4 py-4 text-center text-[11px] text-slate-500 sm:px-6">
+            <p class="font-medium text-slate-700">Pesantren Tadabbur Al-Qur'an Amsa001 (PTQ Amsa001)</p>
+            <p>Jl. Cikopo Selatan, Gg. Yulias, Sukabirus, Desa Gadog, Kec. Megamendung, Kab. Bogor, Jawa Barat 16770</p>
+            <p>Layanan Keuangan WhatsApp: <a href="https://wa.me/6285692253516" target="_blank" class="font-semibold text-brand-700 hover:underline">+62 856-9225-3516</a> | Website: <a href="https://www.ptqamsa.id" target="_blank" class="font-semibold text-brand-700 hover:underline">www.ptqamsa.id</a></p>
+        </footer>
+    </div>
 
-    <!-- Main Content Body -->
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <!-- Flash Alert Messages -->
-        @if($errors->any())
-            <div class="mb-5 bg-rose-50 border-l-4 border-rose-500 p-4 rounded-r-lg shadow-sm flex items-start space-x-3">
-                <i class="fa-solid fa-circle-exclamation text-rose-600 text-xl mt-0.5"></i>
-                <div class="flex-1 text-sm text-rose-800">
-                    <p class="font-semibold">Perubahan belum disimpan.</p>
-                    <ul class="list-disc list-inside mt-1 space-y-0.5">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
-        @endif
+    @include('layouts.partials.scripts')
+</body>
+@else
+<body class="flex min-h-screen flex-col justify-between bg-gray-50 font-sans text-gray-800 antialiased">
 
-        @if(session('success'))
-            <div class="mb-5 bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-lg shadow-sm flex items-start space-x-3">
-                <i class="fa-solid fa-circle-check text-emerald-600 text-xl mt-0.5"></i>
-                <div class="flex-1 text-sm text-emerald-800">
-                    <p class="font-semibold">Berhasil!</p>
-                    <p>{{ session('success') }}</p>
-                    @if(session('wa_direct_url'))
-                        <div class="mt-3 flex items-center space-x-2">
-                            <a href="{{ session('wa_direct_url') }}" target="_blank" class="inline-flex items-center px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-medium text-xs shadow transition">
-                                <i class="fa-brands fa-whatsapp text-sm mr-1.5"></i> Kirim Notifikasi Kuitansi via WhatsApp
-                            </a>
-                            @if(session('receipt_id'))
-                                <a href="{{ route('receipt.download', session('receipt_id')) }}" target="_blank" class="inline-flex items-center px-3 py-1.5 bg-brand-800 hover:bg-brand-900 text-white rounded font-medium text-xs shadow transition">
-                                    <i class="fa-solid fa-file-pdf text-sm mr-1.5"></i> Unduh PDF Kuitansi
-                                </a>
-                            @endif
-                        </div>
-                    @endif
-                </div>
-            </div>
-        @endif
+    @include('layouts.partials.topbar')
 
-        @if(session('info'))
-            <div class="mb-5 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg shadow-sm flex items-start space-x-3">
-                <i class="fa-solid fa-circle-info text-blue-600 text-xl mt-0.5"></i>
-                <div class="text-sm text-blue-800">{{ session('info') }}</div>
-            </div>
-        @endif
-
+    <main class="mx-auto w-full max-w-7xl flex-grow px-4 py-6 sm:px-6 lg:px-8">
+        @include('layouts.partials.flash')
         @yield('content')
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-white border-t border-gray-200 py-6 mt-12 text-center text-xs text-gray-500">
-        <div class="max-w-7xl mx-auto px-4 space-y-2">
+    <footer class="mt-12 border-t border-gray-200 bg-white py-6 text-center text-xs text-gray-500">
+        <div class="mx-auto max-w-7xl space-y-2 px-4">
             <p class="font-medium text-gray-700">Pesantren Tadabbur Al-Qur'an Amsa001 (PTQ Amsa001)</p>
             <p>Jl. Cikopo Selatan, Gg. Yulias, Sukabirus, Desa Gadog, Kec. Megamendung, Kab. Bogor, Jawa Barat 16770</p>
-            <p>Layanan Keuangan WhatsApp: <a href="https://wa.me/6285692253516" target="_blank" class="text-brand-700 font-semibold hover:underline">+62 856-9225-3516</a> | Website: <a href="https://www.ptqamsa.id" target="_blank" class="text-brand-700 font-semibold hover:underline">www.ptqamsa.id</a></p>
+            <p>Layanan Keuangan WhatsApp: <a href="https://wa.me/6285692253516" target="_blank" class="font-semibold text-brand-700 hover:underline">+62 856-9225-3516</a> | Website: <a href="https://www.ptqamsa.id" target="_blank" class="font-semibold text-brand-700 hover:underline">www.ptqamsa.id</a></p>
         </div>
     </footer>
-
 </body>
+@endif
 </html>

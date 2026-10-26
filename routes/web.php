@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\BookClosingController;
 use App\Http\Controllers\Admin\CashierController;
 use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\OtherIncomeController;
+use App\Http\Controllers\Admin\QuickSearchController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\TeacherController;
@@ -66,6 +67,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Dapat diakses semua peran internal — Pengasuh bersifat hanya melihat.
         Route::get('/', [CashierController::class, 'index'])->name('dashboard');
+
+        // Pencarian cepat dari kotak cari di header (santri, kuitansi, guru).
+        Route::get('/cari', QuickSearchController::class)->name('search');
 
         // Modul Laporan Keuangan & Rekap Kas
         Route::prefix('laporan')->name('reports.')->group(function () {
