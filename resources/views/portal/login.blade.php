@@ -34,7 +34,7 @@
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gold-500">
                             <i class="fa-solid fa-id-card"></i>
                         </span>
-                        <input type="text" name="nis" id="nis" value="{{ old('nis', $demoMode ? 'DMY00001' : '') }}" required
+                        <input type="text" name="nis" id="nis" value="{{ old('nis', $prefillNis ?? ($demoMode ? 'DMY00001' : '')) }}" required
                             placeholder="Contoh: DMY00001"
                             class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gold-400 focus:border-gold-400 text-sm transition font-medium">
                     </div>
@@ -48,7 +48,7 @@
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gold-500">
                             <i class="fa-brands fa-whatsapp text-base"></i>
                         </span>
-                        <input type="password" name="identifier" id="identifier" value="{{ old('identifier', $demoMode ? '100001' : '') }}" required
+                        <input type="password" name="identifier" id="identifier" value="{{ old('identifier', $prefillIdentifier ?? ($demoMode ? '100001' : '')) }}" required
                             placeholder="Nomor WA terdaftar atau PIN 6 digit"
                             class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gold-400 focus:border-gold-400 text-sm transition">
                     </div>

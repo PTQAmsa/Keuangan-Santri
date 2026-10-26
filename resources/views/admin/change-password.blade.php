@@ -14,7 +14,7 @@
         </div>
 
         <div class="p-6 sm:p-8">
-            <form action="{{ route('admin.password.update') }}" method="POST" class="space-y-4 text-xs">
+            <form action="{{ route('admin.password.update') }}" method="POST" data-allow-readonly class="space-y-4 text-xs">
                 @csrf
                 @method('PATCH')
 

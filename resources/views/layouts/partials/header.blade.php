@@ -143,12 +143,12 @@
                     <a href="{{ route('admin.logs') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 transition hover:bg-slate-50">
                         <i class="fas fa-clipboard-list w-4 text-center text-slate-400"></i> Log Aktivitas Sistem
                     </a>
-                @elseif($canManage)
+                @else
                     <a href="{{ route('admin.transactions') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 transition hover:bg-slate-50">
                         <i class="fas fa-clipboard-list w-4 text-center text-slate-400"></i> Log Aktivitas Kasir
                     </a>
                 @endif
-                <form method="POST" action="{{ route('admin.logout') }}" class="mt-1 border-t border-slate-100 pt-1">
+                <form method="POST" action="{{ route('admin.logout') }}" data-allow-readonly class="mt-1 border-t border-slate-100 pt-1">
                     @csrf
                     <button type="submit" class="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-semibold text-rose-600 transition hover:bg-rose-50" title="Keluar dari panel">
                         <i class="fas fa-arrow-right-from-bracket w-4 text-center"></i> Keluar

@@ -438,6 +438,11 @@
         document.getElementById('invoiceModal').classList.remove('hidden');
     }
 
+    // Dibuka dari menu "Buat Tagihan Baru" (?tambah=1): modal langsung tampil.
+    @if(request()->boolean('tambah'))
+        document.addEventListener('DOMContentLoaded', openInvoiceModal);
+    @endif
+
     function closeInvoiceModal() {
         document.getElementById('invoiceModal').classList.add('hidden');
     }

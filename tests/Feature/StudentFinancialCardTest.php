@@ -99,11 +99,12 @@ class StudentFinancialCardTest extends TestCase
         }
     }
 
-    public function test_pengasuh_cannot_open_student_financial_card(): void
+    public function test_pengasuh_can_open_student_financial_card_read_only(): void
     {
         $this->actingAs($this->userWithRole(UserRole::Pengasuh))
             ->get(route('admin.students.card', $this->student()))
-            ->assertForbidden();
+            ->assertOk()
+            ->assertSee('Mode lihat saja');
     }
 
     public function test_ledger_running_balance_matches_visible_arrears(): void

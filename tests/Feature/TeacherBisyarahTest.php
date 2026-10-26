@@ -625,8 +625,21 @@ class TeacherBisyarahTest extends TestCase
             ])
             ->assertForbidden();
 
+        // Pengasuh boleh melihat halaman bisyarah, tetapi tidak mencatat.
         $this->actingAs($pengasuh)
             ->get(route('admin.bisyarah'))
+            ->assertOk()
+            ->assertSee('Mode lihat saja');
+
+        $this->actingAs($pengasuh)
+            ->post(route('admin.bisyarah.store'), [
+                'teacher_id' => $this->makeTeacher()->id,
+                'period' => now()->format('Y-m'),
+                'amount' => 1000000,
+                'payment_method' => 'cash',
+            ])
             ->assertForbidden();
+
+        $this->assertSame(0, TeacherBisyarahPayment::count());
     }
 }

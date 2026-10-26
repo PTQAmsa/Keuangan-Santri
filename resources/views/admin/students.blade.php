@@ -446,8 +446,9 @@
 
     document.addEventListener('DOMContentLoaded', syncHubunganDetail);
 
-    // Bila validasi gagal, modal dibuka lagi agar petugas bisa memperbaiki isian.
-    @if($errors->any())
+    // Bila validasi gagal atau dibuka dari menu "Tambah Santri Baru" (?tambah=1),
+    // modal langsung dibuka agar petugas bisa langsung mengisi.
+    @if($errors->any() || request()->boolean('tambah'))
         document.addEventListener('DOMContentLoaded', openStudentModal);
     @endif
 </script>

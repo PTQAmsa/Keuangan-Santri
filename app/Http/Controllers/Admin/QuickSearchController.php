@@ -13,8 +13,8 @@ use Illuminate\Http\Request;
  * Pencarian cepat dari kotak cari di header panel.
  *
  * Hasil dikelompokkan sesuai prioritas kerja Bendahara: santri & wali dulu,
- * lalu kuitansi, lalu guru. Pengasuh (hanya melihat) diarahkan ke laporan,
- * bukan ke halaman kasir.
+ * lalu kuitansi, lalu guru. Semua peran panel melihat hasil yang sama;
+ * Pengasuh membuka halaman tujuan dalam mode lihat saja.
  */
 class QuickSearchController
 {
@@ -28,17 +28,13 @@ class QuickSearchController
             return response()->json(['query' => $term, 'groups' => []]);
         }
 
-        $canManage = (bool) $request->user()?->role?->canManageFinances();
         $like = '%'.$term.'%';
 
         $groups = [
-            $this->studentGroup($like, $canManage),
-            $this->receiptGroup($like, $canManage),
+            $this->studentGroup($like),
+            $this->receiptGroup($like),
+            $this->teacherGroup($like),
         ];
-
-        if ($canManage) {
-            $groups[] = $this->teacherGroup($like);
-        }
 
         return response()->json([
             'query' => $term,
@@ -49,7 +45,7 @@ class QuickSearchController
     /**
      * @return array{key: string, label: string, icon: string, items: list<array<string, mixed>>}
      */
-    private function studentGroup(string $like, bool $canManage): array
+    private function studentGroup(string $like): array
     {
         $students = Student::query()
             ->where(function ($query) use ($like) {
@@ -63,7 +59,7 @@ class QuickSearchController
             ->limit(self::LIMIT_PER_GROUP)
             ->get();
 
-        $items = $students->map(function (Student $student) use ($canManage): array {
+        $items = $students->map(function (Student $student): array {
             $arrears = (float) $student->total_tunggakan;
 
             return [
@@ -73,17 +69,11 @@ class QuickSearchController
                     ? 'Tunggakan Rp '.number_format($arrears, 0, ',', '.')
                     : ($student->status === 'aktif' ? 'Tidak ada tunggakan' : 'Status: '.ucfirst($student->status)),
                 'metaClass' => $arrears > 0 ? 'text-rose-600' : 'text-emerald-600',
-                'url' => $canManage
-                    ? route('admin.cashier', ['student_id' => $student->id])
-                    : route('admin.reports.arrears', ['search' => $student->nis]),
-                'actions' => $canManage
-                    ? [
-                        ['label' => 'Kasir', 'icon' => 'fa-cash-register', 'url' => route('admin.cashier', ['student_id' => $student->id])],
-                        ['label' => 'Kartu', 'icon' => 'fa-address-card', 'url' => route('admin.students.card', $student)],
-                    ]
-                    : [
-                        ['label' => 'Tunggakan', 'icon' => 'fa-clock-rotate-left', 'url' => route('admin.reports.arrears', ['search' => $student->nis])],
-                    ],
+                'url' => route('admin.cashier', ['student_id' => $student->id]),
+                'actions' => [
+                    ['label' => 'Kasir', 'icon' => 'fa-cash-register', 'url' => route('admin.cashier', ['student_id' => $student->id])],
+                    ['label' => 'Kartu', 'icon' => 'fa-address-card', 'url' => route('admin.students.card', $student)],
+                ],
             ];
         })->all();
 
@@ -93,7 +83,7 @@ class QuickSearchController
     /**
      * @return array{key: string, label: string, icon: string, items: list<array<string, mixed>>}
      */
-    private function receiptGroup(string $like, bool $canManage): array
+    private function receiptGroup(string $like): array
     {
         $payments = Payment::with(['student', 'receipt', 'invoice'])
             ->where(function ($query) use ($like) {
@@ -105,7 +95,7 @@ class QuickSearchController
             ->limit(self::LIMIT_PER_GROUP)
             ->get();
 
-        $items = $payments->map(function (Payment $payment) use ($canManage): array {
+        $items = $payments->map(function (Payment $payment): array {
             $number = $payment->receipt?->receipt_number ?? $payment->payment_code;
             $voided = $payment->voided_at !== null;
 
@@ -114,9 +104,7 @@ class QuickSearchController
                 'subtitle' => ($payment->student?->nama_lengkap ?? '-').' • '.($payment->invoice?->title ?? 'Pembayaran').' • '.$payment->payment_date?->format('d/m/Y'),
                 'meta' => 'Rp '.number_format((float) $payment->amount_paid, 0, ',', '.').($voided ? ' • DIBATALKAN' : ''),
                 'metaClass' => $voided ? 'text-gray-400 line-through' : 'text-emerald-600',
-                'url' => $canManage
-                    ? route('admin.transactions', ['search' => $number, 'status' => 'all'])
-                    : route('admin.reports.cash', ['start_date' => $payment->payment_date?->toDateString(), 'end_date' => $payment->payment_date?->toDateString()]),
+                'url' => route('admin.transactions', ['search' => $number, 'status' => 'all']),
                 'actions' => array_values(array_filter([
                     $payment->receipt ? ['label' => 'PDF', 'icon' => 'fa-file-pdf', 'url' => route('receipt.download', $payment->receipt->id)] : null,
                 ])),

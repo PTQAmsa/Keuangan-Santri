@@ -114,7 +114,7 @@
                     Buat tagihan SPP rutin (Rp 1.350.000) otomatis untuk semua santri aktif dalam 1 klik. Sistem secara cerdas akan langsung menerapkan potongan beasiswa (misal santri yatim/dhuafa potong 50% = Rp 675.000).
                 </p>
             </div>
-            <form action="{{ route('admin.generate-spp') }}" method="POST" class="flex items-center gap-2 self-start md:self-auto">
+            <form id="generate-spp" action="{{ route('admin.generate-spp') }}" method="POST" class="flex items-center gap-2 self-start md:self-auto scroll-mt-20">
                 @csrf
                 <select name="month" class="text-xs rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800 bg-white shadow-sm">
                     @for($m = 1; $m <= 12; $m++)

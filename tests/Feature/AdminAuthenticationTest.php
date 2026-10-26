@@ -87,14 +87,16 @@ class AdminAuthenticationTest extends TestCase
     }
 
     /**
-     * Test 6: Pengasuh (read-only) ditolak saat membuka halaman kasir
+     * Test 6: Pengasuh (read-only) boleh melihat halaman kasir dalam mode lihat saja
      */
-    public function test_pengasuh_cannot_open_cashier_page(): void
+    public function test_pengasuh_can_view_cashier_page_in_read_only_mode(): void
     {
         $response = $this->actingAs($this->userWithRole(UserRole::Pengasuh))
             ->get(route('admin.cashier'));
 
-        $response->assertForbidden();
+        $response->assertOk()
+            ->assertSee('Mode lihat saja')
+            ->assertSee('readonly-mode', false);
     }
 
     /**

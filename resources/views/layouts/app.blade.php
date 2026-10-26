@@ -51,13 +51,22 @@
         <style>
             .sidebar-collapsed #app-sidebar { width: 5rem; }
             .sidebar-collapsed #app-sidebar [data-sidebar-label] { display: none; }
+            .sidebar-collapsed #app-sidebar [data-submenu-list] { display: none; }
             @media (min-width: 1024px) { .sidebar-collapsed #app-shell { padding-left: 5rem; } }
+
+            /* Mode lihat-saja (Pengasuh): sembunyikan tombol yang mengubah data.
+               Form GET (filter/pencarian) dan form yang ditandai data-allow-readonly tetap aktif. */
+            .readonly-mode form:not([method="GET"]):not([method="get"]):not([data-allow-readonly]) button[type="submit"],
+            .readonly-mode button[onclick^="open"],
+            .readonly-mode [data-write] { display: none !important; }
         </style>
     @endif
 </head>
 
+@php $isReadOnlyViewer = $usesAdminShell && auth()->user()?->role === \App\Enums\UserRole::Pengasuh; @endphp
+
 @if($usesAdminShell)
-<body class="min-h-screen bg-slate-100 font-sans text-slate-800 antialiased">
+<body class="min-h-screen bg-slate-100 font-sans text-slate-800 antialiased {{ $isReadOnlyViewer ? 'readonly-mode' : '' }}">
 
     @include('layouts.partials.sidebar')
 
@@ -68,6 +77,12 @@
 
         <main class="flex-1 px-4 py-6 sm:px-6 lg:px-8">
             <div class="mx-auto w-full max-w-7xl">
+                @if($isReadOnlyViewer)
+                    <div class="mb-5 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-sm">
+                        <i class="fas fa-eye mt-0.5 text-amber-600"></i>
+                        <p><strong>Mode lihat saja.</strong> Akun Pengasuh dapat membuka seluruh data dan laporan, tetapi tidak dapat mencatat, mengubah, atau membatalkan transaksi.</p>
+                    </div>
+                @endif
                 @include('layouts.partials.flash')
                 @yield('content')
             </div>

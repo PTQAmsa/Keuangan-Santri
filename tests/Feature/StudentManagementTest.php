@@ -155,9 +155,11 @@ class StudentManagementTest extends TestCase
     {
         $pengasuh = $this->userWithRole(UserRole::Pengasuh);
 
+        // Melihat boleh, mengubah tidak.
         $this->actingAs($pengasuh)
             ->get(route('admin.students'))
-            ->assertForbidden();
+            ->assertOk()
+            ->assertSee('Mode lihat saja');
 
         $this->actingAs($pengasuh)
             ->post(route('admin.students.store'), $this->validPayload())

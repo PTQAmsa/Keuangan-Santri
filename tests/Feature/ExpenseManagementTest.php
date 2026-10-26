@@ -126,10 +126,25 @@ class ExpenseManagementTest extends TestCase
         $this->assertStringContainsString($expense->expense_code, $log->description);
     }
 
-    public function test_pengasuh_cannot_access_expenses(): void
+    public function test_pengasuh_can_view_expenses_but_cannot_record(): void
     {
-        $this->actingAs($this->userWithRole(UserRole::Pengasuh))
+        $pengasuh = $this->userWithRole(UserRole::Pengasuh);
+
+        $this->actingAs($pengasuh)
             ->get(route('admin.expenses'))
+            ->assertOk()
+            ->assertSee('Mode lihat saja');
+
+        $this->actingAs($pengasuh)
+            ->post(route('admin.expenses.store'), [
+                'category' => ExpenseCategory::Operasional->value,
+                'description' => 'Coba catat',
+                'amount' => 10000,
+                'expense_date' => now()->toDateString(),
+                'payment_method' => 'cash',
+            ])
             ->assertForbidden();
+
+        $this->assertDatabaseMissing('expenses', ['description' => 'Coba catat']);
     }
 }

@@ -59,9 +59,12 @@ class AdminRevisionTest extends TestCase
             ->assertOk()
             ->assertDontSee('Kembali ke Laporan Kas');
 
+        // Tombol kembali di halaman transaksi sudah dihapus; "Daftar Tagihan"
+        // kini hanya muncul sebagai submenu sidebar.
         $this->actingAs($admin)->get(route('admin.transactions'))
             ->assertOk()
-            ->assertDontSee('Daftar Tagihan');
+            ->assertDontSee('Kembali ke Daftar Tagihan')
+            ->assertDontSee('&larr; Daftar Tagihan', false);
 
         $this->actingAs($admin)->get(route('admin.students'))
             ->assertOk()

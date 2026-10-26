@@ -19,13 +19,22 @@ class PortalController
     /**
      * Halaman Login Portal Wali Santri
      */
-    public function index()
+    public function index(Request $request)
     {
         if (session()->has('portal_student_id')) {
             return redirect()->route('portal.dashboard');
         }
 
-        return view('portal.login');
+        // Isian dari kotak cepat di halaman depan (?q=): NIS diisi ke kolom NIS,
+        // nomor WhatsApp (minimal 9 digit) diisi ke kolom identitas.
+        $quick = trim((string) $request->input('q', ''));
+        $quickIsPhone = $quick !== '' && preg_match('/^\+?\d{9,}$/', $quick) === 1;
+        $demoMode = (bool) config('app.demo_mode');
+
+        return view('portal.login', [
+            'prefillNis' => $quick !== '' && ! $quickIsPhone ? $quick : ($demoMode ? 'DMY00001' : ''),
+            'prefillIdentifier' => $quickIsPhone ? $quick : ($demoMode ? '100001' : ''),
+        ]);
     }
 
     /**

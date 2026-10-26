@@ -57,14 +57,20 @@ class OtherIncomeTest extends TestCase
             ->assertSee('Kasir Santri')
             ->assertSee('Pemasukan Lainnya')
             ->assertSee(route('admin.incomes'), false)
-            ->assertSee('href="'.route('admin.cashier').'" aria-current="page"', false)
             ->assertDontSee('bg-gold-400 text-brand-900 font-bold', false);
+        $this->assertMatchesRegularExpression(
+            '/href="'.preg_quote(route('admin.cashier'), '/').'"\s+role="menuitem"\s+aria-current="page"/',
+            $cashier->getContent(),
+        );
 
         $incomes = $this->actingAs($bendahara)->get(route('admin.incomes'));
         $incomes->assertOk()
             ->assertSee('Pemasukan Lainnya')
-            ->assertSee('Catat Pemasukan Baru')
-            ->assertSee('href="'.route('admin.cashier').'" aria-current="page"', false);
+            ->assertSee('Catat Pemasukan Baru');
+        $this->assertMatchesRegularExpression(
+            '/href="'.preg_quote(route('admin.incomes'), '/').'"\s+role="menuitem"\s+aria-current="page"/',
+            $incomes->getContent(),
+        );
     }
 
     public function test_bendahara_can_record_other_income_and_it_flows_into_cash_reports(): void
@@ -190,7 +196,7 @@ class OtherIncomeTest extends TestCase
     {
         $pengasuh = $this->userWithRole(UserRole::Pengasuh);
 
-        $this->actingAs($pengasuh)->get(route('admin.incomes'))->assertForbidden();
+        $this->actingAs($pengasuh)->get(route('admin.incomes'))->assertOk()->assertSee('Mode lihat saja');
         $this->actingAs($pengasuh)->post(route('admin.incomes.store'), $this->payload())->assertForbidden();
 
         $this->assertSame(0, OtherIncome::count());

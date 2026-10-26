@@ -289,9 +289,10 @@
         });
     });
 
-    // Buka kembali modal yang gagal validasi agar isian old() terlihat.
+    // Buka kembali modal yang gagal validasi agar isian old() terlihat,
+    // atau buka modal tambah bila datang dari menu "Tambah Guru" (?tambah=1).
     document.addEventListener('DOMContentLoaded', function () {
-        const context = @json(old('_form_context'));
+        const context = @json(old('_form_context') ?: (request()->boolean('tambah') ? 'add' : null));
         if (context) openTeacherModal('teacher-modal-' + context);
     });
 </script>

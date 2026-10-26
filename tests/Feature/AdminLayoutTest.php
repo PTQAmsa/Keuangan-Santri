@@ -46,22 +46,28 @@ class AdminLayoutTest extends TestCase
             ->assertSee('Riwayat Transaksi')
             ->assertDontSee('Log Aktivitas Sistem');
 
-        // Menu aktif menunjuk ke Kas Masuk, bukan ke menu lain.
-        $this->assertStringContainsString(
-            'href="'.route('admin.cashier').'" aria-current="page"',
+        // Menu utama Kas Masuk terbuka dan submenu Kasir Santri tersorot.
+        $this->assertMatchesRegularExpression(
+            '/href="'.preg_quote(route('admin.cashier'), '/').'"\s+role="menuitem"\s+aria-current="page"/',
             $response->getContent(),
         );
+        $this->assertStringContainsString('data-submenu class="is-open"', $response->getContent());
     }
 
-    public function test_pengasuh_sidebar_is_read_only_and_admin_sees_admin_menu(): void
+    public function test_pengasuh_sees_all_bendahara_menus_read_only_and_admin_sees_admin_menu(): void
     {
         $pengasuh = $this->userWithRole(UserRole::Pengasuh);
 
         $this->actingAs($pengasuh)->get(route('admin.dashboard'))
             ->assertOk()
+            ->assertSee('Mode lihat saja')
+            ->assertSee('readonly-mode', false)
             ->assertSee('Laporan Keuangan')
-            ->assertDontSee('Kas Keluar')
-            ->assertDontSee('Data Santri')
+            ->assertSee('Kas Keluar')
+            ->assertSee('Data Santri')
+            ->assertSee('Bisyarah Bulanan')
+            ->assertDontSee('Tambah Santri Baru')
+            ->assertDontSee('Buat Tagihan Baru')
             ->assertDontSee('Akun Pengurus');
 
         $admin = $this->userWithRole(UserRole::Admin);
@@ -150,7 +156,7 @@ class AdminLayoutTest extends TestCase
         $this->assertStringContainsString('belum dicatat', $teachers['items'][0]['meta']);
     }
 
-    public function test_quick_search_for_pengasuh_points_to_reports_and_hides_teachers(): void
+    public function test_quick_search_requires_login_and_works_for_pengasuh(): void
     {
         $pengasuh = $this->userWithRole(UserRole::Pengasuh);
         $student = Student::where('status', 'aktif')->firstOrFail();
@@ -158,22 +164,94 @@ class AdminLayoutTest extends TestCase
         // Tanpa login, pencarian diarahkan ke halaman login.
         $this->get(route('admin.search', ['q' => $student->nis]))->assertRedirect(route('admin.login'));
 
-        Teacher::create([
-            'nama_lengkap' => 'Ust. '.$student->nama_lengkap,
-            'kota_asal' => 'Garut',
-            'no_whatsapp' => '6281234567890',
-            'status' => 'guru_tetap',
-            'is_active' => true,
-        ]);
-
         $result = $this->actingAs($pengasuh)
             ->getJson(route('admin.search', ['q' => $student->nis]))
             ->assertOk()
             ->json();
 
         $this->assertSame('students', $result['groups'][0]['key']);
-        $this->assertStringContainsString(route('admin.reports.arrears'), $result['groups'][0]['items'][0]['url']);
-        $this->assertNull(collect($result['groups'])->firstWhere('key', 'teachers'));
+        $this->assertSame(route('admin.cashier', ['student_id' => $student->id]), $result['groups'][0]['items'][0]['url']);
+
+        // Halaman tujuan terbuka dalam mode lihat saja.
+        $this->actingAs($pengasuh)
+            ->get($result['groups'][0]['items'][0]['url'])
+            ->assertOk()
+            ->assertSee('Mode lihat saja');
+    }
+
+    public function test_sidebar_submenus_open_target_pages_and_modals(): void
+    {
+        $bendahara = $this->userWithRole(UserRole::Bendahara);
+
+        $dashboard = $this->actingAs($bendahara)->get(route('admin.dashboard'));
+        $dashboard->assertOk()
+            ->assertSee('data-submenu-toggle', false)
+            ->assertSee('Kasir Santri')
+            ->assertSee('Pemasukan Lainnya')
+            ->assertSee('Buat Tagihan Baru')
+            ->assertSee('Terbitkan SPP Bulanan')
+            ->assertSee('Transaksi Dibatalkan')
+            ->assertSee('Catat Pengeluaran')
+            ->assertSee('Arus Kas')
+            ->assertSee('Rekap Tunggakan')
+            ->assertSee('Tutup Buku')
+            ->assertSee('Tambah Santri Baru')
+            ->assertSee('Tambah Guru')
+            ->assertSee('Bisyarah Bulanan')
+            ->assertSee('id="generate-spp"', false);
+
+        // Submenu Laporan tersorot saat halaman arus kas dibuka.
+        $cashFlow = $this->actingAs($bendahara)->get(route('admin.reports.cash-flow'));
+        $cashFlow->assertOk();
+        $this->assertMatchesRegularExpression(
+            '/href="'.preg_quote(route('admin.reports.cash-flow'), '/').'"\s+role="menuitem"\s+aria-current="page"/',
+            $cashFlow->getContent(),
+        );
+
+        // Tautan "Tambah ..." membuka modal secara otomatis.
+        $this->actingAs($bendahara)->get(route('admin.students', ['tambah' => 1]))
+            ->assertOk()
+            ->assertSee("document.addEventListener('DOMContentLoaded', openStudentModal);", false);
+
+        $this->actingAs($bendahara)->get(route('admin.invoices', ['tambah' => 1]))
+            ->assertOk()
+            ->assertSee("document.addEventListener('DOMContentLoaded', openInvoiceModal);", false);
+
+        $this->actingAs($bendahara)->get(route('admin.teachers', ['tambah' => 1]))
+            ->assertOk()
+            ->assertSee('const context = "add";', false);
+
+        $this->actingAs($bendahara)->get(route('admin.expenses'))
+            ->assertOk()
+            ->assertSee('id="catat"', false);
+    }
+
+    public function test_landing_page_has_new_navbar_hero_and_quick_check(): void
+    {
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('Masuk Portal Wali Santri')
+            ->assertSee('Login Pengurus / Bendahara')
+            ->assertSee('Sistem Keuangan &amp; Tagihan Santri Terpadu', false)
+            ->assertSee('Masukkan NIS / No. WhatsApp Santri')
+            ->assertSee('Cek Tagihan / Masuk')
+            ->assertSee('Total Paket Iuran Bulanan')
+            ->assertSee('Rp 1.350.000')
+            ->assertSee('Skema Cicilan &amp; Beasiswa', false)
+            ->assertSee('Kuitansi Digital PDF')
+            ->assertSee('Notifikasi WhatsApp Gateway')
+            ->assertSee('+62 856-9225-3516')
+            ->assertSee('www.ptqamsa.id')
+            ->assertDontSee('id="app-sidebar"', false);
+
+        // Isian cepat diteruskan ke portal: NIS ke kolom NIS, nomor WA ke kolom identitas.
+        $this->get(route('portal.login', ['q' => 'ABC123']))
+            ->assertOk()
+            ->assertSee('name="nis" id="nis" value="ABC123"', false);
+
+        $this->get(route('portal.login', ['q' => '081234567890']))
+            ->assertOk()
+            ->assertSee('name="identifier" id="identifier" value="081234567890"', false);
     }
 
     public function test_notification_center_counts_overdue_invoices(): void

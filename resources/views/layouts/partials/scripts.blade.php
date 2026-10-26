@@ -91,6 +91,62 @@
     });
 
     /* ---------------------------------------------------------------
+     * 1b. Submenu sidebar (dropdown per menu utama).
+     *     Saat sidebar diringkas, klik menu utama langsung membuka
+     *     halaman pertamanya agar tidak ada daftar yang terpotong.
+     * ------------------------------------------------------------- */
+    document.querySelectorAll('[data-submenu]').forEach(function (group) {
+        var toggle = group.querySelector('[data-submenu-toggle]');
+        var list = group.querySelector('[data-submenu-list]');
+        var chevron = group.querySelector('[data-submenu-chevron]');
+        if (!toggle || !list) return;
+
+        toggle.addEventListener('click', function () {
+            if (sidebar && sidebar.classList.contains('is-collapsed')) {
+                var href = toggle.getAttribute('data-submenu-href');
+                if (href) window.location.href = href;
+                return;
+            }
+
+            var willOpen = list.classList.contains('hidden');
+
+            // Satu submenu terbuka pada satu waktu agar daftar tetap ringkas.
+            document.querySelectorAll('[data-submenu]').forEach(function (other) {
+                if (other === group) return;
+                var otherList = other.querySelector('[data-submenu-list]');
+                var otherToggle = other.querySelector('[data-submenu-toggle]');
+                var otherChevron = other.querySelector('[data-submenu-chevron]');
+                if (otherList) otherList.classList.add('hidden');
+                if (otherToggle) otherToggle.setAttribute('aria-expanded', 'false');
+                if (otherChevron) otherChevron.classList.remove('rotate-180');
+                other.classList.remove('is-open');
+            });
+
+            list.classList.toggle('hidden', !willOpen);
+            group.classList.toggle('is-open', willOpen);
+            toggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+            if (chevron) chevron.classList.toggle('rotate-180', willOpen);
+        });
+    });
+
+    /* ---------------------------------------------------------------
+     * 1c. Mode lihat-saja (Pengasuh): kunci semua isian pada form yang
+     *     mengubah data. Tombol simpan/ubah sudah disembunyikan lewat CSS;
+     *     ini lapisan kedua, dan server tetap menolak bila ditembus.
+     * ------------------------------------------------------------- */
+    if (document.body.classList.contains('readonly-mode')) {
+        document.querySelectorAll('form').forEach(function (form) {
+            var method = (form.getAttribute('method') || 'GET').toUpperCase();
+            if (method === 'GET' || form.hasAttribute('data-allow-readonly')) return;
+            form.querySelectorAll('input, select, textarea, button').forEach(function (el) {
+                if (el.type === 'hidden') return;
+                el.disabled = true;
+            });
+            form.addEventListener('submit', function (event) { event.preventDefault(); });
+        });
+    }
+
+    /* ---------------------------------------------------------------
      * 2. Dropdown generik (notifikasi, profil): toggle class hidden,
      *    tutup saat klik di luar atau tekan Escape.
      * ------------------------------------------------------------- */
