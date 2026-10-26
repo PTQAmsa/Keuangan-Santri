@@ -171,8 +171,11 @@
         <tr>
             <td style="width: 25%; padding-right: 6px;">
                 <div class="summary-box">
-                    <div class="summary-label">Total Penerimaan</div>
-                    <div class="summary-value" style="color: #047857;">Rp {{ number_format($totalPenerimaan, 0, ',', '.') }}</div>
+                    <div class="summary-label">Total Kas Masuk</div>
+                    <div class="summary-value" style="color: #047857;">Rp {{ number_format($totalKasMasuk ?? $totalPenerimaan, 0, ',', '.') }}</div>
+                    @if(($totalLainnya ?? 0) > 0)
+                        <div style="font-size: 8px; color: #6b7280; margin-top: 2px;">Santri Rp {{ number_format($totalPenerimaan, 0, ',', '.') }} &bull; Lainnya Rp {{ number_format($totalLainnya, 0, ',', '.') }}</div>
+                    @endif
                 </div>
             </td>
             <td style="width: 25%; padding-right: 6px;">
@@ -245,7 +248,7 @@
             @endforelse
             <tr class="total-row">
                 <td colspan="7" class="text-right" style="padding: 6px 8px; text-transform: uppercase;">
-                    Total Seluruh Penerimaan:
+                    Total Pembayaran Santri:
                 </td>
                 <td class="text-right" style="color: #047857; font-size: 11px;">
                     Rp {{ number_format($totalPenerimaan, 0, ',', '.') }}
@@ -254,6 +257,48 @@
             </tr>
         </tbody>
     </table>
+
+    @if(isset($otherIncomes) && $otherIncomes->isNotEmpty())
+        <div class="report-header" style="margin-top: 14px;">
+            <h2 class="report-title" style="font-size: 11px;">Pemasukan Lainnya (Donasi, Infaq, Hibah, Unit Usaha, Sewa)</h2>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 4%;" class="text-center">No</th>
+                    <th style="width: 13%;">Kode</th>
+                    <th style="width: 9%;">Tanggal</th>
+                    <th style="width: 14%;">Jenis</th>
+                    <th style="width: 24%;">Uraian</th>
+                    <th style="width: 14%;">Sumber / Pemberi</th>
+                    <th style="width: 8%;" class="text-center">Metode</th>
+                    <th style="width: 14%;" class="text-right">Nominal (Rp)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($otherIncomes as $index => $income)
+                    <tr>
+                        <td class="text-center">{{ $index + 1 }}</td>
+                        <td>{{ $income->income_code }}</td>
+                        <td>{{ $income->income_date?->format('d/m/Y') }}</td>
+                        <td>{{ $income->category->label() }}</td>
+                        <td>{{ $income->description }}</td>
+                        <td>{{ $income->source ?: '-' }}</td>
+                        <td class="text-center">{{ $income->paymentMethodLabel() }}</td>
+                        <td class="text-right">{{ number_format((float) $income->amount, 0, ',', '.') }}</td>
+                    </tr>
+                @endforeach
+                <tr class="total-row">
+                    <td colspan="7" class="text-right" style="padding: 6px 8px; text-transform: uppercase;">Total Pemasukan Lainnya:</td>
+                    <td class="text-right" style="color: #047857; font-size: 11px;">Rp {{ number_format($totalLainnya, 0, ',', '.') }}</td>
+                </tr>
+                <tr class="total-row">
+                    <td colspan="7" class="text-right" style="padding: 6px 8px; text-transform: uppercase;">Total Seluruh Kas Masuk:</td>
+                    <td class="text-right" style="color: #047857; font-size: 11px;">Rp {{ number_format($totalKasMasuk, 0, ',', '.') }}</td>
+                </tr>
+            </tbody>
+        </table>
+    @endif
 
     <!-- Tanda Tangan Pengesahan -->
     <table class="footer-table">

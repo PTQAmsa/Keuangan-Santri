@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Invoice;
+use App\Models\OtherIncome;
 use App\Models\Payment;
 use App\Models\PaymentCategory;
 use App\Models\Student;
@@ -113,14 +114,23 @@ class ReportController
 
         $categories = PaymentCategory::where('is_active', true)->orderBy('name')->get();
 
+        $otherIncomes = $this->otherIncomesInRange($startDate, $endDate, $paymentMethod, $categoryId, $kelompok);
+        $totalLainnya = (float) $otherIncomes->sum('amount');
+        $totalKasMasuk = (float) $totalPenerimaan + $totalLainnya;
+        $totalCash += (float) $otherIncomes->where('payment_method', 'cash')->sum('amount');
+        $totalTransfer += (float) $otherIncomes->where('payment_method', 'transfer')->sum('amount');
+
         return view('admin.reports.cash-inflow', compact(
             'payments',
+            'otherIncomes',
             'startDate',
             'endDate',
             'categoryId',
             'paymentMethod',
             'kelompok',
             'totalPenerimaan',
+            'totalLainnya',
+            'totalKasMasuk',
             'totalTransaksi',
             'totalCash',
             'totalTransfer',
@@ -129,6 +139,33 @@ class ReportController
             'sortBy',
             'sortOrder'
         ));
+    }
+
+    /**
+     * Pemasukan lainnya (donasi, infaq, unit usaha, dsb.) pada rentang laporan.
+     * Filter kategori tagihan dan marhalah hanya berlaku untuk pembayaran santri,
+     * sehingga saat salah satunya dipakai bagian ini dikosongkan.
+     *
+     * @return Collection<int, OtherIncome>
+     */
+    private function otherIncomesInRange(string $startDate, string $endDate, ?string $paymentMethod, mixed $categoryId, mixed $kelompok): Collection
+    {
+        if ($categoryId || in_array($kelompok, ['putra', 'putri'], true)) {
+            return new Collection;
+        }
+
+        $query = OtherIncome::with('recordedBy')
+            ->whereNull('voided_at')
+            ->whereDate('income_date', '>=', $startDate)
+            ->whereDate('income_date', '<=', $endDate)
+            ->orderBy('income_date')
+            ->orderBy('id');
+
+        if ($paymentMethod && in_array($paymentMethod, ['cash', 'transfer'], true)) {
+            $query->where('payment_method', $paymentMethod);
+        }
+
+        return $query->get();
     }
 
     /**
@@ -265,9 +302,10 @@ class ReportController
         }
 
         $payments = $query->get();
+        $otherIncomes = $this->otherIncomesInRange($startDate, $endDate, $paymentMethod, $categoryId, $kelompok);
         $filename = "Laporan_Penerimaan_Kas_PTQ_Amsa_{$startDate}_sd_{$endDate}.csv";
 
-        return response()->streamDownload(function () use ($payments, $startDate, $endDate) {
+        return response()->streamDownload(function () use ($payments, $otherIncomes, $startDate, $endDate) {
             $handle = fopen('php://output', 'w');
 
             // UTF-8 BOM agar terbaca sempurna di Microsoft Excel
@@ -314,7 +352,35 @@ class ReportController
             }
 
             fputcsv($handle, []);
-            fputcsv($handle, ['', '', '', '', '', '', '', '', '', 'TOTAL PENERIMAAN:', $totalNominal]);
+            fputcsv($handle, ['', '', '', '', '', '', '', '', '', 'TOTAL PEMBAYARAN SANTRI:', $totalNominal]);
+
+            $totalLainnya = 0;
+
+            if ($otherIncomes->isNotEmpty()) {
+                fputcsv($handle, []);
+                fputcsv($handle, ['PEMASUKAN LAINNYA (DONASI, INFAQ, UNIT USAHA, DLL.)']);
+                fputcsv($handle, ['No', 'Kode', 'Tanggal', 'Jenis', 'Uraian', 'Sumber / Pemberi', 'Metode', 'Nominal (Rp)', 'Catatan']);
+
+                foreach ($otherIncomes as $index => $income) {
+                    $totalLainnya += (float) $income->amount;
+                    fputcsv($handle, [
+                        $index + 1,
+                        $income->income_code,
+                        $income->income_date?->format('d/m/Y') ?? '-',
+                        $income->category->label(),
+                        $income->description,
+                        $income->source ?: '-',
+                        strtoupper($income->payment_method),
+                        (float) $income->amount,
+                        $income->notes ?? '-',
+                    ]);
+                }
+
+                fputcsv($handle, ['', '', '', '', '', '', 'TOTAL PEMASUKAN LAINNYA:', $totalLainnya]);
+            }
+
+            fputcsv($handle, []);
+            fputcsv($handle, ['', '', '', '', '', '', '', '', '', 'TOTAL SELURUH KAS MASUK:', $totalNominal + $totalLainnya]);
 
             fclose($handle);
         }, $filename, [
@@ -372,12 +438,21 @@ class ReportController
             ];
         })->sortByDesc('total');
 
+        $otherIncomes = $this->otherIncomesInRange($startDate, $endDate, $paymentMethod, $categoryId, $kelompok);
+        $totalLainnya = (float) $otherIncomes->sum('amount');
+        $totalKasMasuk = (float) $totalPenerimaan + $totalLainnya;
+        $totalCash += (float) $otherIncomes->where('payment_method', 'cash')->sum('amount');
+        $totalTransfer += (float) $otherIncomes->where('payment_method', 'transfer')->sum('amount');
+
         $pdf = Pdf::loadView('pdf.cash-inflow-report', compact(
             'payments',
+            'otherIncomes',
             'startDate',
             'endDate',
             'kelompok',
             'totalPenerimaan',
+            'totalLainnya',
+            'totalKasMasuk',
             'totalTransaksi',
             'totalCash',
             'totalTransfer',

@@ -92,17 +92,33 @@ class TeacherController
     /**
      * Nonaktifkan / aktifkan guru tanpa menghapus riwayatnya.
      */
-    public function toggleStatus(Teacher $teacher)
+    public function toggleStatus(Request $request, Teacher $teacher)
     {
-        $teacher->is_active = ! $teacher->is_active;
-        $teacher->save();
+        if ($teacher->is_active) {
+            $data = $request->validate([
+                'inactive_reason' => ['required', 'string', 'max:255'],
+            ], [
+                'inactive_reason.required' => 'Alasan menonaktifkan guru wajib diisi, misalnya pindah tugas atau berhenti mengajar.',
+            ], [
+                'inactive_reason' => 'alasan nonaktif',
+            ]);
 
-        return back()->with(
-            'success',
-            $teacher->is_active
-                ? 'Guru '.$teacher->nama_lengkap.' diaktifkan kembali.'
-                : 'Guru '.$teacher->nama_lengkap.' dinonaktifkan. Data dan riwayat bisyarahnya tetap tersimpan.'
-        );
+            $teacher->forceFill([
+                'is_active' => false,
+                'inactive_reason' => $data['inactive_reason'],
+                'inactivated_at' => now(),
+            ])->save();
+
+            return back()->with('success', 'Guru '.$teacher->nama_lengkap.' dinonaktifkan ('.$data['inactive_reason'].'). Data dan riwayat bisyarahnya tetap tersimpan.');
+        }
+
+        $teacher->forceFill([
+            'is_active' => true,
+            'inactive_reason' => null,
+            'inactivated_at' => null,
+        ])->save();
+
+        return back()->with('success', 'Guru '.$teacher->nama_lengkap.' diaktifkan kembali.');
     }
 
     /**

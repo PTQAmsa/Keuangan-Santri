@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Expense;
+use App\Models\OtherIncome;
 use App\Models\Payment;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
@@ -52,7 +53,27 @@ class CashFlowService
             ->whereDate('expense_date', '<=', $end)
             ->get();
 
+        $otherIncomes = OtherIncome::with('recordedBy')
+            ->whereNull('voided_at')
+            ->whereDate('income_date', '>=', $start)
+            ->whereDate('income_date', '<=', $end)
+            ->get();
+
         $entries = collect();
+
+        foreach ($otherIncomes as $income) {
+            $entries->push([
+                'date' => $income->income_date,
+                'direction' => 'masuk',
+                'code' => $income->income_code,
+                'description' => $income->description.' ('.$income->category->label().')',
+                'party' => $income->source ?: ($income->recordedBy?->name ?? '-'),
+                'method' => $income->payment_method,
+                'amount' => (float) $income->amount,
+                'sort_group' => 0,
+                'sort_id' => (int) $income->id,
+            ]);
+        }
 
         foreach ($payments as $payment) {
             $entries->push([
@@ -125,6 +146,10 @@ class CashFlowService
         $masuk = (float) Payment::whereNull('voided_at')
             ->whereDate('payment_date', '<', $date)
             ->sum('amount_paid');
+
+        $masuk += (float) OtherIncome::whereNull('voided_at')
+            ->whereDate('income_date', '<', $date)
+            ->sum('amount');
 
         $keluar = (float) Expense::whereNull('voided_at')
             ->whereDate('expense_date', '<', $date)

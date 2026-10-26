@@ -114,8 +114,8 @@
                             <i class="fa-solid fa-gauge mr-1"></i> Dashboard
                         </a>
                         @if(auth()->user()->role?->canManageFinances())
-                            <a href="{{ route('admin.cashier') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.cashier') ? 'bg-gold-400 text-brand-900 font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
-                                <i class="fa-solid fa-cash-register mr-1"></i> Kasir
+                            <a href="{{ route('admin.cashier') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.cashier*', 'admin.incomes*') ? 'bg-emerald-600 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
+                                <i class="fa-solid fa-hand-holding-dollar mr-1"></i> Kas Masuk
                             </a>
                             <a href="{{ route('admin.invoices') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.invoices') ? 'bg-brand-800 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
                                 <i class="fa-solid fa-list-check mr-1"></i> Tagihan
@@ -195,20 +195,6 @@
             <div class="mb-5 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg shadow-sm flex items-start space-x-3">
                 <i class="fa-solid fa-circle-info text-blue-600 text-xl mt-0.5"></i>
                 <div class="text-sm text-blue-800">{{ session('info') }}</div>
-            </div>
-        @endif
-
-        @if($errors->any())
-            <div class="mb-5 bg-rose-50 border-l-4 border-rose-500 p-4 rounded-r-lg shadow-sm flex items-start space-x-3">
-                <i class="fa-solid fa-triangle-exclamation text-rose-600 text-xl mt-0.5"></i>
-                <div class="text-sm text-rose-800">
-                    <p class="font-semibold">Periksa kembali data Anda:</p>
-                    <ul class="list-disc list-inside mt-1">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
             </div>
         @endif
 

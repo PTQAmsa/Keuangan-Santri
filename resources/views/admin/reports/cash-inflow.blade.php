@@ -86,10 +86,13 @@
         <!-- Total Penerimaan -->
         <div class="bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-2xl p-5 text-white shadow-md">
             <p class="text-xs font-medium text-emerald-100 uppercase tracking-wider">Total Kas Masuk</p>
-            <p class="text-2xl font-black mt-1">Rp {{ number_format($totalPenerimaan, 0, ',', '.') }}</p>
+            <p class="text-2xl font-black mt-1">Rp {{ number_format($totalKasMasuk, 0, ',', '.') }}</p>
             <p class="text-xs text-emerald-200 mt-2 flex items-center">
                 <i class="fa-solid fa-calendar-check mr-1.5"></i>
                 {{ \Carbon\Carbon::parse($startDate)->format('d M') }} - {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
+            </p>
+            <p class="text-[11px] text-emerald-100 mt-1">
+                Santri Rp {{ number_format($totalPenerimaan, 0, ',', '.') }} &bull; Lainnya Rp {{ number_format($totalLainnya, 0, ',', '.') }}
             </p>
         </div>
 
@@ -303,7 +306,7 @@
                 @if($payments->isNotEmpty())
                     <tfoot class="bg-gray-50 border-t-2 border-gray-200 font-bold text-gray-800 text-xs">
                         <tr>
-                            <td colspan="7" class="py-3 px-4 text-right uppercase tracking-wider">Total Penerimaan Kas:</td>
+                            <td colspan="7" class="py-3 px-4 text-right uppercase tracking-wider">Total Pembayaran Santri:</td>
                             <td class="py-3 px-4 text-right text-emerald-700 font-extrabold text-sm">
                                 Rp {{ number_format($totalPenerimaan, 0, ',', '.') }}
                             </td>
@@ -313,6 +316,61 @@
             </table>
         </div>
     </div>
+
+    <!-- Pemasukan Lainnya -->
+    @if($otherIncomes->isNotEmpty())
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden">
+            <div class="p-4 sm:p-5 bg-gray-50/70 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <h2 class="text-sm font-bold text-gray-900">Pemasukan Lainnya</h2>
+                    <p class="text-xs text-gray-500">Donasi, infaq, hibah, unit usaha, dan sewa &bull; {{ $otherIncomes->count() }} transaksi</p>
+                </div>
+                <a href="{{ route('admin.incomes', ['start_date' => $startDate, 'end_date' => $endDate]) }}" class="inline-flex items-center px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-semibold transition">
+                    <i class="fa-solid fa-hand-holding-heart mr-1.5 text-emerald-600"></i> Kelola Pemasukan Lainnya
+                </a>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs text-gray-600">
+                    <thead class="bg-gray-100 text-gray-700 font-bold uppercase text-[11px] tracking-wider border-b border-gray-200">
+                        <tr>
+                            <th class="py-3 px-4">Kode</th>
+                            <th class="py-3 px-4">Tanggal</th>
+                            <th class="py-3 px-4">Jenis</th>
+                            <th class="py-3 px-4">Uraian</th>
+                            <th class="py-3 px-4">Sumber</th>
+                            <th class="py-3 px-4 text-center">Metode</th>
+                            <th class="py-3 px-4 text-right">Nominal</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @foreach($otherIncomes as $income)
+                            <tr class="hover:bg-gray-50/60">
+                                <td class="py-2.5 px-4 font-mono text-[11px]">{{ $income->income_code }}</td>
+                                <td class="py-2.5 px-4 whitespace-nowrap">{{ $income->income_date?->format('d/m/Y') }}</td>
+                                <td class="py-2.5 px-4">
+                                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold {{ $income->category->badgeClass() }}">{{ $income->category->label() }}</span>
+                                </td>
+                                <td class="py-2.5 px-4 font-semibold text-gray-800">{{ $income->description }}</td>
+                                <td class="py-2.5 px-4">{{ $income->source ?: '-' }}</td>
+                                <td class="py-2.5 px-4 text-center">{{ $income->paymentMethodLabel() }}</td>
+                                <td class="py-2.5 px-4 text-right font-bold text-emerald-700">Rp {{ number_format((float) $income->amount, 0, ',', '.') }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot class="bg-gray-50 border-t-2 border-gray-200 font-bold text-gray-800 text-xs">
+                        <tr>
+                            <td colspan="6" class="py-3 px-4 text-right uppercase tracking-wider">Total Pemasukan Lainnya:</td>
+                            <td class="py-3 px-4 text-right text-emerald-700 font-extrabold text-sm">Rp {{ number_format($totalLainnya, 0, ',', '.') }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="6" class="py-3 px-4 text-right uppercase tracking-wider">Total Seluruh Kas Masuk:</td>
+                            <td class="py-3 px-4 text-right text-emerald-800 font-extrabold text-sm">Rp {{ number_format($totalKasMasuk, 0, ',', '.') }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    @endif
 
 </div>
 @endsection

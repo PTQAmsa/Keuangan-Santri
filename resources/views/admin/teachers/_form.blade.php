@@ -9,6 +9,20 @@
 
 <input type="hidden" name="_form_context" value="{{ $context }}">
 
+@if($errors->any() && old('_form_context') === $context)
+    <div class="bg-rose-50 border border-rose-200 rounded-xl p-3.5 flex items-start space-x-2.5" role="alert">
+        <i class="fa-solid fa-circle-exclamation text-rose-600 mt-0.5"></i>
+        <div class="text-xs text-rose-800">
+            <p class="font-semibold">Data guru belum tersimpan. Periksa isian berikut:</p>
+            <ul class="list-disc list-inside mt-1 space-y-0.5">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    </div>
+@endif
+
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
     <div class="sm:col-span-2">
         <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Lengkap <span class="text-rose-500">*</span></label>

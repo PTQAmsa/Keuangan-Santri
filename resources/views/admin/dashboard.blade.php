@@ -53,14 +53,18 @@
                     <i class="fa-solid fa-hand-holding-dollar"></i>
                 </div>
             </div>
-            <div class="grid grid-cols-2 gap-2 mt-4">
+            <div class="grid grid-cols-3 gap-2 mt-4">
                 <div class="rounded-xl bg-blue-50/70 border border-blue-100 px-3 py-2">
-                    <p class="text-[10px] font-bold uppercase text-blue-700">Putra</p>
+                    <p class="text-[10px] font-bold uppercase text-blue-700">Santri Putra</p>
                     <p class="text-sm font-extrabold text-blue-800">Rp {{ number_format($masukPutra, 0, ',', '.') }}</p>
                 </div>
                 <div class="rounded-xl bg-fuchsia-50/70 border border-fuchsia-100 px-3 py-2">
-                    <p class="text-[10px] font-bold uppercase text-fuchsia-700">Putri</p>
+                    <p class="text-[10px] font-bold uppercase text-fuchsia-700">Santri Putri</p>
                     <p class="text-sm font-extrabold text-fuchsia-800">Rp {{ number_format($masukPutri, 0, ',', '.') }}</p>
+                </div>
+                <div class="rounded-xl bg-teal-50/70 border border-teal-100 px-3 py-2">
+                    <p class="text-[10px] font-bold uppercase text-teal-700">Lainnya</p>
+                    <p class="text-sm font-extrabold text-teal-800">Rp {{ number_format($masukLainnya, 0, ',', '.') }}</p>
                 </div>
             </div>
             <a href="{{ route('admin.reports.cash') }}" class="text-xs text-emerald-700 font-semibold hover:underline mt-3 inline-flex items-center">

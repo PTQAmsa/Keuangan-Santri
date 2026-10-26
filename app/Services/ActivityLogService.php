@@ -8,6 +8,7 @@ use App\Models\ActivityLog;
 use App\Models\BookClosing;
 use App\Models\Expense;
 use App\Models\Invoice;
+use App\Models\OtherIncome;
 use App\Models\Payment;
 use App\Models\Student;
 use App\Models\TeacherBisyarahPayment;
@@ -411,6 +412,66 @@ class ActivityLogService
                 'Uraian' => $expense->description,
                 'Nominal Dibatalkan' => self::rupiah($expense->amount),
                 'Tanggal' => $expense->expense_date?->format('d/m/Y') ?? '-',
+                'Alasan Pembatalan' => $reason,
+            ],
+            userId: $userId,
+        );
+    }
+
+    /**
+     * Catat pemasukan lainnya (donasi, infaq, unit usaha, dsb.).
+     */
+    public static function incomeRecorded(OtherIncome $income, ?int $userId = null): ActivityLog
+    {
+        $income->loadMissing('recordedBy');
+
+        return self::record(
+            module: ActivityModule::Income,
+            action: ActivityAction::Created,
+            description: sprintf(
+                'Mencatat pemasukan %s sebesar %s dari %s (%s).',
+                $income->income_code,
+                self::rupiah($income->amount),
+                $income->source ?: '-',
+                $income->description
+            ),
+            subjectId: $income->id,
+            properties: [
+                'Kode Pemasukan' => $income->income_code,
+                'Jenis' => $income->category->label(),
+                'Uraian' => $income->description,
+                'Nominal' => self::rupiah($income->amount),
+                'Tanggal' => $income->income_date?->format('d/m/Y') ?? '-',
+                'Metode' => $income->paymentMethodLabel(),
+                'Sumber' => $income->source ?: '-',
+                'Dicatat Oleh' => $income->recordedBy->name ?? '-',
+            ],
+            userId: $userId,
+        );
+    }
+
+    /**
+     * Catat pembatalan pemasukan lainnya.
+     */
+    public static function incomeVoided(OtherIncome $income, string $reason, ?int $userId = null): ActivityLog
+    {
+        return self::record(
+            module: ActivityModule::Income,
+            action: ActivityAction::Cancelled,
+            description: sprintf(
+                'Membatalkan pemasukan %s sebesar %s (%s). Alasan: %s',
+                $income->income_code,
+                self::rupiah($income->amount),
+                $income->description,
+                $reason
+            ),
+            subjectId: $income->id,
+            properties: [
+                'Kode Pemasukan' => $income->income_code,
+                'Jenis' => $income->category->label(),
+                'Uraian' => $income->description,
+                'Nominal Dibatalkan' => self::rupiah($income->amount),
+                'Tanggal' => $income->income_date?->format('d/m/Y') ?? '-',
                 'Alasan Pembatalan' => $reason,
             ],
             userId: $userId,

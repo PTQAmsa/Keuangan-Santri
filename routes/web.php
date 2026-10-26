@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\BisyarahController;
 use App\Http\Controllers\Admin\BookClosingController;
 use App\Http\Controllers\Admin\CashierController;
 use App\Http\Controllers\Admin\ExpenseController;
+use App\Http\Controllers\Admin\OtherIncomeController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\TeacherController;
@@ -109,6 +110,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::middleware('role:admin,bendahara')->group(function () {
             Route::get('/kasir', [CashierController::class, 'createPayment'])->name('cashier');
             Route::post('/kasir', [CashierController::class, 'storePayment'])->name('cashier.store');
+
+            // Kas masuk di luar pembayaran santri: donasi, infaq, unit usaha, dsb.
+            Route::get('/kas-masuk/lainnya', [OtherIncomeController::class, 'index'])->name('incomes');
+            Route::post('/kas-masuk/lainnya', [OtherIncomeController::class, 'store'])->name('incomes.store');
+            Route::patch('/kas-masuk/lainnya/{income}/batal', [OtherIncomeController::class, 'void'])->name('incomes.void');
             Route::post('/generate-spp', [CashierController::class, 'generateMonthlySPP'])->name('generate-spp');
             Route::get('/tagihan', [CashierController::class, 'invoices'])->name('invoices');
             Route::post('/tagihan', [CashierController::class, 'storeInvoice'])->name('invoices.store');

@@ -142,6 +142,14 @@
                                             <span class="ml-2 inline-flex px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200 text-[10px] font-semibold">Nonaktif</span>
                                         @endunless
                                     </p>
+                                    @if(! $teacher->is_active && $teacher->inactive_reason)
+                                        <p class="text-[11px] text-rose-600 mt-1">
+                                            <i class="fa-solid fa-user-slash mr-1"></i>{{ $teacher->inactive_reason }}
+                                            @if($teacher->inactivated_at)
+                                                <span class="text-gray-400">· {{ $teacher->inactivated_at->translatedFormat('d M Y') }}</span>
+                                            @endif
+                                        </p>
+                                    @endif
                                 </td>
                                 <td class="px-4 py-3.5 whitespace-nowrap">
                                     @if($wa !== '')
@@ -162,18 +170,21 @@
                                 </td>
                                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
                                     <div class="inline-flex items-center space-x-1.5">
-                                        <a href="{{ route('admin.bisyarah', ['period' => now()->format('Y-m')]) }}#guru-{{ $teacher->id }}"
-                                           class="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-[11px] font-semibold transition">
-                                            <i class="fa-solid fa-money-bill-wave mr-1"></i> Bisyarah
-                                        </a>
                                         <button type="button" onclick="openTeacherModal('teacher-modal-edit-{{ $teacher->id }}')"
                                                 class="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded-lg text-[11px] font-semibold transition">
                                             <i class="fa-solid fa-pen-to-square mr-1"></i> Ubah
                                         </button>
                                         <form method="POST" action="{{ route('admin.teachers.toggle', $teacher) }}"
-                                              onsubmit="return confirm('{{ $teacher->is_active ? 'Nonaktifkan' : 'Aktifkan kembali' }} data guru {{ addslashes($teacher->nama_lengkap) }}?')">
+                                              @if($teacher->is_active)
+                                                  onsubmit="const reason = prompt('Alasan menonaktifkan {{ addslashes($teacher->nama_lengkap) }}:\n(misal: pindah tugas, berhenti mengajar, cuti panjang)'); if (!reason || !reason.trim()) { return false; } this.inactive_reason.value = reason.trim(); return true;"
+                                              @else
+                                                  onsubmit="return confirm('Aktifkan kembali data guru {{ addslashes($teacher->nama_lengkap) }}?')"
+                                              @endif>
                                             @csrf
                                             @method('PATCH')
+                                            @if($teacher->is_active)
+                                                <input type="hidden" name="inactive_reason" value="">
+                                            @endif
                                             <button type="submit" class="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold border transition {{ $teacher->is_active ? 'bg-gray-50 hover:bg-gray-100 text-gray-600 border-gray-200' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200' }}">
                                                 <i class="fa-solid {{ $teacher->is_active ? 'fa-user-slash' : 'fa-user-check' }} mr-1"></i>
                                                 {{ $teacher->is_active ? 'Nonaktifkan' : 'Aktifkan' }}

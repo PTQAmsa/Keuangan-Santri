@@ -6,16 +6,21 @@
 <div class="max-w-4xl mx-auto space-y-6">
 
     <!-- Header -->
-    <div class="flex items-center justify-between pb-4 border-b border-gray-200">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-gray-200">
         <div>
+            <div class="flex items-center space-x-2 text-xs text-gray-500 mb-1">
+                <a href="{{ route('admin.dashboard') }}" class="hover:text-brand-900">Admin</a>
+                <span>/</span>
+                <span class="text-gray-800 font-semibold">Kas Masuk</span>
+                <span>/</span>
+                <span class="text-gray-800 font-semibold">Kasir Santri</span>
+            </div>
             <h1 class="text-xl sm:text-2xl font-bold text-gray-900 flex items-center">
                 <i class="fa-solid fa-cash-register text-gold-500 mr-2.5"></i> Kasir Penerimaan Pembayaran
             </h1>
             <p class="text-xs sm:text-sm text-gray-500 mt-0.5">Input pembayaran santri, terbitkan kuitansi resmi & kirim notifikasi WhatsApp</p>
         </div>
-        <a href="{{ route('admin.dashboard') }}" class="text-xs text-gray-600 hover:text-gray-900 bg-white border border-gray-200 px-3 py-1.5 rounded-lg">
-            &larr; Kembali ke Dashboard
-        </a>
+        @include('admin.incomes._tabs')
     </div>
 
     <!-- Step 1: Pilih Santri -->

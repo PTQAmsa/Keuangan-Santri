@@ -80,8 +80,18 @@ class TeacherBisyarahTest extends TestCase
         $bendahara = $this->userWithRole(UserRole::Bendahara);
 
         $this->actingAs($bendahara)
-            ->post(route('admin.teachers.store'), [])
+            ->post(route('admin.teachers.store'), ['_form_context' => 'add'])
             ->assertSessionHasErrors(['nama_lengkap', 'kota_asal', 'no_whatsapp', 'status']);
+
+        // Pesan kesalahan tampil di dalam popup Tambah Guru, bukan hanya di atas halaman.
+        $this->actingAs($bendahara)
+            ->from(route('admin.teachers'))
+            ->followingRedirects()
+            ->post(route('admin.teachers.store'), ['_form_context' => 'add'])
+            ->assertOk()
+            ->assertSee('Data guru belum tersimpan. Periksa isian berikut:')
+            ->assertSee('Asal guru wajib diisi.')
+            ->assertDontSee('Periksa kembali data Anda:');
 
         $this->assertSame(0, Teacher::count());
     }
@@ -122,8 +132,40 @@ class TeacherBisyarahTest extends TestCase
         $this->assertSame('guru_tetap', $teacher->status);
         $this->assertSame('628111222333', $teacher->no_whatsapp);
 
+        // Menonaktifkan guru wajib disertai alasan.
         $this->actingAs($bendahara)
             ->patch(route('admin.teachers.toggle', $teacher))
+            ->assertSessionHasErrors('inactive_reason');
+
+        $this->assertTrue($teacher->fresh()->is_active);
+
+        $this->actingAs($bendahara)
+            ->patch(route('admin.teachers.toggle', $teacher), ['inactive_reason' => 'Pindah tugas ke pesantren lain.'])
+            ->assertRedirect();
+
+        $teacher->refresh();
+        $this->assertFalse($teacher->is_active);
+        $this->assertSame('Pindah tugas ke pesantren lain.', $teacher->inactive_reason);
+        $this->assertNotNull($teacher->inactivated_at);
+
+        $this->actingAs($bendahara)
+            ->get(route('admin.teachers'))
+            ->assertOk()
+            ->assertSee('Pindah tugas ke pesantren lain.')
+            ->assertDontSee('fa-money-bill-wave mr-1"></i> Bisyarah', false);
+
+        // Mengaktifkan kembali menghapus alasan nonaktif.
+        $this->actingAs($bendahara)
+            ->patch(route('admin.teachers.toggle', $teacher))
+            ->assertRedirect();
+
+        $teacher->refresh();
+        $this->assertTrue($teacher->is_active);
+        $this->assertNull($teacher->inactive_reason);
+        $this->assertNull($teacher->inactivated_at);
+
+        $this->actingAs($bendahara)
+            ->patch(route('admin.teachers.toggle', $teacher), ['inactive_reason' => 'Berhenti mengajar.'])
             ->assertRedirect();
 
         $this->assertFalse($teacher->fresh()->is_active);

@@ -27,10 +27,13 @@ class Teacher extends Model
         'status',
         'notes',
         'is_active',
+        'inactive_reason',
+        'inactivated_at',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'inactivated_at' => 'datetime',
     ];
 
     /**

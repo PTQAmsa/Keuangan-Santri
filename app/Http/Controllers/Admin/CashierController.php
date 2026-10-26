@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Invoice;
+use App\Models\OtherIncome;
 use App\Models\Payment;
 use App\Models\PaymentCategory;
 use App\Models\Student;
@@ -35,13 +36,23 @@ class CashierController
             ->whereYear('payment_date', now()->year)
             ->whereMonth('payment_date', now()->month);
 
-        $totalMasukBulanIni = $masukBulanIni()->sum('amount_paid');
+        $masukSantri = (float) $masukBulanIni()->sum('amount_paid');
         $masukPutra = $masukBulanIni()
             ->whereHas('student', fn ($q) => $q->where('santri_group', 'putra'))
             ->sum('amount_paid');
         $masukPutri = $masukBulanIni()
             ->whereHas('student', fn ($q) => $q->where('santri_group', 'putri'))
             ->sum('amount_paid');
+
+        // Pemasukan lain (donasi, infaq, unit usaha, dsb.) ikut dihitung agar
+        // angka dashboard sama dengan laporan arus kas.
+        $masukLainnya = (float) OtherIncome::query()
+            ->whereNull('voided_at')
+            ->whereYear('income_date', now()->year)
+            ->whereMonth('income_date', now()->month)
+            ->sum('amount');
+
+        $totalMasukBulanIni = $masukSantri + $masukLainnya;
 
         // Tunggakan aktif sampai bulan berjalan, dipisah keseluruhan / putra / putri.
         // Tagihan bulan-bulan mendatang tidak dihitung agar angka card tetap
@@ -76,6 +87,7 @@ class CashierController
             'totalMasukBulanIni',
             'masukPutra',
             'masukPutri',
+            'masukLainnya',
             'totalTunggakan',
             'tunggakanPutra',
             'tunggakanPutri',
