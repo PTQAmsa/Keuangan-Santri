@@ -1,52 +1,66 @@
-{{-- Navbar atas untuk halaman publik, login pengurus, dan portal wali santri. --}}
-<header class="sticky top-0 z-50 bg-brand-900 text-white shadow-md">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex h-16 items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <img src="{{ asset('images/logo-pesantren.png') }}" alt="Logo PTQ Amsa001" class="h-10 w-10 rounded-full bg-white object-contain p-0.5 shadow">
-                <div>
-                    <a href="{{ url('/') }}" class="text-sm font-bold tracking-tight transition hover:text-gold-400 sm:text-base">
-                        Pesantren Tadabbur Al-Qur'an Amsa001
-                    </a>
-                    <p class="hidden text-xs text-blue-200 sm:block">
-                        @if(request()->is('admin*'))
-                            Panel Bendahara & Kasir Pesantren
-                        @elseif(request()->is('portal*'))
-                            Portal Khusus Wali Santri
-                        @else
-                            Sistem Keuangan & Tagihan Santri
-                        @endif
-                    </p>
-                </div>
-            </div>
-
-            <div class="flex items-center space-x-1 text-xs font-medium sm:space-x-2 sm:text-sm">
-                @if(request()->is('portal*'))
-                    @if(session('portal_student_id'))
-                        <a href="{{ route('portal.dashboard') }}" class="rounded-lg px-3 py-1.5 {{ request()->routeIs('portal.dashboard') ? 'border border-brand-700 bg-brand-800 text-gold-400' : 'text-gray-300 hover:bg-brand-800 hover:text-white' }}">
-                            <i class="fa-solid fa-user-graduate mr-1"></i> Dashboard Santri
-                        </a>
-                        <a href="{{ route('portal.card') }}" class="rounded-lg px-3 py-1.5 {{ request()->routeIs('portal.card') ? 'border border-brand-700 bg-brand-800 text-gold-400' : 'text-gray-300 hover:bg-brand-800 hover:text-white' }}">
-                            <i class="fa-solid fa-address-card mr-1"></i> Kartu Keuangan
-                        </a>
-                        <a href="{{ route('portal.profile') }}" class="rounded-lg px-3 py-1.5 {{ request()->routeIs('portal.profile', 'portal.change-pin') ? 'border border-brand-700 bg-brand-800 text-gold-400' : 'text-gray-300 hover:bg-brand-800 hover:text-white' }}">
-                            <i class="fa-solid fa-user mr-1"></i> Profil
-                        </a>
-                        <a href="{{ route('portal.logout') }}" class="rounded-lg px-3 py-1.5 text-gray-300 hover:bg-brand-800 hover:text-white">
-                            <i class="fa-solid fa-right-from-bracket mr-1"></i> Keluar
-                        </a>
+{{-- Navbar atas untuk halaman login pengurus dan portal wali santri (gaya sama dengan halaman depan). --}}
+@php
+    $isPortal = request()->is('portal*');
+    $isAdminArea = request()->is('admin*');
+    $portalLoggedIn = $isPortal && session('portal_student_id');
+    $portalLink = fn (bool $active) => $active
+        ? 'inline-flex items-center gap-1.5 rounded-xl bg-amber-100 px-3 py-2 text-xs font-semibold text-amber-900 sm:text-sm'
+        : 'inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 sm:text-sm';
+@endphp
+<header class="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur">
+    <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+        <a href="{{ url('/') }}" class="flex min-w-0 items-center gap-3">
+            <img src="{{ asset('images/logo-pesantren.png') }}" alt="Logo PTQ Amsa001" class="h-10 w-10 shrink-0 rounded-full bg-white object-contain p-0.5 shadow ring-1 ring-slate-200">
+            <span class="min-w-0 leading-tight">
+                <span class="block truncate text-sm font-bold tracking-tight text-slate-900 sm:text-base">Pesantren Tadabbur Al-Qur'an Amsa001</span>
+                <span class="hidden truncate text-[11px] text-slate-500 sm:block">
+                    @if($isAdminArea)
+                        Panel Bendahara & Kasir Pesantren
+                    @elseif($isPortal)
+                        Portal Khusus Wali Santri
+                    @else
+                        Sistem Keuangan & Tagihan Santri
                     @endif
-                @elseif(request()->is('admin*'))
-                    <a href="{{ url('/') }}" class="rounded-lg px-3 py-1.5 text-gray-200 hover:bg-brand-800 hover:text-white">
-                        <i class="fa-solid fa-house mr-1"></i> Beranda Utama
-                    </a>
-                @elseif(request()->is('/'))
-                    {{-- Login pengurus hanya ditawarkan di beranda, bukan di halaman publik lain. --}}
-                    <a href="{{ route('admin.login') }}" class="rounded-lg bg-gold-400 px-3.5 py-1.5 font-bold text-brand-900 shadow-sm transition hover:bg-gold-500">
-                        <i class="fa-solid fa-lock mr-1"></i> Login Pengurus / Bendahara
-                    </a>
-                @endif
-            </div>
-        </div>
+                </span>
+            </span>
+        </a>
+
+        <nav class="flex shrink-0 items-center gap-1 sm:gap-2" aria-label="Navigasi">
+            @if($portalLoggedIn)
+                <a href="{{ route('portal.dashboard') }}" class="{{ $portalLink(request()->routeIs('portal.dashboard')) }}">
+                    <i class="fa-solid fa-user-graduate"></i> <span class="hidden sm:inline">Dashboard Santri</span>
+                </a>
+                <a href="{{ route('portal.card') }}" class="{{ $portalLink(request()->routeIs('portal.card')) }}">
+                    <i class="fa-solid fa-address-card"></i> <span class="hidden sm:inline">Kartu Keuangan</span>
+                </a>
+                <a href="{{ route('portal.profile') }}" class="{{ $portalLink(request()->routeIs('portal.profile', 'portal.change-pin')) }}">
+                    <i class="fa-solid fa-user"></i> Profil
+                </a>
+                <a href="{{ route('portal.logout') }}" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-100 sm:text-sm">
+                    <i class="fa-solid fa-right-from-bracket"></i> Keluar
+                </a>
+            @elseif($isPortal)
+                <a href="{{ route('admin.login') }}" class="hidden items-center gap-2 rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 sm:inline-flex">
+                    <i class="fa-solid fa-lock text-xs"></i> Login Pengurus / Bendahara
+                </a>
+                <a href="{{ url('/') }}" class="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-amber-600">
+                    <i class="fa-solid fa-house text-xs"></i> Halaman Depan
+                </a>
+            @elseif($isAdminArea)
+                <a href="{{ route('portal.login') }}" class="hidden items-center gap-2 rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 sm:inline-flex">
+                    <i class="fa-solid fa-user-shield text-xs"></i> Portal Wali Santri
+                </a>
+                <a href="{{ url('/') }}" class="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-amber-600">
+                    <i class="fa-solid fa-house text-xs"></i> Halaman Depan
+                </a>
+            @else
+                <a href="{{ route('admin.login') }}" class="hidden items-center gap-2 rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 sm:inline-flex">
+                    <i class="fa-solid fa-lock text-xs"></i> Login Pengurus / Bendahara
+                </a>
+                <a href="{{ route('portal.login') }}" class="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-amber-600">
+                    <i class="fa-solid fa-user-shield text-xs"></i> Masuk Portal Wali Santri
+                </a>
+            @endif
+        </nav>
     </div>
 </header>

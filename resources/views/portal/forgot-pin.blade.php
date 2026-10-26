@@ -3,58 +3,64 @@
 @section('title', 'Lupa PIN Portal - PTQ Amsa001')
 
 @section('content')
-<div class="max-w-md mx-auto my-8">
-    <div class="bg-white rounded-3xl shadow-xl overflow-hidden border-2 border-gold-400/40">
-        <div class="bg-gradient-to-br from-brand-900 via-brand-800 to-brand-900 px-6 py-7 text-center text-white border-b-4 border-gold-400">
-            <div class="w-12 h-12 mx-auto rounded-2xl bg-gold-400 text-brand-900 flex items-center justify-center text-xl mb-2 shadow">
-                <i class="fa-solid fa-key"></i>
-            </div>
+<div class="mx-auto my-6 max-w-md sm:my-10">
+    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
+        <!-- Kepala kartu -->
+        <div class="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 px-6 py-7 text-center text-white">
+            <span class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500 text-slate-900 shadow">
+                <i class="fa-solid fa-key text-lg"></i>
+            </span>
             <h1 class="text-lg font-bold">Lupa PIN Portal</h1>
-            <p class="text-xs text-blue-200 mt-1">Minta bantuan reset PIN kepada Bendahara</p>
+            <p class="mt-1 text-xs text-blue-200">Minta bantuan reset PIN kepada Bendahara</p>
         </div>
 
-        <div class="p-6 sm:p-8 space-y-5 text-sm">
-            <div class="p-4 bg-blue-50 border border-blue-100 rounded-xl text-xs text-blue-900 space-y-1.5">
-                <p class="font-bold">Cara masuk tanpa PIN:</p>
-                <p>Pada halaman login, isi <strong>NIS</strong> lalu kolom kedua dengan <strong>nomor WhatsApp wali</strong> yang terdaftar di pesantren. Sistem akan meminta Anda membuat PIN baru.</p>
+        <div class="space-y-5 p-6 text-sm sm:p-8">
+            <div class="rounded-xl border border-blue-100 bg-blue-50 p-4 text-xs text-blue-900">
+                <p class="mb-1 flex items-center gap-2 font-bold"><i class="fa-brands fa-whatsapp text-emerald-600"></i> Cara masuk tanpa PIN</p>
+                <p class="leading-relaxed">Pada halaman login, isi <strong>NIS</strong> lalu kolom kedua dengan <strong>nomor WhatsApp wali</strong> yang terdaftar di pesantren. Sistem akan meminta Anda membuat PIN baru.</p>
             </div>
 
-            <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 space-y-1.5">
-                <p class="font-bold">Bila nomor WhatsApp juga tidak bisa dipakai:</p>
-                <p>Kirim permintaan di bawah ini, lalu hubungi Bendahara Pesantren. Petugas akan memverifikasi identitas Anda dan memberikan PIN sementara.</p>
+            <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900">
+                <p class="mb-1 flex items-center gap-2 font-bold"><i class="fa-solid fa-circle-info text-amber-600"></i> Bila nomor WhatsApp juga tidak bisa dipakai</p>
+                <p class="leading-relaxed">Kirim permintaan di bawah ini, lalu hubungi Bendahara Pesantren. Petugas akan memverifikasi identitas Anda dan memberikan PIN sementara.</p>
             </div>
 
             <form action="{{ route('portal.forgot-pin.post') }}" method="POST" class="space-y-4">
                 @csrf
 
                 <div>
-                    <label for="nis" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">NIS Santri</label>
-                    <input type="text" name="nis" id="nis" value="{{ old('nis') }}" required
-                           placeholder="Contoh: DMY00001"
-                           class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gold-400 focus:border-gold-400 text-sm">
+                    <label for="nis" class="mb-1.5 block text-xs font-semibold text-slate-700">NIS Santri</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-id-card pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i>
+                        <input type="text" name="nis" id="nis" value="{{ old('nis') }}" required
+                               placeholder="Contoh: DMY00001"
+                               class="h-11 w-full rounded-xl border border-slate-300 bg-slate-50 pl-10 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/30">
+                    </div>
                 </div>
 
                 <div>
-                    <label for="nama_wali" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Nama Wali Santri</label>
-                    <input type="text" name="nama_wali" id="nama_wali" value="{{ old('nama_wali') }}" required
-                           placeholder="Nama sesuai data pesantren"
-                           class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gold-400 focus:border-gold-400 text-sm">
+                    <label for="nama_wali" class="mb-1.5 block text-xs font-semibold text-slate-700">Nama Wali Santri</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-user pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i>
+                        <input type="text" name="nama_wali" id="nama_wali" value="{{ old('nama_wali') }}" required
+                               placeholder="Nama sesuai data pesantren"
+                               class="h-11 w-full rounded-xl border border-slate-300 bg-slate-50 pl-10 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/30">
+                    </div>
                 </div>
 
-                <button type="submit" class="w-full py-3 px-4 bg-brand-900 hover:bg-brand-800 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center space-x-2 text-sm">
-                    <i class="fa-solid fa-paper-plane"></i>
-                    <span>Kirim Permintaan Reset PIN</span>
+                <button type="submit" class="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-amber-500 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-amber-600">
+                    <i class="fa-solid fa-paper-plane"></i> Kirim Permintaan Reset PIN
                 </button>
             </form>
 
-            <div class="text-center text-xs text-gray-500 pt-2 border-t border-gray-100 space-y-2">
-                <a href="https://wa.me/6285692253516?text={{ urlencode('Assalamu\'alaikum, saya wali santri dan lupa PIN Portal. Mohon bantuan reset PIN.') }}" target="_blank"
-                   class="inline-flex items-center text-emerald-700 font-bold hover:underline">
-                    <i class="fa-brands fa-whatsapp mr-1.5"></i> Hubungi Bendahara via WhatsApp
+            <div class="space-y-2 border-t border-slate-100 pt-4 text-center text-xs text-slate-500">
+                <a href="https://wa.me/6285692253516?text={{ urlencode('Assalamu\'alaikum, saya wali santri dan lupa PIN Portal. Mohon bantuan reset PIN.') }}" target="_blank" rel="noopener"
+                   class="inline-flex items-center gap-1.5 font-semibold text-emerald-700 hover:underline">
+                    <i class="fa-brands fa-whatsapp"></i> Hubungi Bendahara via WhatsApp
                 </a>
                 <div>
-                    <a href="{{ route('portal.login') }}" class="text-brand-900 font-bold hover:underline">
-                        <i class="fa-solid fa-arrow-left mr-1"></i> Kembali ke Login
+                    <a href="{{ route('portal.login') }}" class="inline-flex items-center gap-1.5 font-semibold text-slate-700 hover:text-slate-900 hover:underline">
+                        <i class="fa-solid fa-arrow-left"></i> Kembali ke Login
                     </a>
                 </div>
             </div>

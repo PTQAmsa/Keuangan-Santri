@@ -98,7 +98,7 @@
     @include('layouts.partials.scripts')
 </body>
 @else
-<body class="flex min-h-screen flex-col justify-between bg-gray-50 font-sans text-gray-800 antialiased">
+<body class="flex min-h-screen flex-col justify-between bg-slate-50 font-sans text-slate-800 antialiased">
 
     @include('layouts.partials.topbar')
 
