@@ -6,9 +6,11 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\PaymentCategory;
 use App\Models\Student;
+use App\Services\CashFlowService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportController
@@ -19,7 +21,9 @@ class ReportController
     public function cashInflow(Request $request)
     {
         $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->toDateString());
-        $endDate = $request->input('end_date', Carbon::now()->toDateString());
+        // Ringkasan laporan selalu per satu bulan penuh dan otomatis berganti
+        // saat tanggal 1 bulan berikutnya tiba.
+        $endDate = $request->input('end_date', Carbon::now()->endOfMonth()->toDateString());
         $categoryId = $request->input('category_id');
         $paymentMethod = $request->input('payment_method');
         $kelompok = $request->input('kelompok');
@@ -30,6 +34,7 @@ class ReportController
             'receipt_number' => 'receipt_number',
             'payment_date' => 'payment_date',
             'student_name' => 'student_name',
+            'kelompok' => 'kelompok',
             'category' => 'category',
             'payment_method' => 'payment_method',
             'amount_paid' => 'amount_paid',
@@ -65,6 +70,10 @@ class ReportController
         if ($sortBy === 'student_name') {
             $query->leftJoin('students', 'payments.student_id', '=', 'students.id')
                 ->orderBy('students.nama_lengkap', $sortOrder)
+                ->select('payments.*');
+        } elseif ($sortBy === 'kelompok') {
+            $query->leftJoin('students', 'payments.student_id', '=', 'students.id')
+                ->orderBy('students.santri_group', $sortOrder)
                 ->select('payments.*');
         } elseif ($sortBy === 'category') {
             $query->leftJoin('invoices', 'payments.invoice_id', '=', 'invoices.id')
@@ -123,12 +132,114 @@ class ReportController
     }
 
     /**
+     * Kerangka Laporan Arus Kas: kas masuk & kas keluar dalam satu buku kas.
+     */
+    public function cashFlow(Request $request, CashFlowService $cashFlow)
+    {
+        $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->toDateString());
+        $endDate = $request->input('end_date', Carbon::now()->toDateString());
+
+        $allowedSorts = [
+            'date',
+            'code',
+            'description',
+            'party',
+            'method',
+            'masuk',
+            'keluar',
+            'saldo',
+        ];
+
+        $sortBy = (string) $request->input('sort_by', 'date');
+        $sortOrder = strtolower((string) $request->input('sort_order', 'asc')) === 'desc' ? 'desc' : 'asc';
+
+        if (! in_array($sortBy, $allowedSorts, true)) {
+            $sortBy = 'date';
+        }
+
+        $flow = $cashFlow->build(Carbon::parse($startDate), Carbon::parse($endDate));
+        $flow['entries'] = $this->sortCashFlowEntries($flow['entries'], $sortBy, $sortOrder);
+
+        return view('admin.reports.cash-flow', [
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'sortBy' => $sortBy,
+            'sortOrder' => $sortOrder,
+            ...$flow,
+        ]);
+    }
+
+    /**
+     * Urutkan buku kas sesuai kolom yang dipilih. Saldo berjalan tetap
+     * dihitung secara kronologis oleh CashFlowService.
+     *
+     * @param  Collection<int, array<string, mixed>>  $entries
+     * @return Collection<int, array<string, mixed>>
+     */
+    private function sortCashFlowEntries(Collection $entries, string $sortBy, string $sortOrder): Collection
+    {
+        $descending = $sortOrder === 'desc';
+
+        $entries = match ($sortBy) {
+            'code' => $entries->sortBy(
+                fn (array $entry) => mb_strtolower((string) $entry['code']),
+                SORT_NATURAL | SORT_FLAG_CASE,
+                $descending
+            ),
+            'description' => $entries->sortBy(
+                fn (array $entry) => mb_strtolower((string) $entry['description']),
+                SORT_NATURAL | SORT_FLAG_CASE,
+                $descending
+            ),
+            'party' => $entries->sortBy(
+                fn (array $entry) => mb_strtolower((string) $entry['party']),
+                SORT_NATURAL | SORT_FLAG_CASE,
+                $descending
+            ),
+            'method' => $entries->sortBy(
+                fn (array $entry) => mb_strtolower((string) $entry['method']),
+                SORT_NATURAL | SORT_FLAG_CASE,
+                $descending
+            ),
+            'masuk' => $entries->sortBy(
+                fn (array $entry) => $entry['direction'] === 'masuk' ? $entry['amount'] : 0,
+                SORT_NUMERIC,
+                $descending
+            ),
+            'keluar' => $entries->sortBy(
+                fn (array $entry) => $entry['direction'] === 'keluar' ? $entry['amount'] : 0,
+                SORT_NUMERIC,
+                $descending
+            ),
+            'saldo' => $entries->sortBy(
+                fn (array $entry) => $entry['running_balance'],
+                SORT_NUMERIC,
+                $descending
+            ),
+            default => $entries->sortBy(
+                fn (array $entry) => sprintf(
+                    '%s-%d-%06d',
+                    $entry['date']->toDateString(),
+                    $entry['sort_group'],
+                    $entry['sort_id'],
+                ),
+                SORT_STRING,
+                $descending
+            ),
+        };
+
+        return $entries->values();
+    }
+
+    /**
      * Export Laporan Penerimaan Kas ke CSV / Excel
      */
     public function exportCashInflowCsv(Request $request): StreamedResponse
     {
         $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->toDateString());
-        $endDate = $request->input('end_date', Carbon::now()->toDateString());
+        // Ringkasan laporan selalu per satu bulan penuh dan otomatis berganti
+        // saat tanggal 1 bulan berikutnya tiba.
+        $endDate = $request->input('end_date', Carbon::now()->endOfMonth()->toDateString());
         $categoryId = $request->input('category_id');
         $paymentMethod = $request->input('payment_method');
         $kelompok = $request->input('kelompok');
@@ -164,7 +275,7 @@ class ReportController
 
             fputcsv($handle, ['LAPORAN PENERIMAAN KAS - PESANTREN TADABBUR AL-QURAN AMSA001']);
             fputcsv($handle, ["Periode: {$startDate} s/d {$endDate}"]);
-            fputcsv($handle, ['Tanggal Unduh: '.Carbon::now()->translatedFormat('d F Y H:i:s')]);
+            fputcsv($handle, ['Tanggal Unduh: '.Carbon::now()->translatedFormat('d F Y')]);
             fputcsv($handle, []);
 
             // Header Tabel
@@ -195,7 +306,7 @@ class ReportController
                     $pay->student->kelas ?? '-',
                     $pay->student->kelompok ?? '-',
                     $pay->invoice->category->name ?? '-',
-                    $pay->invoice->title ?? '-',
+                    $pay->invoice?->receipt_title ?? '-',
                     strtoupper($pay->payment_method),
                     (float) $pay->amount_paid,
                     $pay->notes ?? '-',
@@ -218,7 +329,9 @@ class ReportController
     public function exportCashInflowPdf(Request $request)
     {
         $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->toDateString());
-        $endDate = $request->input('end_date', Carbon::now()->toDateString());
+        // Ringkasan laporan selalu per satu bulan penuh dan otomatis berganti
+        // saat tanggal 1 bulan berikutnya tiba.
+        $endDate = $request->input('end_date', Carbon::now()->endOfMonth()->toDateString());
         $categoryId = $request->input('category_id');
         $paymentMethod = $request->input('payment_method');
         $kelompok = $request->input('kelompok');
@@ -286,6 +399,14 @@ class ReportController
         $search = $request->input('search');
         $kelompok = $request->input('kelompok');
 
+        $allowedSorts = ['student_name', 'wali', 'detail', 'total_tunggakan'];
+        $sortBy = (string) $request->input('sort_by', 'total_tunggakan');
+        $sortOrder = strtolower((string) $request->input('sort_order', 'desc')) === 'asc' ? 'asc' : 'desc';
+
+        if (! in_array($sortBy, $allowedSorts, true)) {
+            $sortBy = 'total_tunggakan';
+        }
+
         // Query tagihan yang belum lunas
         $invoiceQuery = Invoice::with(['student', 'category'])
             ->whereIn('status', ['unpaid', 'partial']);
@@ -326,7 +447,22 @@ class ReportController
                 'total_tunggakan' => $totalTunggakan,
                 'count_invoices' => $invoices->count(),
             ];
-        })->sortByDesc('total_tunggakan');
+        });
+
+        $sortOptions = in_array($sortBy, ['detail', 'total_tunggakan'], true)
+            ? SORT_NUMERIC
+            : SORT_NATURAL | SORT_FLAG_CASE;
+
+        $studentArrears = $studentArrears
+            ->sortBy(function (array $item) use ($sortBy) {
+                return match ($sortBy) {
+                    'student_name' => mb_strtolower((string) ($item['student']?->nama_lengkap ?? '')),
+                    'wali' => mb_strtolower((string) ($item['student']?->nama_wali ?? '')),
+                    'detail' => $item['count_invoices'],
+                    default => $item['total_tunggakan'],
+                };
+            }, $sortOptions, $sortOrder === 'desc')
+            ->values();
 
         $totalSantriMenunggak = $studentArrears->count();
         $totalNilaiTunggakan = $studentArrears->sum('total_tunggakan');
@@ -346,7 +482,9 @@ class ReportController
             'selectedClass',
             'categoryId',
             'search',
-            'kelompok'
+            'kelompok',
+            'sortBy',
+            'sortOrder'
         ));
     }
 
@@ -397,7 +535,7 @@ class ReportController
             fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
 
             fputcsv($handle, ['LAPORAN TUNGGAKAN BIAYA SANTRI - PTQ AMSA001']);
-            fputcsv($handle, ['Tanggal Cetak: '.Carbon::now()->translatedFormat('d F Y H:i:s')]);
+            fputcsv($handle, ['Tanggal Unduh: '.Carbon::now()->translatedFormat('d F Y')]);
             fputcsv($handle, []);
 
             fputcsv($handle, [

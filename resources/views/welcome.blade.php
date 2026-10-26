@@ -18,7 +18,7 @@
                 Sistem Keuangan & Tagihan Santri Terpadu
             </h1>
             <p class="text-sm sm:text-base text-blue-200 leading-relaxed max-w-2xl">
-                Layanan pencatatan pembayaran SPP bulanan, sarpras asrama, wakaf pembangunan bertahap, serta penerbitan kuitansi digital ber-QR Code untuk wali santri.
+                Layanan pencatatan pembayaran SPP bulanan, sarpras asrama, wakaf pembangunan bertahap, serta penerbitan kuitansi digital untuk wali santri.
             </p>
 
             <div class="pt-4 flex flex-wrap gap-3">
@@ -123,11 +123,11 @@
 
         <div class="bg-white rounded-2xl p-6 border border-gray-100 text-center space-y-3">
             <div class="w-12 h-12 rounded-2xl bg-brand-50 text-brand-800 mx-auto flex items-center justify-center text-xl">
-                <i class="fa-solid fa-qrcode"></i>
+                <i class="fa-solid fa-file-invoice"></i>
             </div>
-            <h3 class="font-bold text-gray-900 text-base">Kuitansi Digital QR Code</h3>
+            <h3 class="font-bold text-gray-900 text-base">Kuitansi Digital PDF</h3>
             <p class="text-xs text-gray-500 leading-relaxed">
-                Tanda terima resmi berformat PDF ber-Kop PTQ Amsa001 yang dilengkapi kode verifikasi publik untuk menjamin keaslian bukti pembayaran.
+                Tanda terima resmi berformat PDF ber-Kop PTQ Amsa001 sebagai bukti pembayaran yang dapat diunduh dan disimpan oleh wali santri.
             </p>
         </div>
 

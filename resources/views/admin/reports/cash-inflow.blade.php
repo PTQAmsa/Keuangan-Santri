@@ -19,20 +19,8 @@
             <p class="text-xs sm:text-sm text-gray-500 mt-0.5">Rekapitulasi seluruh dana masuk pembayaran santri PTQ Amsa001</p>
         </div>
 
-        <!-- Quick Switch Tab -->
-        <div class="flex items-center bg-gray-100 p-1 rounded-xl self-start md:self-auto text-xs font-semibold">
-            <a href="{{ route('admin.reports.cash') }}" class="px-4 py-2 rounded-lg bg-white text-brand-900 shadow-sm">
-                <i class="fa-solid fa-money-bill-wave mr-1 text-emerald-600"></i> Kas Masuk
-            </a>
-            <a href="{{ route('admin.reports.arrears') }}" class="px-4 py-2 rounded-lg text-gray-600 hover:text-brand-900 transition">
-                <i class="fa-solid fa-clock-rotate-left mr-1 text-rose-500"></i> Rekap Tunggakan
-            </a>
-            @if(auth()->user()->role?->canManageFinances())
-                <a href="{{ route('admin.expenses') }}" class="px-4 py-2 rounded-lg text-gray-600 hover:text-brand-900 transition">
-                    <i class="fa-solid fa-money-bill-trend-up mr-1 text-rose-500"></i> Kas Keluar
-                </a>
-            @endif
-        </div>
+        <!-- Navigasi laporan (Kas Keluar sudah ada di menu utama, tidak diulang di sini) -->
+        @include('admin.reports._tabs')
     </div>
 
     <!-- Filter Form Bar -->
@@ -116,7 +104,10 @@
                     <i class="fa-solid fa-receipt"></i>
                 </div>
             </div>
-            <p class="text-xs text-gray-400 mt-2">Kuitansi terbit dan terverifikasi</p>
+            <p class="text-xs text-gray-400 mt-2 flex items-center">
+                <i class="fa-solid fa-calendar-check mr-1.5"></i>
+                {{ \Carbon\Carbon::parse($startDate)->format('d M') }} - {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
+            </p>
         </div>
 
         <!-- Total Cash -->
@@ -130,7 +121,10 @@
                     <i class="fa-solid fa-hand-holding-dollar"></i>
                 </div>
             </div>
-            <p class="text-xs text-gray-400 mt-2">Diterima langsung di meja kasir</p>
+            <p class="text-xs text-gray-400 mt-2 flex items-center">
+                <i class="fa-solid fa-calendar-check mr-1.5"></i>
+                {{ \Carbon\Carbon::parse($startDate)->format('d M') }} - {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
+            </p>
         </div>
 
         <!-- Total Transfer -->
@@ -144,7 +138,10 @@
                     <i class="fa-solid fa-building-columns"></i>
                 </div>
             </div>
-            <p class="text-xs text-gray-400 mt-2">Bank Syariah Indonesia (BSI)</p>
+            <p class="text-xs text-gray-400 mt-2 flex items-center">
+                <i class="fa-solid fa-calendar-check mr-1.5"></i>
+                {{ \Carbon\Carbon::parse($startDate)->format('d M') }} - {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
+            </p>
         </div>
     </div>
 
@@ -203,9 +200,6 @@
                 <a href="{{ route('admin.reports.cash.pdf', request()->query()) }}" target="_blank" class="inline-flex items-center px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold shadow-sm transition">
                     <i class="fa-solid fa-file-pdf mr-1.5"></i> Unduh PDF
                 </a>
-                <button onclick="window.print()" class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 rounded-xl text-xs font-semibold shadow-sm transition">
-                    <i class="fa-solid fa-print mr-1.5"></i> Cetak
-                </button>
             </div>
         </div>
 
@@ -233,7 +227,11 @@
                                 <span>Santri</span>{!! $sortIcon('student_name', $sortBy, $sortOrder) !!}
                             </a>
                         </th>
-                        <th class="py-3 px-4 text-center">Marhalah</th>
+                        <th class="py-3 px-4 text-center">
+                            <a href="{{ $sortUrl('kelompok', $sortBy, $sortOrder) }}" class="inline-flex items-center justify-center hover:text-brand-900 transition" title="Urutkan Marhalah">
+                                <span>Marhalah</span>{!! $sortIcon('kelompok', $sortBy, $sortOrder) !!}
+                            </a>
+                        </th>
                         <th class="py-3 px-4">
                             <a href="{{ $sortUrl('category', $sortBy, $sortOrder) }}" class="inline-flex items-center hover:text-brand-900 transition" title="Urutkan Komponen Tagihan">
                                 <span>Komponen Tagihan</span>{!! $sortIcon('category', $sortBy, $sortOrder) !!}
@@ -249,7 +247,6 @@
                                 <span>Nominal Bayar</span>{!! $sortIcon('amount_paid', $sortBy, $sortOrder) !!}
                             </a>
                         </th>
-                        <th class="py-3 px-4 text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -277,7 +274,7 @@
                                 <span class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-700 mb-0.5">
                                     {{ $pay->invoice->category->name ?? 'Tagihan' }}
                                 </span>
-                                <p class="text-xs text-gray-600 truncate max-w-xs">{{ $pay->invoice->title ?? '-' }}</p>
+                                <p class="text-xs text-gray-600 truncate max-w-xs">{{ $pay->invoice?->receipt_title ?? '-' }}</p>
                             </td>
                             <td class="py-3 px-4 text-center">
                                 @if($pay->payment_method == 'transfer')
@@ -293,19 +290,10 @@
                             <td class="py-3 px-4 text-right font-bold text-emerald-600 whitespace-nowrap">
                                 Rp {{ number_format($pay->amount_paid, 0, ',', '.') }}
                             </td>
-                            <td class="py-3 px-4 text-center whitespace-nowrap">
-                                @if($pay->receipt)
-                                    <a href="{{ route('receipt.download', $pay->receipt->id) }}" target="_blank" class="inline-flex items-center px-2.5 py-1 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-900 text-xs font-semibold transition" title="Unduh Kuitansi PDF">
-                                        <i class="fa-solid fa-file-pdf mr-1 text-gold-500"></i> PDF
-                                    </a>
-                                @else
-                                    <span class="text-gray-300">-</span>
-                                @endif
-                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="py-12 text-center text-gray-400">
+                            <td colspan="8" class="py-12 text-center text-gray-400">
                                 <i class="fa-solid fa-inbox text-4xl mb-2 text-gray-300 block"></i>
                                 Tidak ditemukan data transaksi pada periode filter yang dipilih.
                             </td>
@@ -319,7 +307,6 @@
                             <td class="py-3 px-4 text-right text-emerald-700 font-extrabold text-sm">
                                 Rp {{ number_format($totalPenerimaan, 0, ',', '.') }}
                             </td>
-                            <td></td>
                         </tr>
                     </tfoot>
                 @endif

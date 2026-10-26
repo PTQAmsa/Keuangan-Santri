@@ -145,12 +145,12 @@
             </td>
             <td style="width: 58%; vertical-align: middle;">
                 <h1 class="logo-title">Pesantren Tadabbur Al-Qur'an Amsa001</h1>
-                <p class="logo-sub">Pendidikan Muadalah Mu'allimien (Program 6 Tahun)</p>
+                <p class="logo-sub">Satuan Pendidikan Muadalah Mu'allimien | Putra-Putri</p>
                 <p class="logo-address">Jl. Cikopo Selatan, Gg. Yulias, Sukabirus, Desa Gadog, Kec. Megamendung, Bogor 16770 | Telp: +62 856-9225-3516 | Web: www.ptqamsa.id</p>
             </td>
             <td style="width: 30%; text-align: right; vertical-align: middle;">
                 <div style="font-size: 9px; color: #64748b;">
-                    Dicetak: {{ now()->translatedFormat('d F Y H:i') }} WIB<br>
+                    Dicetak: {{ now()->translatedFormat('d F Y') }}<br>
                     Dokumen: Laporan Resmi Internal
                 </div>
             </td>
@@ -224,7 +224,7 @@
                     <td class="text-center">{{ $pay->student->kelompok ?? '-' }}</td>
                     <td>
                         <strong>{{ $pay->invoice->category->name ?? '-' }}</strong><br>
-                        <span style="font-size: 8.5px; color: #64748b;">{{ $pay->invoice->title ?? '-' }}</span>
+                        <span style="font-size: 8.5px; color: #64748b;">{{ $pay->invoice?->receipt_title ?? '-' }}</span>
                     </td>
                     <td class="text-center">
                         {{ strtoupper($pay->payment_method) }}
@@ -261,7 +261,7 @@
             <td style="width: 60%; vertical-align: top;">
                 <div style="font-size: 8.5px; color: #64748b;">
                     * Laporan ini dicetak secara otomatis melalui Sistem Keuangan PTQ Amsa001.<br>
-                    * Setiap data pembayaran terikat langsung dengan nomor kuitansi dan verifikasi digital.
+                    * Setiap data pembayaran terikat langsung dengan nomor kuitansi digital.
                 </div>
             </td>
             <td class="signature-box" style="vertical-align: top; width: 40%;">

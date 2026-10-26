@@ -28,6 +28,7 @@ class FinancialReportTest extends TestCase
         $response->assertSee('Laporan Penerimaan Kas');
         $response->assertSee('Total Kas Masuk');
         $response->assertSee('Jumlah Transaksi');
+        $response->assertSee('sort_by=kelompok', false);
     }
 
     /**
@@ -93,6 +94,7 @@ class FinancialReportTest extends TestCase
             'receipt_number',
             'payment_date',
             'student_name',
+            'kelompok',
             'category',
             'payment_method',
             'amount_paid',
@@ -142,6 +144,10 @@ class FinancialReportTest extends TestCase
 
         $response->assertStatus(200);
         $this->assertTrue(str_contains($response->headers->get('content-type'), 'text/csv'));
+        $this->assertStringContainsString(
+            'Tanggal Unduh: '.now()->translatedFormat('d F Y'),
+            $response->streamedContent()
+        );
     }
 
     /**
@@ -166,6 +172,20 @@ class FinancialReportTest extends TestCase
         $response->assertSee('Laporan Rekapitulasi Tunggakan');
         $response->assertSee('Total Nilai Tunggakan');
         $response->assertSee('Santri Menunggak');
+        $response->assertSee('sort_by=student_name', false);
+    }
+
+    /**
+     * Test setiap kolom tabel tunggakan dapat diurutkan.
+     */
+    public function test_arrears_report_can_sort_by_each_table_column(): void
+    {
+        foreach (['student_name', 'wali', 'detail', 'total_tunggakan'] as $column) {
+            $this->get(route('admin.reports.arrears', [
+                'sort_by' => $column,
+                'sort_order' => 'asc',
+            ]))->assertOk();
+        }
     }
 
     /**
@@ -177,6 +197,10 @@ class FinancialReportTest extends TestCase
 
         $response->assertStatus(200);
         $this->assertTrue(str_contains($response->headers->get('content-type'), 'text/csv'));
+        $this->assertStringContainsString(
+            'Tanggal Unduh: '.now()->translatedFormat('d F Y'),
+            $response->streamedContent()
+        );
     }
 
     /**

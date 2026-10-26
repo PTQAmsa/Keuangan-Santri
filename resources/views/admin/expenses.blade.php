@@ -19,14 +19,13 @@
             </h1>
             <p class="text-xs sm:text-sm text-gray-500 mt-0.5">Catat dan pantau pengeluaran operasional pesantren</p>
         </div>
-        <a href="{{ route('admin.reports.cash') }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 hover:bg-gray-50 transition">
-            <i class="fa-solid fa-arrow-left mr-2"></i> Kembali ke Laporan Kas
-        </a>
     </div>
 
     <!-- Filter -->
     <div class="bg-white rounded-2xl p-5 border border-gray-200/80 shadow-sm">
         <form method="GET" action="{{ route('admin.expenses') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+            <input type="hidden" name="sort_by" value="{{ $sortBy }}">
+            <input type="hidden" name="sort_order" value="{{ $sortOrder }}">
             <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1">Dari Tanggal</label>
                 <input type="date" name="start_date" value="{{ $startDate }}" class="w-full text-xs rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800 focus:border-brand-800 bg-gray-50/50">
@@ -130,7 +129,7 @@
             <div>
                 <label for="payment_method" class="block text-xs font-semibold text-gray-700 mb-1">Metode <span class="text-rose-500">*</span></label>
                 <select name="payment_method" id="payment_method" required class="w-full text-sm rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800 focus:border-brand-800">
-                    <option value="cash" {{ old('payment_method', 'cash') === 'cash' ? 'selected' : '' }}>Tunai / Kasir</option>
+                    <option value="cash" {{ old('payment_method', 'cash') === 'cash' ? 'selected' : '' }}>Tunai</option>
                     <option value="transfer" {{ old('payment_method') === 'transfer' ? 'selected' : '' }}>Transfer Bank</option>
                 </select>
             </div>
@@ -154,6 +153,24 @@
         </form>
     </div>
 
+    @php
+        $sortUrl = function ($column) use ($sortBy, $sortOrder) {
+            $order = ($sortBy === $column && $sortOrder === 'asc') ? 'desc' : 'asc';
+
+            return request()->fullUrlWithQuery(['sort_by' => $column, 'sort_order' => $order]);
+        };
+
+        $sortIcon = function ($column) use ($sortBy, $sortOrder) {
+            if ($sortBy !== $column) {
+                return '<i class="fa-solid fa-sort text-gray-300 ml-1"></i>';
+            }
+
+            return $sortOrder === 'asc'
+                ? '<i class="fa-solid fa-arrow-up-short-wide text-brand-900 ml-1"></i>'
+                : '<i class="fa-solid fa-arrow-down-wide-short text-brand-900 ml-1"></i>';
+        };
+    @endphp
+
     <!-- Daftar Pengeluaran -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="px-6 py-4 bg-gray-50/70 border-b border-gray-100 flex items-center justify-between">
@@ -172,16 +189,16 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-xs sm:text-sm">
                     <thead>
-                        <tr class="bg-gray-50 text-gray-600 uppercase text-[11px] font-semibold border-b border-gray-200">
-                            <th class="py-3 px-3">Tanggal</th>
-                            <th class="py-3 px-3">Kode</th>
-                            <th class="py-3 px-3">Kategori</th>
-                            <th class="py-3 px-3">Uraian</th>
-                            <th class="py-3 px-3 text-right">Nominal</th>
-                            <th class="py-3 px-3">Metode</th>
-                            <th class="py-3 px-3">Penerima</th>
-                            <th class="py-3 px-3">Dicatat Oleh</th>
-                            <th class="py-3 px-3 text-center">Status</th>
+                        <tr class="bg-gray-50 text-gray-600 uppercase text-[11px] font-semibold border-b border-gray-200 select-none">
+                            <th class="py-3 px-3"><a href="{{ $sortUrl('expense_date') }}" class="inline-flex items-center hover:text-brand-900" title="Urutkan Tanggal">Tanggal{!! $sortIcon('expense_date') !!}</a></th>
+                            <th class="py-3 px-3"><a href="{{ $sortUrl('expense_code') }}" class="inline-flex items-center hover:text-brand-900" title="Urutkan Kode">Kode{!! $sortIcon('expense_code') !!}</a></th>
+                            <th class="py-3 px-3"><a href="{{ $sortUrl('category') }}" class="inline-flex items-center hover:text-brand-900" title="Urutkan Kategori">Kategori{!! $sortIcon('category') !!}</a></th>
+                            <th class="py-3 px-3"><a href="{{ $sortUrl('description') }}" class="inline-flex items-center hover:text-brand-900" title="Urutkan Uraian">Uraian{!! $sortIcon('description') !!}</a></th>
+                            <th class="py-3 px-3 text-right"><a href="{{ $sortUrl('amount') }}" class="inline-flex items-center justify-end hover:text-brand-900" title="Urutkan Nominal">Nominal{!! $sortIcon('amount') !!}</a></th>
+                            <th class="py-3 px-3"><a href="{{ $sortUrl('payment_method') }}" class="inline-flex items-center hover:text-brand-900" title="Urutkan Metode">Metode{!! $sortIcon('payment_method') !!}</a></th>
+                            <th class="py-3 px-3"><a href="{{ $sortUrl('recipient') }}" class="inline-flex items-center hover:text-brand-900" title="Urutkan Penerima">Penerima{!! $sortIcon('recipient') !!}</a></th>
+                            <th class="py-3 px-3"><a href="{{ $sortUrl('recorded_by') }}" class="inline-flex items-center hover:text-brand-900" title="Urutkan Pencatat">Dicatat Oleh{!! $sortIcon('recorded_by') !!}</a></th>
+                            <th class="py-3 px-3 text-center"><a href="{{ $sortUrl('status') }}" class="inline-flex items-center justify-center hover:text-brand-900" title="Urutkan Status">Status{!! $sortIcon('status') !!}</a></th>
                             <th class="py-3 px-3 text-center">Aksi</th>
                         </tr>
                     </thead>
@@ -207,7 +224,7 @@
                                 <td class="py-3 px-3 text-right font-bold {{ $expense->isVoided() ? 'text-gray-400 line-through' : 'text-rose-700' }}">
                                     Rp {{ number_format((float) $expense->amount, 0, ',', '.') }}
                                 </td>
-                                <td class="py-3 px-3 uppercase text-[11px] text-gray-600">{{ $expense->payment_method }}</td>
+                                <td class="py-3 px-3 text-[11px] text-gray-600">{{ $expense->payment_method === 'cash' ? 'Tunai' : 'Transfer Bank' }}</td>
                                 <td class="py-3 px-3 text-gray-700">{{ $expense->recipient ?: '-' }}</td>
                                 <td class="py-3 px-3 text-gray-600">{{ $expense->recordedBy?->name ?? '-' }}</td>
                                 <td class="py-3 px-3 text-center">
@@ -218,7 +235,13 @@
                                     @endif
                                 </td>
                                 <td class="py-3 px-3 text-center">
-                                    @unless($expense->isVoided())
+                                    @if(! $expense->isVoided() && $expense->bisyarahPayment)
+                                        <a href="{{ route('admin.bisyarah', ['period' => sprintf('%04d-%02d', $expense->bisyarahPayment->period_year, $expense->bisyarahPayment->period_month)]) }}#guru-{{ $expense->bisyarahPayment->teacher_id }}"
+                                           title="Kas keluar ini berasal dari modul Bisyarah. Ubah atau batalkan lewat halaman Bisyarah Bulanan."
+                                           class="inline-flex items-center px-2.5 py-1.5 rounded-lg bg-violet-50 hover:bg-violet-100 text-violet-700 text-[11px] font-semibold border border-violet-200 transition">
+                                            <i class="fa-solid fa-chalkboard-user mr-1"></i> Bisyarah
+                                        </a>
+                                    @elseif(! $expense->isVoided())
                                         <form action="{{ route('admin.expenses.void', $expense) }}" method="POST" class="inline"
                                               onsubmit="const reason = prompt('Alasan pembatalan {{ $expense->expense_code }}:'); if (!reason || !reason.trim()) { return false; } this.void_reason.value = reason.trim(); return true;">
                                             @csrf
@@ -230,7 +253,7 @@
                                         </form>
                                     @else
                                         <span class="text-[10px] text-gray-400">-</span>
-                                    @endunless
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach
@@ -241,7 +264,7 @@
     </div>
 
     <div class="bg-blue-50/60 border border-blue-100 rounded-xl p-4 text-[11px] text-blue-800">
-        <p><strong>Catatan:</strong> Pengeluaran yang dibatalkan tetap tersimpan untuk keperluan audit, tetapi tidak dihitung dalam total kas keluar. Gunakan pembatalan jika ada kesalahan input, lalu catat ulang data yang benar.</p>
+        <p><strong>Catatan:</strong> Pengeluaran yang dibatalkan tetap tersimpan untuk keperluan audit, tetapi tidak dihitung dalam total kas keluar. Gunakan pembatalan jika ada kesalahan input, lalu catat ulang data yang benar. Klik judul kolom pada tabel untuk mengurutkan data.</p>
     </div>
 </div>
 @endsection

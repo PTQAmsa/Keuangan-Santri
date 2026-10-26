@@ -58,9 +58,10 @@
             <div>
                 <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Tagihan Belum Lunas</p>
                 <p class="text-xl sm:text-2xl font-bold text-rose-600 mt-1">
-                    Rp {{ number_format($student->total_tunggakan, 0, ',', '.') }}
+                    Rp {{ number_format($totalTunggakan, 0, ',', '.') }}
                 </p>
-                <p class="text-[11px] text-gray-400 mt-0.5">{{ $activeInvoices->count() }} pos tagihan aktif</p>
+                <p class="text-[11px] text-gray-400 mt-0.5">{{ $activeInvoices->count() }} pos tagihan &bull; s.d. {{ $batasTunggakanLabel }}</p>
+                <p class="text-[10px] text-gray-400 mt-1 leading-snug">{{ $batasTunggakanCatatan }}</p>
             </div>
             <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl">
                 <i class="fa-solid fa-file-invoice-dollar"></i>
@@ -98,7 +99,7 @@
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="px-6 py-4 bg-gray-50/70 border-b border-gray-100 flex items-center justify-between">
             <h2 class="text-base font-bold text-gray-800 flex items-center">
-                <i class="fa-solid fa-bell text-gold-500 mr-2"></i> Tagihan Aktif (Menunggu Pembayaran)
+                <i class="fa-solid fa-bell text-gold-500 mr-2"></i> Tagihan Aktif s.d. {{ $batasTunggakanLabel }}
             </h2>
             <span class="text-xs px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 font-semibold">
                 {{ $activeInvoices->count() }} Tagihan
@@ -133,7 +134,11 @@
                                 </div>
                                 <h3 class="text-base font-bold text-gray-900">{{ $inv->title }}</h3>
                                 <p class="text-xs text-gray-500">
-                                    Jatuh Tempo: <strong>{{ $inv->due_date ? $inv->due_date->format('d M Y') : '-' }}</strong>
+                                    @if($inv->isWakaf())
+                                        <span class="italic">Pembayaran wakaf berlaku selama ananda menjadi santri</span>
+                                    @else
+                                        Jatuh Tempo: <strong>{{ $inv->due_date ? $inv->due_date->format('d M Y') : '-' }}</strong>
+                                    @endif
                                     @if($inv->notes)
                                         • <span class="italic">{{ $inv->notes }}</span>
                                     @endif
@@ -173,13 +178,7 @@
             <h2 class="text-base font-bold text-gray-800 flex items-center">
                 <i class="fa-solid fa-receipt text-brand-800 mr-2"></i> Riwayat Pembayaran & Kuitansi Digital
             </h2>
-            <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-500 hidden sm:inline">Total: {{ $payments->count() }} Kuitansi</span>
-                <a href="{{ route('portal.card') }}"
-                   class="inline-flex items-center px-3 py-1.5 rounded-lg bg-brand-900 hover:bg-brand-800 text-white text-[11px] font-semibold transition shadow-sm">
-                    <i class="fa-solid fa-address-card mr-1.5 text-gold-400"></i> Kartu Keuangan
-                </a>
-            </div>
+            <span class="text-xs text-gray-500">Total: {{ $payments->count() }} Kuitansi</span>
         </div>
 
         @if($payments->isEmpty())
@@ -209,7 +208,7 @@
                                     @endif
                                 </td>
                                 <td class="py-3.5 px-4 font-medium text-gray-800">
-                                    {{ $pay->invoice->title ?? '-' }}
+                                    {{ $pay->invoice?->receipt_title ?? '-' }}
                                 </td>
                                 <td class="py-3.5 px-4 font-bold {{ $pay->isVoided() ? 'text-gray-400 line-through' : 'text-emerald-600' }}">
                                     Rp {{ number_format($pay->amount_paid, 0, ',', '.') }}
@@ -224,16 +223,10 @@
                                 </td>
                                 <td class="py-3.5 px-4 text-center">
                                     @if($pay->receipt)
-                                        <div class="inline-flex items-center space-x-1.5">
-                                            <a href="{{ route('receipt.download', $pay->receipt->id) }}" target="_blank"
-                                               class="inline-flex items-center px-2.5 py-1.5 bg-brand-900 hover:bg-brand-800 text-white rounded-lg text-xs font-semibold shadow-sm transition">
-                                                <i class="fa-solid fa-file-pdf mr-1 text-gold-400"></i> Unduh PDF
-                                            </a>
-                                            <a href="{{ $pay->receipt->verification_url }}" target="_blank"
-                                               class="inline-flex items-center px-2 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-medium transition" title="Lihat Status QR Verifikasi">
-                                                <i class="fa-solid fa-qrcode"></i>
-                                            </a>
-                                        </div>
+                                        <a href="{{ route('receipt.download', $pay->receipt->id) }}" target="_blank" rel="noopener"
+                                           class="inline-flex items-center px-2.5 py-1.5 bg-brand-900 hover:bg-brand-800 text-white rounded-lg text-xs font-semibold shadow-sm transition">
+                                            <i class="fa-solid fa-file-pdf mr-1 text-gold-400"></i> Unduh PDF
+                                        </a>
                                     @else
                                         <span class="text-gray-400 text-xs">-</span>
                                     @endif

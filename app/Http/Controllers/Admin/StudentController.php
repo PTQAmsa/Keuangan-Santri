@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Student;
 use App\Services\ActivityLogService;
 use App\Services\StudentFinancialCardService;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class StudentController
@@ -152,13 +151,18 @@ class StudentController
     }
 
     /**
-     * Unduh kartu keuangan santri dalam bentuk PDF.
+     * Unduh daftar tagihan santri (maksimal satu semester berjalan).
      */
-    public function cardPdf(Student $student, StudentFinancialCardService $cardService)
+    public function cardInvoicesPdf(Student $student, StudentFinancialCardService $cardService)
     {
-        $pdf = Pdf::loadView('pdf.student-card', $cardService->build($student))
-            ->setPaper('a4', 'portrait');
+        return $cardService->invoicesPdf($student);
+    }
 
-        return $pdf->stream('Kartu-Keuangan-'.$student->nis.'.pdf');
+    /**
+     * Unduh riwayat pembayaran & kuitansi santri (maksimal satu semester berjalan).
+     */
+    public function cardPaymentsPdf(Student $student, StudentFinancialCardService $cardService)
+    {
+        return $cardService->paymentsPdf($student);
     }
 }

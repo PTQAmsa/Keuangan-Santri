@@ -20,33 +20,42 @@
                 Perbaiki data pembayaran yang salah input atau batalkan kuitansi. Seluruh aksi tercatat di Log Aktivitas.
             </p>
         </div>
-        <a href="{{ route('admin.invoices') }}" class="px-3.5 py-2 bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 rounded-xl text-xs font-semibold shadow-sm transition">
-            <i class="fa-solid fa-file-invoice mr-1.5"></i> Daftar Tagihan
-        </a>
     </div>
 
     <!-- Ringkasan -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div class="bg-white rounded-2xl p-5 border border-gray-200/80 shadow-sm">
             <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Kuitansi Aktif</p>
-            <p class="text-xl font-extrabold text-emerald-700 mt-1">Rp {{ number_format($totalAktif, 0, ',', '.') }}</p>
-            <p class="text-xs text-gray-400 mt-1">Dihitung dari kuitansi yang belum dibatalkan</p>
+            <p class="text-2xl font-extrabold text-emerald-700 mt-1">{{ number_format($jumlahAktif, 0, ',', '.') }} <span class="text-sm font-semibold text-gray-500">kuitansi</span></p>
+            <p class="text-xs text-gray-400 mt-1">Jumlah kuitansi aktif yang tersedia di database</p>
         </div>
         <div class="bg-white rounded-2xl p-5 border border-gray-200/80 shadow-sm">
             <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Dibatalkan</p>
-            <p class="text-xl font-extrabold text-rose-700 mt-1">Rp {{ number_format($totalDibatalkan, 0, ',', '.') }}</p>
-            <p class="text-xs text-gray-400 mt-1">{{ $jumlahDibatalkan }} kuitansi dibatalkan</p>
+            <p class="text-2xl font-extrabold text-rose-700 mt-1">{{ number_format($jumlahDibatalkan, 0, ',', '.') }} <span class="text-sm font-semibold text-gray-500">kuitansi</span></p>
+            <p class="text-xs text-gray-400 mt-1">Jumlah kuitansi yang berstatus dibatalkan</p>
         </div>
         <div class="bg-white rounded-2xl p-5 border border-gray-200/80 shadow-sm">
-            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Peran yang Berhak</p>
-            <p class="text-sm font-bold text-brand-900 mt-1">Administrator &amp; Bendahara</p>
-            <p class="text-xs text-gray-400 mt-1">Pengasuh hanya dapat melihat laporan</p>
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Kuitansi Putra &amp; Putri</p>
+            <div class="mt-2 space-y-1.5 text-xs">
+                <div class="flex items-center justify-between rounded-lg bg-blue-50/70 border border-blue-100 px-2.5 py-1.5">
+                    <span class="font-semibold text-blue-800">Putra</span>
+                    <span class="text-gray-700"><strong>{{ $putraAktif }}</strong> aktif &bull; <strong class="text-rose-700">{{ $putraBatal }}</strong> batal</span>
+                </div>
+                <div class="flex items-center justify-between rounded-lg bg-fuchsia-50/70 border border-fuchsia-100 px-2.5 py-1.5">
+                    <span class="font-semibold text-fuchsia-800">Putri</span>
+                    <span class="text-gray-700"><strong>{{ $putriAktif }}</strong> aktif &bull; <strong class="text-rose-700">{{ $putriBatal }}</strong> batal</span>
+                </div>
+            </div>
+            <p class="text-xs text-gray-400 mt-1.5">Jumlah status kuitansi per marhalah</p>
         </div>
     </div>
 
     <!-- Filter -->
     <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
         <form action="{{ route('admin.transactions') }}" method="GET" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end text-xs">
+            <input type="hidden" name="sort_by" value="{{ $sortBy }}">
+            <input type="hidden" name="sort_order" value="{{ $sortOrder }}">
+
             <div class="sm:col-span-2">
                 <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Cari Kuitansi / Santri / NIS / Diterima Dari</label>
                 <div class="relative">
@@ -79,19 +88,66 @@
         </form>
     </div>
 
+    <!-- Helper sortir kolom -->
+    @php
+        $sortUrl = function ($column, $currentSort, $currentOrder) {
+            $order = ($currentSort === $column && $currentOrder === 'asc') ? 'desc' : 'asc';
+
+            return request()->fullUrlWithQuery(['sort_by' => $column, 'sort_order' => $order]);
+        };
+
+        $sortIcon = function ($column, $currentSort, $currentOrder) {
+            if ($currentSort !== $column) {
+                return '<i class="fa-solid fa-sort text-gray-300 ml-1"></i>';
+            }
+
+            return $currentOrder === 'asc'
+                ? '<i class="fa-solid fa-arrow-up-short-wide text-brand-900 ml-1"></i>'
+                : '<i class="fa-solid fa-arrow-down-wide-short text-brand-900 ml-1"></i>';
+        };
+    @endphp
+
     <!-- Tabel Transaksi -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs sm:text-sm">
                 <thead>
-                    <tr class="bg-gray-50 text-gray-600 uppercase text-[11px] font-semibold border-b border-gray-200">
-                        <th class="py-3 px-4 whitespace-nowrap">No. Kuitansi</th>
-                        <th class="py-3 px-4 whitespace-nowrap">Tanggal</th>
-                        <th class="py-3 px-4">Santri</th>
-                        <th class="py-3 px-4 text-center whitespace-nowrap">Marhalah</th>
-                        <th class="py-3 px-4">Uraian Tagihan</th>
-                        <th class="py-3 px-4 text-right whitespace-nowrap">Nominal</th>
-                        <th class="py-3 px-4 text-center whitespace-nowrap">Status</th>
+                    <tr class="bg-gray-50 text-gray-600 uppercase text-[11px] font-semibold border-b border-gray-200 select-none">
+                        <th class="py-3 px-4 whitespace-nowrap">
+                            <a href="{{ $sortUrl('receipt_number', $sortBy, $sortOrder) }}" class="inline-flex items-center hover:text-brand-900 transition" title="Urutkan No. Kuitansi">
+                                <span>No. Kuitansi</span>{!! $sortIcon('receipt_number', $sortBy, $sortOrder) !!}
+                            </a>
+                        </th>
+                        <th class="py-3 px-4 whitespace-nowrap">
+                            <a href="{{ $sortUrl('payment_date', $sortBy, $sortOrder) }}" class="inline-flex items-center hover:text-brand-900 transition" title="Urutkan Tanggal">
+                                <span>Tanggal</span>{!! $sortIcon('payment_date', $sortBy, $sortOrder) !!}
+                            </a>
+                        </th>
+                        <th class="py-3 px-4">
+                            <a href="{{ $sortUrl('student_name', $sortBy, $sortOrder) }}" class="inline-flex items-center hover:text-brand-900 transition" title="Urutkan Nama Santri">
+                                <span>Santri</span>{!! $sortIcon('student_name', $sortBy, $sortOrder) !!}
+                            </a>
+                        </th>
+                        <th class="py-3 px-4 text-center whitespace-nowrap">
+                            <a href="{{ $sortUrl('kelompok', $sortBy, $sortOrder) }}" class="inline-flex items-center justify-center hover:text-brand-900 transition" title="Urutkan Marhalah">
+                                <span>Marhalah</span>{!! $sortIcon('kelompok', $sortBy, $sortOrder) !!}
+                            </a>
+                        </th>
+                        <th class="py-3 px-4">
+                            <a href="{{ $sortUrl('invoice_title', $sortBy, $sortOrder) }}" class="inline-flex items-center hover:text-brand-900 transition" title="Urutkan Uraian Tagihan">
+                                <span>Uraian Tagihan</span>{!! $sortIcon('invoice_title', $sortBy, $sortOrder) !!}
+                            </a>
+                        </th>
+                        <th class="py-3 px-4 text-right whitespace-nowrap">
+                            <a href="{{ $sortUrl('amount_paid', $sortBy, $sortOrder) }}" class="inline-flex items-center justify-end hover:text-brand-900 transition" title="Urutkan Nominal">
+                                <span>Nominal</span>{!! $sortIcon('amount_paid', $sortBy, $sortOrder) !!}
+                            </a>
+                        </th>
+                        <th class="py-3 px-4 text-center whitespace-nowrap">
+                            <a href="{{ $sortUrl('status', $sortBy, $sortOrder) }}" class="inline-flex items-center justify-center hover:text-brand-900 transition" title="Urutkan Status">
+                                <span>Status</span>{!! $sortIcon('status', $sortBy, $sortOrder) !!}
+                            </a>
+                        </th>
                         <th class="py-3 px-4 text-center whitespace-nowrap">Aksi</th>
                     </tr>
                 </thead>
@@ -116,7 +172,7 @@
                                 @endif
                             </td>
                             <td class="py-3.5 px-4">
-                                <p class="text-xs font-medium text-gray-700">{{ $pay->invoice->title ?? '-' }}</p>
+                                <p class="text-xs font-medium text-gray-700">{{ $pay->invoice?->receipt_title ?? '-' }}</p>
                                 <p class="text-[11px] text-gray-400">Diterima dari: {{ $pay->received_from ?: '-' }}</p>
                             </td>
                             <td class="py-3.5 px-4 text-right font-bold whitespace-nowrap {{ $pay->isVoided() ? 'text-gray-400 line-through' : 'text-emerald-700' }}">
@@ -144,16 +200,24 @@
                                                     'date' => $pay->payment_date?->format('Y-m-d'),
                                                     'received_from' => $pay->received_from,
                                                     'notes' => $pay->notes,
+                                                    'student' => $pay->student->nama_lengkap ?? '-',
+                                                    'origin' => $pay->student->kota_asal ?? '-',
+                                                    'kelompok' => $pay->student->kelompok ?? '-',
+                                                    'invoice' => $pay->invoice?->receipt_title ?? '-',
                                                 ]) }}"
                                                 onclick="openEditPayment(this)"
                                                 class="inline-flex items-center px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 text-[11px] font-semibold border border-amber-200 transition">
                                             <i class="fa-solid fa-pen-to-square mr-1"></i> Ubah
-                                        </button>
-                                        <button type="button"
+                                        </button>                                            <button type="button"
                                                 data-payment="{{ json_encode([
                                                     'id' => $pay->id,
                                                     'code' => $pay->receipt->receipt_number ?? $pay->payment_code,
                                                     'student' => $pay->student->nama_lengkap ?? '-',
+                                                    'origin' => $pay->student->kota_asal ?? '-',
+                                                    'kelompok' => $pay->student->kelompok ?? '-',
+                                                    'invoice' => $pay->invoice?->receipt_title ?? '-',
+                                                    'received_from' => $pay->received_from ?: '-',
+                                                    'method' => $pay->payment_method === 'cash' ? 'Tunai' : 'Transfer BSI',
                                                     'amount' => number_format((float) $pay->amount_paid, 0, ',', '.'),
                                                 ]) }}"
                                                 onclick="openVoidPayment(this)"
@@ -201,6 +265,28 @@
             @csrf
             @method('PATCH')
 
+            <!-- Konteks santri & tagihan agar koreksi tidak salah baris -->
+            <div class="p-3 bg-gray-50 border border-gray-200 rounded-xl space-y-1.5">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <p class="text-[10px] font-bold uppercase text-gray-400">Nama Santri</p>
+                        <p class="font-bold text-gray-900" id="editStudent">-</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold uppercase text-gray-400">Asal</p>
+                        <p class="font-semibold text-gray-800" id="editOrigin">-</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold uppercase text-gray-400">Marhalah</p>
+                        <p class="font-semibold text-gray-800" id="editKelompok">-</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold uppercase text-gray-400">Uraian Tagihan</p>
+                        <p class="font-semibold text-gray-800" id="editInvoice">-</p>
+                    </div>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                     <label class="block font-bold text-gray-700 uppercase mb-1">Nominal Bayar (Rp) <span class="text-rose-500">*</span></label>
@@ -237,7 +323,7 @@
 
             <div class="p-3 bg-amber-50 border border-amber-100 rounded-xl text-[11px] text-amber-900">
                 <i class="fa-solid fa-triangle-exclamation mr-1"></i>
-                Perubahan akan tercatat pada Log Aktivitas beserta nilai sebelum dan sesudahnya.
+                Perubahan akan tercatat pada Log Aktivitas beserta nilai sebelum dan sesudahnya. Laporan kas, arus kas, dan sisa tunggakan otomatis dihitung ulang dari kuitansi yang masih aktif.
             </div>
 
             <div class="flex items-center justify-end space-x-2 pt-2">
@@ -267,9 +353,27 @@
             @csrf
             @method('PATCH')
 
-            <div class="p-3 bg-rose-50 border border-rose-100 rounded-xl text-[11px] text-rose-900 space-y-1">
-                <p id="voidPaymentSummary">-</p>
-                <p>Kuitansi tidak dihapus, tetapi ditandai <strong>DIBATALKAN</strong>. Status tagihan akan dihitung ulang.</p>
+            <div class="p-3 bg-rose-50 border border-rose-100 rounded-xl text-[11px] text-rose-900 space-y-2">
+                <div class="grid grid-cols-3 gap-2">
+                    <div class="col-span-2">
+                        <p class="text-[10px] font-bold uppercase text-rose-400">Nama Santri</p>
+                        <p class="font-bold text-rose-900" id="voidStudent">-</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold uppercase text-rose-400">Marhalah</p>
+                        <p class="font-semibold text-rose-900" id="voidKelompok">-</p>
+                    </div>
+                </div>
+                <div>
+                    <p class="text-[10px] font-bold uppercase text-rose-400">Asal</p>
+                    <p class="font-semibold text-rose-900" id="voidOrigin">-</p>
+                </div>
+                <div class="pt-2 border-t border-rose-200">
+                    <p class="font-semibold" id="voidInvoice">-</p>
+                    <p class="text-rose-700" id="voidReceived">-</p>
+                    <p class="font-bold mt-1" id="voidPaymentSummary">-</p>
+                </div>
+                <p>Kuitansi tidak dihapus, tetapi ditandai <strong>DIBATALKAN</strong>. Status tagihan, laporan kas, dan arus kas langsung dihitung ulang.</p>
             </div>
 
             <div>
@@ -298,6 +402,10 @@
         document.getElementById('editMethod').value = data.method || 'transfer';
         document.getElementById('editReceivedFrom').value = data.received_from || '';
         document.getElementById('editNotes').value = data.notes || '';
+        document.getElementById('editStudent').textContent = data.student || '-';
+        document.getElementById('editOrigin').textContent = data.origin || '-';
+        document.getElementById('editKelompok').textContent = data.kelompok || '-';
+        document.getElementById('editInvoice').textContent = data.invoice || '-';
         document.getElementById('editPaymentModal').classList.remove('hidden');
     }
 
@@ -305,7 +413,12 @@
         const data = JSON.parse(button.dataset.payment);
         document.getElementById('voidPaymentForm').action = "{{ url('admin/transaksi') }}/" + data.id + "/void";
         document.getElementById('voidPaymentCode').textContent = data.code || '-';
-        document.getElementById('voidPaymentSummary').textContent = data.student + ' — Rp ' + data.amount;
+        document.getElementById('voidStudent').textContent = data.student || '-';
+        document.getElementById('voidOrigin').textContent = data.origin || '-';
+        document.getElementById('voidKelompok').textContent = data.kelompok || '-';
+        document.getElementById('voidInvoice').textContent = data.invoice || '-';
+        document.getElementById('voidReceived').textContent = 'Diterima dari: ' + (data.received_from || '-') + ' (' + (data.method || '-') + ')';
+        document.getElementById('voidPaymentSummary').textContent = 'Nominal: Rp ' + data.amount;
         document.getElementById('voidPaymentModal').classList.remove('hidden');
     }
 </script>

@@ -65,18 +65,17 @@
                     @if(request()->is('portal*'))
                         {{-- NAV KHUSUS PORTAL WALI SANTRI --}}
                         @if(session('portal_student_id'))
-                            <a href="{{ route('portal.dashboard') }}" class="px-3 py-1.5 rounded-lg bg-brand-800 hover:bg-brand-700 text-gold-400 border border-brand-700">
+                            <a href="{{ route('portal.dashboard') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('portal.dashboard') ? 'bg-brand-800 text-gold-400 border border-brand-700' : 'text-gray-300 hover:text-white hover:bg-brand-800' }}">
                                 <i class="fa-solid fa-user-graduate mr-1"></i> Dashboard Santri
                             </a>
-                            <a href="{{ route('portal.change-pin') }}" class="px-3 py-1.5 rounded-lg text-gray-300 hover:text-white hover:bg-brand-800">
-                                <i class="fa-solid fa-lock mr-1"></i> Ganti PIN
+                            <a href="{{ route('portal.card') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('portal.card') ? 'bg-brand-800 text-gold-400 border border-brand-700' : 'text-gray-300 hover:text-white hover:bg-brand-800' }}">
+                                <i class="fa-solid fa-address-card mr-1"></i> Kartu Keuangan
+                            </a>
+                            <a href="{{ route('portal.profile') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('portal.profile', 'portal.change-pin') ? 'bg-brand-800 text-gold-400 border border-brand-700' : 'text-gray-300 hover:text-white hover:bg-brand-800' }}">
+                                <i class="fa-solid fa-user mr-1"></i> Profil
                             </a>
                             <a href="{{ route('portal.logout') }}" class="px-3 py-1.5 rounded-lg text-gray-300 hover:text-white hover:bg-brand-800">
                                 <i class="fa-solid fa-right-from-bracket mr-1"></i> Keluar
-                            </a>
-                        @else
-                            <a href="{{ url('/') }}" class="px-2.5 py-1.5 rounded-lg text-gray-200 hover:text-white hover:bg-brand-800">
-                                <i class="fa-solid fa-house mr-1"></i> Beranda Utama
                             </a>
                         @endif
                     @elseif(request()->is('admin*'))
@@ -96,8 +95,8 @@
                                 <i class="fa-solid fa-house mr-1"></i> Beranda Utama
                             </a>
                         @endauth
-                    @else
-                        {{-- NAV BERANDA DEPAN / PUBLIK --}}
+                    @elseif(request()->is('/'))
+                        {{-- Login pengurus hanya ditawarkan di beranda, bukan di halaman publik lain. --}}
                         <a href="{{ route('admin.login') }}" class="px-3.5 py-1.5 rounded-lg bg-gold-400 text-brand-900 font-bold hover:bg-gold-500 shadow-sm transition">
                             <i class="fa-solid fa-lock mr-1"></i> Login Pengurus / Bendahara
                         </a>
@@ -131,6 +130,14 @@
                         <a href="{{ route('admin.reports.cash') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.reports.*') ? 'bg-emerald-600 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }} transition">
                             <i class="fa-solid fa-chart-column mr-1"></i> Laporan
                         </a>
+                        @if(auth()->user()->role?->canManageFinances())
+                            <a href="{{ route('admin.students') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.students*') ? 'bg-amber-500 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
+                                <i class="fa-solid fa-user-graduate mr-1"></i> Data Santri
+                            </a>
+                            <a href="{{ route('admin.teachers') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.teachers*', 'admin.bisyarah*') ? 'bg-amber-500 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }}">
+                                <i class="fa-solid fa-user-tie mr-1"></i> Data Guru
+                            </a>
+                        @endif
                         @if(auth()->user()->role?->isAdmin())
                             <a href="{{ route('admin.logs') }}" class="px-3 py-1.5 rounded-lg {{ request()->routeIs('admin.logs') ? 'bg-rose-600 text-white font-bold' : 'text-gray-200 hover:text-white hover:bg-brand-800' }} transition">
                                 <i class="fa-solid fa-clipboard-list mr-1"></i> Log Aktivitas
@@ -148,6 +155,20 @@
     <!-- Main Content Body -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <!-- Flash Alert Messages -->
+        @if($errors->any())
+            <div class="mb-5 bg-rose-50 border-l-4 border-rose-500 p-4 rounded-r-lg shadow-sm flex items-start space-x-3">
+                <i class="fa-solid fa-circle-exclamation text-rose-600 text-xl mt-0.5"></i>
+                <div class="flex-1 text-sm text-rose-800">
+                    <p class="font-semibold">Perubahan belum disimpan.</p>
+                    <ul class="list-disc list-inside mt-1 space-y-0.5">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        @endif
+
         @if(session('success'))
             <div class="mb-5 bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-lg shadow-sm flex items-start space-x-3">
                 <i class="fa-solid fa-circle-check text-emerald-600 text-xl mt-0.5"></i>

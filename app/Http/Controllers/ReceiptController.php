@@ -4,15 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\Receipt;
 use App\Services\ReceiptService;
+use Illuminate\Http\Request;
 
 class ReceiptController
 {
     /**
-     * Unduh file PDF Kuitansi Resmi
+     * Unduh file PDF Kuitansi Resmi.
+     *
+     * Dokumen hanya boleh diakses oleh pengurus yang login atau wali santri
+     * pemilik kuitansi (session portal). Tanpa salah satu syarat itu, balas 404
+     * agar keberadaan kuitansi tidak bisa ditebak dari nomor id.
      */
-    public function download(int $id, ReceiptService $receiptService)
+    public function download(Request $request, int $id, ReceiptService $receiptService)
     {
         $receipt = Receipt::with(['payment.student', 'payment.invoice.category'])->findOrFail($id);
+
+        abort_unless($this->canAccess($request, $receipt), 404);
 
         $pdf = $receiptService->generateReceiptPdf($receipt);
 
@@ -22,14 +29,17 @@ class ReceiptController
     }
 
     /**
-     * Halaman Publik Verifikasi QR Code Keaslian Kuitansi
+     * Cek hak akses terhadap satu kuitansi.
      */
-    public function verify(string $token)
+    private function canAccess(Request $request, Receipt $receipt): bool
     {
-        $receipt = Receipt::with(['payment.student', 'payment.invoice.category', 'payment.recordedBy'])
-            ->where('qr_verification_token', $token)
-            ->first();
+        $user = $request->user();
 
-        return view('receipt.verify', compact('receipt', 'token'));
+        if ($user !== null && $user->is_active) {
+            return true;
+        }
+
+        // Wali santri hanya boleh mengunduh kuitansi anaknya sendiri.
+        return (int) $request->session()->get('portal_student_id') === (int) $receipt->payment->student_id;
     }
 }

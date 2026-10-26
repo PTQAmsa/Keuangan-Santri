@@ -8,6 +8,8 @@ enum ActivityAction: string
     case Updated = 'updated';
     case Cancelled = 'cancelled';
     case Deleted = 'deleted';
+    case Closed = 'closed';
+    case Reopened = 'reopened';
     case Login = 'login';
 
     /**
@@ -20,6 +22,8 @@ enum ActivityAction: string
             self::Updated => 'Diubah',
             self::Cancelled => 'Dibatalkan',
             self::Deleted => 'Dihapus',
+            self::Closed => 'Ditutup',
+            self::Reopened => 'Dibuka Kembali',
             self::Login => 'Login',
         };
     }
@@ -34,6 +38,8 @@ enum ActivityAction: string
             self::Updated => 'bg-amber-100 text-amber-800',
             self::Cancelled => 'bg-rose-100 text-rose-800',
             self::Deleted => 'bg-rose-100 text-rose-800',
+            self::Closed => 'bg-slate-200 text-slate-800',
+            self::Reopened => 'bg-amber-100 text-amber-800',
             self::Login => 'bg-indigo-100 text-indigo-800',
         };
     }

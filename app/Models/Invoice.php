@@ -23,12 +23,19 @@ class Invoice extends Model
         'period_month',
         'period_year',
         'notes',
+        'edit_count',
     ];
+
+    /**
+     * Jumlah maksimal koreksi data tagihan (judul, nominal, jatuh tempo).
+     */
+    public const MAX_EDITS = 2;
 
     protected $casts = [
         'amount' => 'decimal:2',
         'paid_amount' => 'decimal:2',
         'due_date' => 'date',
+        'edit_count' => 'integer',
     ];
 
     public function student(): BelongsTo
@@ -60,6 +67,24 @@ class Invoice extends Model
     public function isCancelled(): bool
     {
         return $this->status === 'cancelled';
+    }
+
+    /**
+     * Apakah tagihan ini berasal dari pos wakaf (komitmen, bukan tagihan bulanan).
+     */
+    public function isWakaf(): bool
+    {
+        $teks = strtoupper(trim(($this->category?->code ?? '').' '.($this->category?->name ?? '')));
+
+        return str_contains($teks, 'WAKAF');
+    }
+
+    /**
+     * Sisa kuota koreksi data tagihan (maksimal dua kali).
+     */
+    public function remainingEdits(): int
+    {
+        return max(0, self::MAX_EDITS - (int) $this->edit_count);
     }
 
     /**

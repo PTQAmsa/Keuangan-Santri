@@ -6,65 +6,66 @@
     <style>
         @page {
             size: a5 landscape;
-            margin: 15mm;
+            margin: 10mm;
         }
         body {
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             color: #1f2937;
-            font-size: 11px;
-            line-height: 1.4;
+            font-size: 10px;
+            line-height: 1.3;
             margin: 0;
             padding: 0;
         }
         .header-table {
             width: 100%;
             border-bottom: 2px solid #1e3a8a;
-            padding-bottom: 8px;
-            margin-bottom: 12px;
+            padding-bottom: 5px;
+            margin-bottom: 8px;
         }
         .logo-text {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
             color: #1e3a8a;
             margin: 0;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.4px;
         }
         .sub-text {
-            font-size: 10px;
+            font-size: 9px;
             color: #4b5563;
-            margin: 2px 0;
+            margin: 1px 0;
         }
         .address-text {
-            font-size: 8.5px;
+            font-size: 7.5px;
             color: #6b7280;
             margin: 0;
         }
         .receipt-title-box {
             text-align: center;
-            margin: 8px 0 14px 0;
+            margin: 4px 0 8px 0;
         }
         .receipt-title {
             display: inline-block;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: bold;
             color: #1e3a8a;
             border-bottom: 1.5px solid #f59e0b;
-            padding-bottom: 2px;
+            padding-bottom: 1px;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
         .receipt-number {
-            font-size: 10px;
+            font-size: 9px;
             color: #4b5563;
-            margin-top: 3px;
+            margin-top: 2px;
         }
         .content-table {
             width: 100%;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             border-collapse: collapse;
+            page-break-inside: avoid;
         }
         .content-table td {
-            padding: 4px 6px;
+            padding: 2.5px 5px;
             vertical-align: top;
         }
         .label-col {
@@ -83,42 +84,35 @@
         .terbilang-box {
             background-color: #f3f4f6;
             border-left: 3px solid #1e3a8a;
-            padding: 6px 10px;
-            margin: 10px 0;
+            padding: 4px 8px;
+            margin: 6px 0;
             font-style: italic;
             font-weight: 500;
             color: #1e3a8a;
+            page-break-inside: avoid;
         }
         .amount-box {
             display: inline-block;
             background-color: #eff6ff;
             border: 1px dashed #2563eb;
             color: #1e3a8a;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
-            padding: 4px 12px;
+            padding: 3px 10px;
             border-radius: 4px;
         }
         .footer-table {
             width: 100%;
-            margin-top: 15px;
+            margin-top: 8px;
             border-collapse: collapse;
-        }
-        .qr-box {
-            border: 1px solid #e5e7eb;
-            padding: 6px;
-            background-color: #fafafa;
-            border-radius: 4px;
-            font-size: 8px;
-            color: #6b7280;
-            line-height: 1.2;
+            page-break-inside: avoid;
         }
         .sig-box {
             text-align: center;
-            font-size: 10px;
+            font-size: 9px;
         }
         .sig-space {
-            height: 40px;
+            height: 26px;
         }
         .badge-paid {
             color: #065f46;
@@ -173,7 +167,7 @@
     <table class="header-table">
         <tr>
             <td style="width: 12%; vertical-align: middle;">
-                <img src="{{ public_path('images/logo-pesantren.png') }}" style="height: 52px; width: auto;" alt="Logo PTQ Amsa001">
+                <img src="{{ public_path('images/logo-pesantren.png') }}" style="height: 44px; width: auto;" alt="Logo PTQ Amsa001">
             </td>
             <td style="width: 63%; vertical-align: middle;">
                 <div class="logo-text">PESANTREN TADABBUR AL-QUR'AN AMSA001</div>
@@ -182,8 +176,8 @@
                 <div class="address-text">WhatsApp: +62 856-9225-3516 | Email: info@ptqamsa.id | Web: www.ptqamsa.id</div>
             </td>
             <td style="width: 25%; text-align: right; vertical-align: top;">
-                <div style="font-size: 9px; color: #6b7280;">Tanggal Terbit:</div>
-                <div style="font-weight: bold; color: #1e3a8a;">{{ $receipt->issued_at->format('d F Y') }}</div>
+                <div style="font-size: 9px; color: #6b7280;">Diunduh:</div>
+                <div style="font-weight: bold; color: #1e3a8a;">{{ now()->format('d/m/Y') }}</div>
             </td>
         </tr>
     </table>
@@ -218,7 +212,7 @@
             <td class="separator-col">:</td>
             <td class="value-col">
                 @if($payment->isVoided())
-                    <span class="badge-void">DIBATALKAN {{ $payment->voided_at->format('d/m/Y H:i') }} — {{ $payment->void_reason }}</span>
+                    <span class="badge-void">DIBATALKAN {{ $payment->voided_at->format('d/m/Y') }} — {{ $payment->void_reason }}</span>
                 @else
                     <span class="badge-paid">SAH</span>
                 @endif
@@ -254,19 +248,13 @@
                 <div class="amount-box">
                     Rp {{ number_format($payment->amount_paid, 0, ',', '.') }},-
                 </div>
-                <div class="qr-box" style="margin-top: 8px;">
-                    <strong>Verifikasi Dokumen Resmi:</strong><br>
-                    Dokumen ini diterbitkan secara elektronik dan sah.<br>
-                    Validasi keaslian dokumen dapat diakses melalui:<br>
-                    <a href="{{ $verification_url }}" style="color: #2563eb; text-decoration: none;">{{ $verification_url }}</a>
-                </div>
             </td>
             <td style="width: 20%;"></td>
             <td style="width: 35%; vertical-align: top;" class="sig-box">
-                <div>Gadog, {{ $payment->payment_date->translatedFormat('d F Y') }}</div>
-                <div>{{ $payment->recordedBy?->receiptTitle() ?? 'Bendahara / Kasir Keuangan' }}</div>
+                <div>Gadog</div>
                 <div class="sig-space"></div>
-                <div style="font-weight: bold; text-decoration: underline;">{{ $payment->recordedBy->name ?? 'Usth. Yuni Permatasari' }}</div>
+                <div style="font-weight: bold; color: #374151;">{{ $payment->recordedBy?->receiptPosition() ?? 'Bendahara 1' }},</div>
+                <div style="font-weight: bold; text-decoration: underline;">{{ $payment->recordedBy?->receiptName() ?? 'Usth. Yuni Permatasari' }}</div>
             </td>
         </tr>
     </table>

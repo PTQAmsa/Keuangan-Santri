@@ -146,12 +146,12 @@
             </td>
             <td style="width: 56%; vertical-align: middle;">
                 <h1 class="logo-title">Pesantren Tadabbur Al-Qur'an Amsa001</h1>
-                <p class="logo-sub">Pendidikan Muadalah Mu'allimien (Program 6 Tahun)</p>
+                <p class="logo-sub">Satuan Pendidikan Muadalah Mu'allimien | Putra-Putri</p>
                 <p class="logo-address">Jl. Cikopo Selatan, Gg. Yulias, Sukabirus, Desa Gadog, Kec. Megamendung, Bogor 16770 | Telp: +62 856-9225-3516</p>
             </td>
             <td style="width: 30%; text-align: right; vertical-align: middle;">
                 <div style="font-size: 8.5px; color: #64748b;">
-                    Dicetak: {{ now()->translatedFormat('d F Y H:i') }} WIB<br>
+                    Dicetak: {{ now()->translatedFormat('d F Y') }}<br>
                     Dokumen: Rekapitulasi Tunggakan
                 </div>
             </td>
@@ -214,8 +214,8 @@
                         @foreach($item['invoices'] as $inv)
                             <div style="margin-bottom: 2px;">
                                 • {{ $inv->title }}:
-                                <strong style="color: #b91c1c;">Rp {{ number_format($inv->remaining_amount, 0, ',', '.') }}</strong>
-                                @if($inv->status == 'partial') <span style="color: #d97706; font-size: 8px;">(Cicilan)</span> @endif
+                                <strong style="color: #111827;">Rp {{ number_format($inv->remaining_amount, 0, ',', '.') }}</strong>
+                                @if($inv->status == 'partial') <span style="color: #4b5563; font-size: 8px;">(Cicilan)</span> @endif
                             </div>
                         @endforeach
                     </td>

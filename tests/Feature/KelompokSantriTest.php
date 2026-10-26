@@ -133,7 +133,7 @@ class KelompokSantriTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Pemasukan Bulan Ini');
-        $response->assertSee('Total Tunggakan Santri');
+        $response->assertSee('Tunggakan Santri Bulan Ini');
         $response->assertSee('Putra');
         $response->assertSee('Putri');
 

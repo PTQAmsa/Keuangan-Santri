@@ -121,23 +121,11 @@ class PesantrenFinancialTest extends TestCase
     public function test_receipt_pdf_download(): void
     {
         $receipt = Receipt::first();
-        $response = $this->get(route('receipt.download', $receipt->id));
+        $response = $this->actingAs(User::where('email', 'admin@ptqamsa.id')->firstOrFail())
+            ->get(route('receipt.download', $receipt->id));
 
         $response->assertStatus(200);
         $response->assertHeader('content-type', 'application/pdf');
-    }
-
-    /**
-     * Test 5: Halaman publik verifikasi keaslian kuitansi QR Code
-     */
-    public function test_receipt_public_verification_page(): void
-    {
-        $receipt = Receipt::first();
-        $response = $this->get(route('receipt.verify', $receipt->qr_verification_token));
-
-        $response->assertStatus(200);
-        $response->assertSee('DOKUMEN RESMI TERVERIFIKASI');
-        $response->assertSee($receipt->receipt_number);
     }
 
     /**
@@ -165,12 +153,14 @@ class PesantrenFinancialTest extends TestCase
     public function test_receipt_prints_manual_received_from(): void
     {
         $invoice = Invoice::where('invoice_number', 'INV-202701-0005')->firstOrFail();
+        $bendahara1 = User::where('email', 'bendahara1@ptqamsa.id')->firstOrFail();
 
         $payment = app(ReceiptService::class)->recordPayment(
             invoice: $invoice,
             amountPaid: 675000,
             method: 'cash',
             notes: 'Lunas tunai',
+            adminId: $bendahara1->id,
             receivedFrom: 'Bpk. Abdurrahman (Ayah Kandung)',
         );
 
@@ -180,7 +170,6 @@ class PesantrenFinancialTest extends TestCase
             'invoice' => $invoice,
             'student' => $invoice->student,
             'terbilang' => ReceiptService::terbilang((int) $payment->amount_paid).' Rupiah',
-            'verification_url' => $payment->receipt->verification_url,
         ])->render();
 
         $this->assertStringContainsString('Bpk. Abdurrahman (Ayah Kandung)', $html);
@@ -189,25 +178,32 @@ class PesantrenFinancialTest extends TestCase
         $this->assertStringNotContainsString('Penerima Beasiswa', $html);
         $this->assertStringContainsString("Satuan Pendidikan Muadalah Mu'allimien | Putra-Putri", $html);
         $this->assertStringNotContainsString('Sistem Keuangan PTQ Amsa001', $html);
+        $this->assertStringContainsString('Bendahara 1,', $html);
+        $this->assertStringContainsString('Usth. Yuni Permatasari', $html);
+        $this->assertLessThan(
+            strpos($html, 'Usth. Yuni Permatasari'),
+            strpos($html, 'Bendahara 1,'),
+            'Jabatan Bendahara 1 harus tercetak di atas nama penanda tangan.'
+        );
+        $this->assertStringNotContainsString('Usth. Yuni Permatasari (Bendahara 1)', $html);
+        $this->assertStringContainsString('Diunduh:', $html);
+        $this->assertStringContainsString(now()->format('d/m/Y'), $html);
     }
 
     /**
-     * Test 7b: Gelar penanda tangan kuitansi mengikuti jabatan Bendahara 1 & 2
+     * Test 7b: Nama penanda tangan kuitansi tidak menyertakan jabatan.
      */
-    public function test_receipt_signature_title_follows_bendahara_jabatan(): void
+    public function test_receipt_signature_name_omits_position(): void
     {
-        $this->assertSame(
-            'Bendahara 1 PTQ Amsa001',
-            User::where('email', 'bendahara1@ptqamsa.id')->firstOrFail()->receiptTitle()
-        );
-        $this->assertSame(
-            'Bendahara 2 PTQ Amsa001',
-            User::where('email', 'bendahara2@ptqamsa.id')->firstOrFail()->receiptTitle()
-        );
-        $this->assertSame(
-            'Bendahara / Kasir Keuangan',
-            User::where('email', 'admin@ptqamsa.id')->firstOrFail()->receiptTitle()
-        );
+        $bendahara1 = User::where('email', 'bendahara1@ptqamsa.id')->firstOrFail();
+        $bendahara2 = User::where('email', 'bendahara2@ptqamsa.id')->firstOrFail();
+
+        $this->assertSame('Usth. Yuni Permatasari', $bendahara1->receiptName());
+        $this->assertSame('Usth. Revina', $bendahara2->receiptName());
+        $this->assertSame('Bendahara 1', $bendahara1->receiptPosition());
+        $this->assertSame('Bendahara 2', $bendahara2->receiptPosition());
+        $this->assertStringNotContainsString('Bendahara 1', $bendahara1->receiptName());
+        $this->assertStringNotContainsString('Bendahara 2', $bendahara2->receiptName());
     }
 
     /**

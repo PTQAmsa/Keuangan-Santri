@@ -5,10 +5,12 @@ namespace App\Services;
 use App\Enums\ActivityAction;
 use App\Enums\ActivityModule;
 use App\Models\ActivityLog;
+use App\Models\BookClosing;
 use App\Models\Expense;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Student;
+use App\Models\TeacherBisyarahPayment;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -633,6 +635,153 @@ class ActivityLogService
                 'Perubahan' => 'Kata sandi diganti sendiri oleh pengurus',
             ],
         );
+    }
+
+    /**
+     * Catat penutupan buku bulanan beserta snapshot angkanya.
+     */
+    public static function bookClosed(BookClosing $closing, ?int $userId = null): ActivityLog
+    {
+        return self::record(
+            module: ActivityModule::BookClosing,
+            action: ActivityAction::Closed,
+            description: sprintf(
+                'Menutup buku %s dengan saldo akhir %s.',
+                $closing->periodLabel(),
+                self::rupiah((float) $closing->closing_balance)
+            ),
+            subjectId: $closing->id,
+            properties: [
+                'Periode' => $closing->periodLabel(),
+                'Kas Masuk' => self::rupiah((float) $closing->total_in),
+                'Kas Keluar' => self::rupiah((float) $closing->total_out),
+                'Saldo Akhir' => self::rupiah((float) $closing->closing_balance),
+                'Jumlah Transaksi' => $closing->payment_count.' masuk / '.$closing->expense_count.' keluar',
+            ],
+            userId: $userId,
+        );
+    }
+
+    /**
+     * Catat pembukaan kembali periode yang sudah ditutup.
+     */
+    public static function bookReopened(BookClosing $closing, string $reason, ?int $userId = null): ActivityLog
+    {
+        return self::record(
+            module: ActivityModule::BookClosing,
+            action: ActivityAction::Reopened,
+            description: sprintf('Membuka kembali buku %s. Alasan: %s', $closing->periodLabel(), $reason),
+            subjectId: $closing->id,
+            properties: [
+                'Periode' => $closing->periodLabel(),
+                'Alasan' => $reason,
+                'Saldo Tercatat' => self::rupiah((float) $closing->closing_balance),
+            ],
+            userId: $userId,
+        );
+    }
+
+    /**
+     * Catat pembayaran bisyarah guru untuk satu bulan.
+     */
+    public static function bisyarahRecorded(TeacherBisyarahPayment $payment, ?int $userId = null): ActivityLog
+    {
+        $payment->loadMissing('teacher');
+        $teacher = $payment->teacher;
+
+        return self::record(
+            module: ActivityModule::Bisyarah,
+            action: ActivityAction::Created,
+            description: sprintf(
+                'Mencatat bisyarah %s periode %s sebesar %s (%s).',
+                $teacher->nama_lengkap ?? 'Guru',
+                $payment->periodLabel(),
+                self::rupiah($payment->amount),
+                $payment->paymentMethodLabel()
+            ),
+            subjectId: $payment->id,
+            properties: self::bisyarahProperties($payment) + [
+                'Nominal Bisyarah' => self::rupiah($payment->amount),
+            ],
+            userId: $userId,
+        );
+    }
+
+    /**
+     * Catat pembatalan bisyarah guru beserta kas keluar yang ikut dibatalkan.
+     */
+    public static function bisyarahCancelled(TeacherBisyarahPayment $payment, string $reason, ?Expense $expense = null, ?int $userId = null): ActivityLog
+    {
+        $payment->loadMissing('teacher');
+
+        return self::record(
+            module: ActivityModule::Bisyarah,
+            action: ActivityAction::Cancelled,
+            description: sprintf(
+                'Membatalkan bisyarah %s periode %s sebesar %s. Alasan: %s',
+                $payment->teacher->nama_lengkap ?? 'Guru',
+                $payment->periodLabel(),
+                self::rupiah($payment->amount),
+                $reason
+            ),
+            subjectId: $payment->id,
+            properties: self::bisyarahProperties($payment) + [
+                'Nominal Bisyarah' => self::rupiah($payment->amount),
+                'Kas Keluar Dibatalkan' => $expense?->expense_code ?? '-',
+                'Alasan' => $reason,
+            ],
+            userId: $userId,
+        );
+    }
+
+    /**
+     * Catat perbaikan nominal, metode, atau rekening bisyarah guru.
+     *
+     * @param  array<string, array{0: string, 1: string}>  $changes
+     */
+    public static function bisyarahUpdated(TeacherBisyarahPayment $payment, array $changes, ?int $userId = null): ActivityLog
+    {
+        $payment->loadMissing('teacher');
+        $properties = self::bisyarahProperties($payment);
+
+        foreach ($changes as $label => $values) {
+            $properties[$label] = $values[0].' → '.$values[1];
+        }
+
+        return self::record(
+            module: ActivityModule::Bisyarah,
+            action: ActivityAction::Updated,
+            description: sprintf(
+                'Memperbaiki bisyarah %s periode %s (%s).',
+                $payment->teacher->nama_lengkap ?? 'Guru',
+                $payment->periodLabel(),
+                implode(', ', array_keys($changes))
+            ),
+            subjectId: $payment->id,
+            properties: $properties,
+            userId: $userId,
+        );
+    }
+
+    /**
+     * Rincian guru & periode untuk log bisyarah.
+     *
+     * @return array<string, string>
+     */
+    private static function bisyarahProperties(TeacherBisyarahPayment $payment): array
+    {
+        $payment->loadMissing('expense');
+
+        return [
+            'Guru' => $payment->teacher->nama_lengkap ?? '-',
+            'Periode' => $payment->periodLabel(),
+            'Kas Keluar' => $payment->expense?->expense_code ?? '-',
+            'Metode' => $payment->paymentMethodLabel(),
+            'Rekening Tujuan' => $payment->hasBankAccount()
+                ? trim(($payment->bank_name ?? 'Bank').' • '.$payment->bank_account_number.' • '.($payment->bank_account_name ?? '-'))
+                : '-',
+            'Catatan' => $payment->notes ?: '-',
+        ];
     }
 
     /**

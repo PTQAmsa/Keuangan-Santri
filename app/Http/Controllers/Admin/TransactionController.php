@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Services\ActivityLogService;
+use App\Services\BookClosingService;
 use App\Services\ReceiptService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -26,9 +27,24 @@ class TransactionController
         $status = $request->input('status', 'active');
         $kelompok = $request->input('kelompok');
 
-        $query = Payment::with(['student', 'invoice.category', 'receipt', 'recordedBy', 'voidedBy'])
-            ->latest('payment_date')
-            ->latest('id');
+        $allowedSorts = [
+            'receipt_number',
+            'payment_date',
+            'student_name',
+            'kelompok',
+            'invoice_title',
+            'amount_paid',
+            'status',
+        ];
+
+        $sortBy = (string) $request->input('sort_by', 'payment_date');
+        $sortOrder = strtolower((string) $request->input('sort_order', 'desc')) === 'asc' ? 'asc' : 'desc';
+
+        if (! in_array($sortBy, $allowedSorts, true)) {
+            $sortBy = 'payment_date';
+        }
+
+        $query = Payment::with(['student', 'invoice.category', 'receipt', 'recordedBy', 'voidedBy']);
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -52,27 +68,70 @@ class TransactionController
             $query->whereHas('student', fn ($sub) => $sub->where('santri_group', $kelompok));
         }
 
+        // Kolom relasi perlu join agar bisa diurutkan dari server.
+        if ($sortBy === 'receipt_number') {
+            $query->leftJoin('receipts', 'receipts.payment_id', '=', 'payments.id')
+                ->orderByRaw('COALESCE(receipts.receipt_number, payments.payment_code) '.$sortOrder)
+                ->select('payments.*');
+        } elseif ($sortBy === 'student_name') {
+            $query->leftJoin('students', 'payments.student_id', '=', 'students.id')
+                ->orderBy('students.nama_lengkap', $sortOrder)
+                ->select('payments.*');
+        } elseif ($sortBy === 'kelompok') {
+            $query->leftJoin('students', 'payments.student_id', '=', 'students.id')
+                ->orderBy('students.santri_group', $sortOrder)
+                ->select('payments.*');
+        } elseif ($sortBy === 'invoice_title') {
+            $query->leftJoin('invoices', 'payments.invoice_id', '=', 'invoices.id')
+                ->orderBy('invoices.title', $sortOrder)
+                ->select('payments.*');
+        } elseif ($sortBy === 'status') {
+            $query->orderBy('payments.voided_at', $sortOrder);
+        } else {
+            $query->orderBy('payments.'.$sortBy, $sortOrder);
+        }
+
+        // Urutan sekunder agar baris dengan nilai sama tetap konsisten.
+        $query->orderBy('payments.id', 'desc');
+
         $payments = $query->paginate(20)->withQueryString();
 
-        $totalAktif = Payment::whereNull('voided_at')->sum('amount_paid');
-        $totalDibatalkan = Payment::whereNotNull('voided_at')->sum('amount_paid');
+        $jumlahAktif = Payment::whereNull('voided_at')->count();
         $jumlahDibatalkan = Payment::whereNotNull('voided_at')->count();
+
+        $putraAktif = Payment::whereNull('voided_at')
+            ->whereHas('student', fn ($q) => $q->where('santri_group', 'putra'))
+            ->count();
+        $putriAktif = Payment::whereNull('voided_at')
+            ->whereHas('student', fn ($q) => $q->where('santri_group', 'putri'))
+            ->count();
+        $putraBatal = Payment::whereNotNull('voided_at')
+            ->whereHas('student', fn ($q) => $q->where('santri_group', 'putra'))
+            ->count();
+        $putriBatal = Payment::whereNotNull('voided_at')
+            ->whereHas('student', fn ($q) => $q->where('santri_group', 'putri'))
+            ->count();
 
         return view('admin.transactions', compact(
             'payments',
             'search',
             'status',
             'kelompok',
-            'totalAktif',
-            'totalDibatalkan',
-            'jumlahDibatalkan'
+            'jumlahAktif',
+            'jumlahDibatalkan',
+            'putraAktif',
+            'putriAktif',
+            'putraBatal',
+            'putriBatal',
+            'sortBy',
+            'sortOrder'
         ));
     }
 
     /**
      * Batalkan kuitansi/pembayaran.
      */
-    public function voidPayment(Request $request, Payment $payment, ReceiptService $receiptService)
+    public function voidPayment(Request $request, Payment $payment, ReceiptService $receiptService, BookClosingService $bookClosing)
     {
         $data = $request->validate([
             'void_reason' => ['required', 'string', 'max:255'],
@@ -84,6 +143,8 @@ class TransactionController
             return back()->with('info', 'Kuitansi ini sudah dibatalkan sebelumnya.');
         }
 
+        $bookClosing->assertOpen($payment->payment_date, 'pembatalan kuitansi');
+
         $receiptService->voidPayment($payment, $data['void_reason'], auth()->id());
 
         return back()->with('success', 'Kuitansi '.($payment->receipt->receipt_number ?? $payment->payment_code).' dibatalkan. Status tagihan telah dihitung ulang.');
@@ -92,11 +153,13 @@ class TransactionController
     /**
      * Perbaiki data pembayaran yang salah input.
      */
-    public function updatePayment(Request $request, Payment $payment, ReceiptService $receiptService)
+    public function updatePayment(Request $request, Payment $payment, ReceiptService $receiptService, BookClosingService $bookClosing)
     {
         if ($payment->isVoided()) {
             return back()->withErrors(['payment' => 'Kuitansi yang sudah dibatalkan tidak dapat diubah.']);
         }
+
+        $bookClosing->assertOpen($payment->payment_date, 'perbaikan pembayaran');
 
         $data = $request->validate([
             'amount_paid' => ['required', 'numeric', 'min:1'],
@@ -110,6 +173,9 @@ class TransactionController
             'payment_date' => 'tanggal bayar',
             'received_from' => 'diterima dari',
         ]);
+
+        // Tanggal tujuan juga tidak boleh masuk periode yang sudah ditutup.
+        $bookClosing->assertOpen($data['payment_date'], 'perbaikan pembayaran');
 
         // Total pembayaran aktif tidak boleh melebihi nilai tagihan.
         $otherActive = (float) $payment->invoice->payments()
@@ -135,6 +201,12 @@ class TransactionController
     {
         if ($invoice->isCancelled()) {
             return back()->withErrors(['invoice' => 'Tagihan yang sudah dibatalkan tidak dapat diubah.']);
+        }
+
+        if ($invoice->remainingEdits() <= 0) {
+            return back()->withErrors([
+                'invoice' => 'Tagihan '.$invoice->invoice_number.' sudah diubah '.Invoice::MAX_EDITS.' kali, jadi data tagihan tidak dapat diubah lagi.',
+            ]);
         }
 
         $data = $request->validate([
@@ -182,12 +254,19 @@ class TransactionController
             return back()->with('info', 'Tidak ada perubahan pada tagihan ini.');
         }
 
-        $invoice->fill($data)->save();
+        $invoice->fill($data);
+        $invoice->edit_count = (int) $invoice->edit_count + 1;
+        $invoice->save();
         $invoice->recalculateStatus();
 
         ActivityLogService::invoiceUpdated($invoice, $changes, auth()->id());
 
-        return back()->with('success', 'Tagihan '.$invoice->invoice_number.' berhasil diperbarui.');
+        $sisa = $invoice->remainingEdits();
+        $pesanSisa = $sisa > 0
+            ? ' Sisa kuota perubahan: '.$sisa.' kali.'
+            : ' Kuota perubahan tagihan ini sudah habis.';
+
+        return back()->with('success', 'Tagihan '.$invoice->invoice_number.' berhasil diperbarui.'.$pesanSisa);
     }
 
     /**

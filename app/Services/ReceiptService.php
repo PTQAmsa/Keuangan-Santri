@@ -69,7 +69,7 @@ class ReceiptService
             'recorded_by' => $adminId,
         ]);
 
-        // 3. Buat Receipt dengan Token Verifikasi Unik
+        // 3. Buat Receipt dengan token internal unik
         Receipt::create([
             'receipt_number' => $receiptNumber,
             'payment_id' => $payment->id,
@@ -204,7 +204,6 @@ class ReceiptService
             'invoice' => $invoice,
             'student' => $student,
             'terbilang' => $terbilang,
-            'verification_url' => $receipt->verification_url,
         ];
 
         $pdf = Pdf::loadView('pdf.receipt', $data)

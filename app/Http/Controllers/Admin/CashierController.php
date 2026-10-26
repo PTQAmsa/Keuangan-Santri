@@ -7,17 +7,23 @@ use App\Models\Payment;
 use App\Models\PaymentCategory;
 use App\Models\Student;
 use App\Services\ActivityLogService;
+use App\Services\BookClosingService;
+use App\Services\InvoiceNumberService;
 use App\Services\ReceiptService;
+use App\Services\StudentFinancialCardService;
 use App\Services\WhatsAppService;
 use Carbon\Carbon;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CashierController
 {
     /**
      * Dashboard Ringkasan Keuangan Pesantren
      */
-    public function index()
+    public function index(StudentFinancialCardService $cardService)
     {
         $totalSantri = Student::where('status', 'aktif')->count();
         $totalPutra = Student::where('status', 'aktif')->where('santri_group', 'putra')->count();
@@ -37,10 +43,15 @@ class CashierController
             ->whereHas('student', fn ($q) => $q->where('santri_group', 'putri'))
             ->sum('amount_paid');
 
-        // Tunggakan aktif, dipisah keseluruhan / putra / putri.
-        $invoicesAktif = Invoice::with('student')
-            ->whereIn('status', ['unpaid', 'partial'])
-            ->get();
+        // Tunggakan aktif sampai bulan berjalan, dipisah keseluruhan / putra / putri.
+        // Tagihan bulan-bulan mendatang tidak dihitung agar angka card tetap
+        // mencerminkan kewajiban yang sudah jatuh tempo pada bulan ini.
+        $invoicesAktif = $cardService->limitArrearsToCurrentMonth(
+            Invoice::with('student')
+                ->whereIn('status', ['unpaid', 'partial'])
+                ->get(),
+            now()
+        );
 
         $totalTunggakan = $invoicesAktif->sum(fn ($inv) => $inv->remaining_amount);
         $tunggakanPutra = $invoicesAktif
@@ -79,23 +90,35 @@ class CashierController
     public function createPayment(Request $request)
     {
         $students = Student::where('status', 'aktif')->orderBy('nama_lengkap')->get();
+
+        // Daftar kelas dipisah per marhalah agar dropdown bertingkat tetap relevan.
+        $classesByKelompok = $students
+            ->groupBy(fn (Student $student) => $student->santri_group === 'putri' ? 'putri' : 'putra')
+            ->map(fn ($group) => $group->pluck('kelas')->filter()->unique()->sort()->values())
+            ->toArray();
+
         $selectedStudent = null;
         $unpaidInvoices = collect();
 
-        if ($request->has('student_id')) {
-            $selectedStudent = Student::find($request->student_id);
+        if ($request->filled('student_id')) {
+            $selectedStudent = Student::where('status', 'aktif')->find($request->student_id);
             if ($selectedStudent) {
                 $unpaidInvoices = $selectedStudent->invoices()->whereIn('status', ['unpaid', 'partial'])->get();
             }
         }
 
-        return view('admin.cashier', compact('students', 'selectedStudent', 'unpaidInvoices'));
+        return view('admin.cashier', compact(
+            'students',
+            'classesByKelompok',
+            'selectedStudent',
+            'unpaidInvoices'
+        ));
     }
 
     /**
      * Simpan Pembayaran Kasir
      */
-    public function storePayment(Request $request, ReceiptService $receiptService, WhatsAppService $waService)
+    public function storePayment(Request $request, ReceiptService $receiptService, WhatsAppService $waService, BookClosingService $bookClosing)
     {
         $request->validate([
             'invoice_id' => 'required|exists:invoices,id',
@@ -104,6 +127,9 @@ class CashierController
             'received_from' => 'required|string|max:150',
             'notes' => 'nullable|string|max:255',
         ]);
+
+        // Pembayaran selalu bertanggal hari ini; tolak bila bulan ini sudah ditutup.
+        $bookClosing->assertOpen(now(), 'pembayaran');
 
         $invoice = Invoice::findOrFail($request->invoice_id);
 
@@ -124,6 +150,16 @@ class CashierController
         $encodedWa = urlencode($waMessage);
         $cleanPhone = preg_replace('/^0/', '62', preg_replace('/[^0-9]/', '', $payment->student->no_whatsapp_wali));
         $waDirectUrl = "https://wa.me/{$cleanPhone}?text={$encodedWa}";
+
+        // Bila gateway sudah diaktifkan, kuitansi juga masuk outbox otomatis.
+        // Kegagalan notifikasi tidak boleh membatalkan pencatatan pembayaran.
+        if (config('services.whatsapp.enabled')) {
+            try {
+                $waService->queuePaymentReceipt($payment, auth()->id());
+            } catch (\Throwable $e) {
+                Log::warning('Gagal mengantrekan WhatsApp kuitansi: '.$e->getMessage());
+            }
+        }
 
         return redirect()->route('admin.cashier', ['student_id' => $invoice->student_id])
             ->with('success', 'Pembayaran Rp '.number_format($payment->amount_paid, 0, ',', '.')." berhasil dicatat! Kuitansi: {$payment->receipt->receipt_number}")
@@ -205,11 +241,11 @@ class CashierController
     /**
      * Simpan Pembuatan Tagihan Baru (Uang Kitab, Iuran Kondisional / Rihlah / Wisuda, dll)
      */
-    public function storeInvoice(Request $request)
+    public function storeInvoice(Request $request, InvoiceNumberService $invoiceNumbers)
     {
         $request->validate([
             'payment_category_id' => 'required|exists:payment_categories,id',
-            'target_type' => 'required|in:single,class,all',
+            'target_type' => 'required|in:single,class,all,putra,putri',
             'student_id' => 'required_if:target_type,single|nullable|exists:students,id',
             'target_class' => 'required_if:target_type,class|nullable|string',
             'title' => 'required|string|max:150',
@@ -229,6 +265,8 @@ class CashierController
             $targetStudents = Student::where('id', $request->student_id)->where('status', 'aktif')->get();
         } elseif ($request->target_type === 'class') {
             $targetStudents = Student::where('kelas', $request->target_class)->where('status', 'aktif')->get();
+        } elseif (in_array($request->target_type, ['putra', 'putri'], true)) {
+            $targetStudents = Student::where('santri_group', $request->target_type)->where('status', 'aktif')->get();
         } else {
             $targetStudents = Student::where('status', 'aktif')->get();
         }
@@ -237,31 +275,47 @@ class CashierController
             return back()->withErrors(['target_type' => 'Tidak ditemukan santri aktif untuk kriteria target yang dipilih.'])->withInput();
         }
 
-        $createdCount = 0;
         $prefix = strtoupper($category->code ?? 'TAG');
-        $yearMonth = now()->format('Ym');
+        $attempts = 0;
 
-        foreach ($targetStudents as $student) {
-            $uniqueCode = 'INV-'.$prefix.'-'.$yearMonth.'-'.str_pad($student->id, 4, '0', STR_PAD_LEFT).'-'.rand(100, 999);
+        do {
+            try {
+                // Nomor dihitung dari data terbaru, lalu seluruh tagihan disimpan
+                // dalam satu transaksi agar tidak ada batch yang setengah jadi.
+                $numbers = $invoiceNumbers->generate($prefix, $targetStudents->count());
 
-            Invoice::create([
-                'invoice_number' => $uniqueCode,
-                'student_id' => $student->id,
-                'payment_category_id' => $category->id,
-                'title' => $title,
-                'amount' => $amount,
-                'paid_amount' => 0,
-                'due_date' => $dueDate,
-                'status' => 'unpaid',
-                'notes' => $notes,
-            ]);
+                DB::transaction(function () use ($targetStudents, $numbers, $category, $title, $amount, $dueDate, $notes): void {
+                    foreach ($targetStudents->values() as $index => $student) {
+                        Invoice::create([
+                            'invoice_number' => $numbers[$index],
+                            'student_id' => $student->id,
+                            'payment_category_id' => $category->id,
+                            'title' => $title,
+                            'amount' => $amount,
+                            'paid_amount' => 0,
+                            'due_date' => $dueDate,
+                            'status' => 'unpaid',
+                            'notes' => $notes,
+                        ]);
+                    }
+                });
 
-            $createdCount++;
-        }
+                break;
+            } catch (UniqueConstraintViolationException $exception) {
+                // Nomor sempat dipakai request lain; hitung ulang urutan lalu coba lagi.
+                if (++$attempts >= 3) {
+                    throw $exception;
+                }
+            }
+        } while (true);
+
+        $createdCount = $targetStudents->count();
 
         $targetLabel = match ($request->target_type) {
             'single' => 'santri '.$targetStudents->first()->nama_lengkap.' (NIS '.$targetStudents->first()->nis.')',
             'class' => 'Kelas '.$request->target_class.' ('.$targetStudents->count().' santri)',
+            'putra' => 'Marhalah Putra ('.$targetStudents->count().' santri)',
+            'putri' => 'Marhalah Putri ('.$targetStudents->count().' santri)',
             default => 'Semua santri aktif ('.$targetStudents->count().' santri)',
         };
 

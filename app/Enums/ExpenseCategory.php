@@ -19,7 +19,7 @@ enum ExpenseCategory: string
         return match ($this) {
             self::Operasional => 'Operasional Harian',
             self::Pemeliharaan => 'Pemeliharaan & Perbaikan',
-            self::Gaji => 'Gaji / Insentif',
+            self::Gaji => 'Bisyarah',
             self::Transport => 'Transportasi',
             self::Konsumsi => 'Konsumsi',
             self::Lainnya => 'Lainnya',

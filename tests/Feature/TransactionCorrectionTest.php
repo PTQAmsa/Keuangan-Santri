@@ -64,9 +64,9 @@ class TransactionCorrectionTest extends TestCase
     }
 
     /**
-     * Test 2: Kuitansi yang dibatalkan tidak dihitung pada Laporan Kas dan diverifikasi sebagai DIBATALKAN.
+     * Test 2: Kuitansi yang dibatalkan tidak dihitung pada Laporan Kas.
      */
-    public function test_voided_payment_is_excluded_from_cash_report_and_marked_on_verification(): void
+    public function test_voided_payment_is_excluded_from_cash_report(): void
     {
         $admin = $this->userWithRole(UserRole::Admin);
         $payment = Payment::where('payment_code', 'PAY-202610-0001')->firstOrFail();
@@ -86,12 +86,6 @@ class TransactionCorrectionTest extends TestCase
         $report->assertDontSee('Rp 1.350.000');
         $report->assertSee('Rp 3.700.000');
         $report->assertSee('3 <span class="text-xs font-normal text-gray-500">Kuitansi</span>', false);
-
-        // Halaman verifikasi publik menandai kuitansi sebagai dibatalkan.
-        $verify = $this->get(route('receipt.verify', $payment->receipt->qr_verification_token));
-        $verify->assertOk();
-        $verify->assertSee('KUITANSI SUDAH DIBATALKAN');
-        $verify->assertSee('Dobel input');
     }
 
     /**
@@ -295,7 +289,6 @@ class TransactionCorrectionTest extends TestCase
             'invoice' => $payment->invoice,
             'student' => $payment->student,
             'terbilang' => 'Dua Ratus Ribu Rupiah',
-            'verification_url' => $receipt->verification_url,
         ])->render();
 
         $this->assertStringContainsString('DIBATALKAN', $html);
@@ -313,5 +306,48 @@ class TransactionCorrectionTest extends TestCase
         $response->assertOk();
         $response->assertSee('Koreksi &amp; Pembatalan Transaksi', false);
         $response->assertSee('KWT-202607-0001');
+        $response->assertSee('sort_by=receipt_number', false);
+    }
+
+    public function test_transaction_page_can_sort_by_each_table_column(): void
+    {
+        $columns = [
+            'receipt_number',
+            'payment_date',
+            'student_name',
+            'kelompok',
+            'invoice_title',
+            'amount_paid',
+            'status',
+        ];
+
+        foreach ($columns as $column) {
+            $this->actingAs($this->userWithRole(UserRole::Bendahara))
+                ->get(route('admin.transactions', [
+                    'sort_by' => $column,
+                    'sort_order' => 'asc',
+                ]))
+                ->assertOk();
+        }
+    }
+
+    public function test_transaction_page_sorts_by_nominal_ascending(): void
+    {
+        $expected = Payment::with('receipt')
+            ->whereNull('voided_at')
+            ->orderBy('amount_paid')
+            ->orderByDesc('id')
+            ->limit(2)
+            ->get()
+            ->map(fn (Payment $payment) => $payment->receipt?->receipt_number ?? $payment->payment_code)
+            ->all();
+
+        $this->actingAs($this->userWithRole(UserRole::Bendahara))
+            ->get(route('admin.transactions', [
+                'sort_by' => 'amount_paid',
+                'sort_order' => 'asc',
+            ]))
+            ->assertOk()
+            ->assertSeeInOrder($expected);
     }
 }

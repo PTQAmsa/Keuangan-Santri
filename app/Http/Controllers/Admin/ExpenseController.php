@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\ExpenseCategory;
 use App\Models\Expense;
 use App\Services\ActivityLogService;
+use App\Services\BookClosingService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -19,15 +20,46 @@ class ExpenseController
         $endDate = $request->input('end_date', now()->toDateString());
         $category = ExpenseCategory::tryFrom((string) $request->input('category'));
 
-        $query = Expense::with(['recordedBy', 'voidedBy'])
+        // Kolom tabel yang boleh diurutkan lewat klik judul kolom.
+        $allowedSorts = [
+            'expense_date' => 'expenses.expense_date',
+            'expense_code' => 'expenses.expense_code',
+            'category' => 'expenses.category',
+            'description' => 'expenses.description',
+            'amount' => 'expenses.amount',
+            'payment_method' => 'expenses.payment_method',
+            'recipient' => 'expenses.recipient',
+            'status' => 'expenses.voided_at',
+        ];
+
+        $sortBy = (string) $request->input('sort_by', 'expense_date');
+        $sortOrder = strtolower((string) $request->input('sort_order', 'desc')) === 'asc' ? 'asc' : 'desc';
+
+        if ($sortBy !== 'recorded_by' && ! array_key_exists($sortBy, $allowedSorts)) {
+            $sortBy = 'expense_date';
+        }
+
+        $query = Expense::with(['recordedBy', 'voidedBy', 'bisyarahPayment'])
             ->whereDate('expense_date', '>=', $startDate)
-            ->whereDate('expense_date', '<=', $endDate)
-            ->latest('expense_date')
-            ->latest('id');
+            ->whereDate('expense_date', '<=', $endDate);
 
         if ($category) {
             $query->where('category', $category->value);
         }
+
+        if ($sortBy === 'recorded_by') {
+            $query->leftJoin('users', 'expenses.recorded_by', '=', 'users.id')
+                ->orderBy('users.name', $sortOrder)
+                ->select('expenses.*');
+        } else {
+            $query->orderBy($allowedSorts[$sortBy], $sortOrder);
+        }
+
+        if ($sortBy !== 'expense_date') {
+            $query->orderBy('expenses.expense_date', 'desc');
+        }
+
+        $query->orderBy('expenses.id', 'desc');
 
         $expenses = $query->get();
         $activeExpenses = $expenses->whereNull('voided_at');
@@ -57,14 +89,16 @@ class ExpenseController
             'totalTransaksi',
             'totalCash',
             'totalTransfer',
-            'categoryBreakdown'
+            'categoryBreakdown',
+            'sortBy',
+            'sortOrder'
         ));
     }
 
     /**
      * Simpan pengeluaran operasional baru.
      */
-    public function store(Request $request)
+    public function store(Request $request, BookClosingService $bookClosing)
     {
         $data = $request->validate([
             'category' => ['required', Rule::enum(ExpenseCategory::class)],
@@ -91,17 +125,9 @@ class ExpenseController
             'notes' => 'catatan',
         ]);
 
-        $monthYear = now()->format('Ym');
-        $sequence = Expense::whereYear('created_at', now()->year)
-            ->whereMonth('created_at', now()->month)
-            ->count() + 1;
+        $bookClosing->assertOpen($data['expense_date'], 'pengeluaran');
 
-        do {
-            $code = 'EXP-'.$monthYear.'-'.str_pad((string) $sequence, 4, '0', STR_PAD_LEFT);
-            $sequence++;
-        } while (Expense::where('expense_code', $code)->exists());
-
-        $data['expense_code'] = $code;
+        $data['expense_code'] = Expense::generateCode();
         $data['recorded_by'] = auth()->id();
 
         $expense = Expense::create($data);
@@ -116,7 +142,7 @@ class ExpenseController
     /**
      * Batalkan pengeluaran yang salah input. Data tetap tersimpan untuk audit.
      */
-    public function void(Request $request, Expense $expense)
+    public function void(Request $request, Expense $expense, BookClosingService $bookClosing)
     {
         $data = $request->validate([
             'void_reason' => ['required', 'string', 'max:500'],
@@ -127,6 +153,14 @@ class ExpenseController
         if ($expense->isVoided()) {
             return back()->with('info', 'Pengeluaran ini sudah dibatalkan sebelumnya.');
         }
+
+        if ($expense->isManagedByBisyarah()) {
+            return back()->withErrors([
+                'void_reason' => 'Kas keluar '.$expense->expense_code.' berasal dari modul Bisyarah. Batalkan lewat halaman Bisyarah Bulanan agar catatan guru ikut tersinkron.',
+            ]);
+        }
+
+        $bookClosing->assertOpen($expense->expense_date, 'pembatalan pengeluaran');
 
         $expense->voided_at = now();
         $expense->voided_by = auth()->id();

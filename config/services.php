@@ -35,4 +35,16 @@ return [
         ],
     ],
 
+    /*
+    | WhatsApp Gateway (Fonnte / Wablas / Starsender atau gateway lain yang
+    | menerima target + message dengan header Authorization). Selama token
+    | belum diisi, pesan hanya dicatat di outbox sebagai "simulated".
+    */
+    'whatsapp' => [
+        'enabled' => (bool) env('WHATSAPP_ENABLED', false),
+        'endpoint' => env('WHATSAPP_ENDPOINT', 'https://api.fonnte.com/send'),
+        'token' => env('WHATSAPP_TOKEN'),
+        'country_code' => env('WHATSAPP_COUNTRY_CODE', '62'),
+    ],
+
 ];

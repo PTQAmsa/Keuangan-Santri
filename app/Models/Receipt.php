@@ -25,12 +25,4 @@ class Receipt extends Model
     {
         return $this->belongsTo(Payment::class);
     }
-
-    /**
-     * URL Verifikasi Publik Keaslian Kuitansi
-     */
-    public function getVerificationUrlAttribute(): string
-    {
-        return url('/kuitansi/verifikasi/'.$this->qr_verification_token);
-    }
 }

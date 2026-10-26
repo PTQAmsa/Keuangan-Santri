@@ -45,7 +45,7 @@ class DemoModeTest extends TestCase
         $this->get(route('portal.login'))
             ->assertOk()
             ->assertSee('Akun Santri untuk Uji Coba')
-            ->assertSee('202601001')
-            ->assertSee('085692253516');
+            ->assertSee('DMY00001')
+            ->assertSee('100001');
     }
 }

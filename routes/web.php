@@ -3,10 +3,13 @@
 use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\BisyarahController;
+use App\Http\Controllers\Admin\BookClosingController;
 use App\Http\Controllers\Admin\CashierController;
 use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\StudentController;
+use App\Http\Controllers\Admin\TeacherController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\ReceiptController;
@@ -27,21 +30,26 @@ Route::prefix('portal')->name('portal.')->group(function () {
     Route::get('/dashboard', [PortalController::class, 'dashboard'])
         ->middleware(EnsurePortalPinIsChanged::class)
         ->name('dashboard');
+    Route::get('/profil', [PortalController::class, 'profile'])
+        ->middleware(EnsurePortalPinIsChanged::class)
+        ->name('profile');
     Route::get('/kartu-keuangan', [PortalController::class, 'card'])
         ->middleware(EnsurePortalPinIsChanged::class)
         ->name('card');
-    Route::get('/kartu-keuangan/pdf', [PortalController::class, 'cardPdf'])
+    Route::get('/kartu-keuangan/tagihan/pdf', [PortalController::class, 'cardInvoicesPdf'])
         ->middleware(EnsurePortalPinIsChanged::class)
-        ->name('card.pdf');
+        ->name('card.invoices.pdf');
+    Route::get('/kartu-keuangan/pembayaran/pdf', [PortalController::class, 'cardPaymentsPdf'])
+        ->middleware(EnsurePortalPinIsChanged::class)
+        ->name('card.payments.pdf');
     Route::get('/ganti-pin', [PortalController::class, 'showChangePin'])->name('change-pin');
     Route::post('/ganti-pin', [PortalController::class, 'changePin'])->name('change-pin.post');
     Route::get('/logout', [PortalController::class, 'logout'])->name('logout');
 });
 
-// Kuitansi Digital (Unduh PDF & Verifikasi Publik QR Code)
+// Kuitansi Digital (Unduh PDF)
 Route::prefix('kuitansi')->name('receipt.')->group(function () {
     Route::get('/{id}/download', [ReceiptController::class, 'download'])->name('download');
-    Route::get('/verifikasi/{token}', [ReceiptController::class, 'verify'])->name('verify');
 });
 
 // Admin Kasir & Bendahara Pesantren
@@ -64,9 +72,20 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('/kas/csv', [ReportController::class, 'exportCashInflowCsv'])->name('cash.csv');
             Route::get('/kas/pdf', [ReportController::class, 'exportCashInflowPdf'])->name('cash.pdf');
 
+            Route::get('/arus-kas', [ReportController::class, 'cashFlow'])->name('cash-flow');
+
             Route::get('/tunggakan', [ReportController::class, 'arrears'])->name('arrears');
             Route::get('/tunggakan/csv', [ReportController::class, 'exportArrearsCsv'])->name('arrears.csv');
             Route::get('/tunggakan/pdf', [ReportController::class, 'exportArrearsPdf'])->name('arrears.pdf');
+
+            // Tutup buku bulanan: snapshot laporan + kunci transaksi kas.
+            Route::get('/tutup-buku', [BookClosingController::class, 'index'])->name('closing');
+            Route::post('/tutup-buku', [BookClosingController::class, 'store'])
+                ->middleware('role:admin,bendahara')
+                ->name('closing.store');
+            Route::patch('/tutup-buku/{bookClosing}/buka', [BookClosingController::class, 'reopen'])
+                ->middleware('role:admin')
+                ->name('closing.reopen');
         });
 
         // Log Aktivitas Perubahan Data: khusus Administrator.
@@ -94,10 +113,24 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('/tagihan', [CashierController::class, 'invoices'])->name('invoices');
             Route::post('/tagihan', [CashierController::class, 'storeInvoice'])->name('invoices.store');
 
+            // Data induk guru/pengajar. Cukup diisi sekali.
+            Route::get('/guru', [TeacherController::class, 'index'])->name('teachers');
+            Route::post('/guru', [TeacherController::class, 'store'])->name('teachers.store');
+
+            // Bisyarah bulanan: pilih guru yang sudah terdaftar, isi nominal & metode.
+            Route::get('/guru/bisyarah', [BisyarahController::class, 'index'])->name('bisyarah');
+            Route::post('/guru/bisyarah', [BisyarahController::class, 'store'])->name('bisyarah.store');
+            Route::patch('/guru/bisyarah/{bisyarah}', [BisyarahController::class, 'update'])->name('bisyarah.update');
+            Route::delete('/guru/bisyarah/{bisyarah}', [BisyarahController::class, 'destroy'])->name('bisyarah.destroy');
+
+            Route::patch('/guru/{teacher}', [TeacherController::class, 'update'])->name('teachers.update');
+            Route::patch('/guru/{teacher}/status', [TeacherController::class, 'toggleStatus'])->name('teachers.toggle');
+
             // Data santri: santri masuk (tambah) & santri keluar (nonaktifkan).
             Route::get('/santri', [StudentController::class, 'index'])->name('students');
             Route::get('/santri/{student}/kartu', [StudentController::class, 'card'])->name('students.card');
-            Route::get('/santri/{student}/kartu/pdf', [StudentController::class, 'cardPdf'])->name('students.card.pdf');
+            Route::get('/santri/{student}/kartu/tagihan/pdf', [StudentController::class, 'cardInvoicesPdf'])->name('students.card.invoices.pdf');
+            Route::get('/santri/{student}/kartu/pembayaran/pdf', [StudentController::class, 'cardPaymentsPdf'])->name('students.card.payments.pdf');
             Route::post('/santri', [StudentController::class, 'store'])->name('students.store');
             Route::patch('/santri/{student}/status', [StudentController::class, 'toggleStatus'])->name('students.toggle');
             Route::post('/santri/{student}/reset-pin', [StudentController::class, 'resetPin'])->name('students.reset-pin');

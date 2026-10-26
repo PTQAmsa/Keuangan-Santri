@@ -25,25 +25,59 @@
             Pilih Data Santri
         </h2>
 
-        <form action="{{ route('admin.cashier') }}" method="GET" class="flex flex-col sm:flex-row gap-3">
-            <div class="flex-1">
-                <select name="student_id" onchange="this.form.submit()" class="w-full text-sm rounded-xl border-gray-300 py-2.5 px-3 focus:ring-brand-800 focus:border-brand-800 bg-gray-50">
-                    <option value="">-- Pilih Santri Berdasarkan Nama / NIS --</option>
+        <form action="{{ route('admin.cashier') }}" method="GET" id="studentFilterForm" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+                <label for="filterKelompok" class="block text-[11px] font-bold text-gray-500 uppercase mb-1">1. Marhalah</label>
+                <select name="kelompok" id="filterKelompok" class="w-full text-sm rounded-xl border-gray-300 py-2.5 px-3 focus:ring-brand-800 focus:border-brand-800 bg-gray-50">
+                    <option value="">-- Pilih Marhalah --</option>
+                    <option value="putra" {{ $selectedStudent?->santri_group === 'putra' ? 'selected' : '' }}>Putra</option>
+                    <option value="putri" {{ $selectedStudent?->santri_group === 'putri' ? 'selected' : '' }}>Putri</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="filterKelas" class="block text-[11px] font-bold text-gray-500 uppercase mb-1">2. Kelas</label>
+                <select name="kelas" id="filterKelas" disabled class="w-full text-sm rounded-xl border-gray-300 py-2.5 px-3 focus:ring-brand-800 focus:border-brand-800 bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400">
+                    <option value="">-- Pilih Kelas --</option>
+                    @foreach($classesByKelompok as $kelompok => $daftarKelas)
+                        @foreach($daftarKelas as $kelas)
+                            <option value="{{ $kelas }}" data-kelompok="{{ $kelompok }}" {{ $selectedStudent?->kelas === $kelas ? 'selected' : '' }}>
+                                Kelas {{ $kelas }}
+                            </option>
+                        @endforeach
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
+                <label for="filterSantri" class="block text-[11px] font-bold text-gray-500 uppercase mb-1">3. Nama Santri</label>
+                <select name="student_id" id="filterSantri" disabled onchange="if (this.value) { document.getElementById('studentFilterForm').submit(); }" class="w-full text-sm rounded-xl border-gray-300 py-2.5 px-3 focus:ring-brand-800 focus:border-brand-800 bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400">
+                    <option value="">-- Pilih Nama Santri --</option>
                     @foreach($students as $s)
-                        <option value="{{ $s->id }}" {{ $selectedStudent && $selectedStudent->id == $s->id ? 'selected' : '' }}>
-                            {{ $s->nama_lengkap }} (NIS: {{ $s->nis }} - Marhalah {{ $s->kelompok }} - Kelas {{ $s->kelas }})
+                        <option value="{{ $s->id }}"
+                                data-kelompok="{{ $s->santri_group === 'putri' ? 'putri' : 'putra' }}"
+                                data-kelas="{{ $s->kelas }}"
+                                {{ $selectedStudent && $selectedStudent->id == $s->id ? 'selected' : '' }}>
+                            {{ $s->nama_lengkap }} (NIS: {{ $s->nis }})
                         </option>
                     @endforeach
                 </select>
             </div>
+
             <noscript>
-                <button type="submit" class="px-4 py-2 bg-brand-900 text-white rounded-xl text-sm font-semibold">Pilih</button>
+                <div class="sm:col-span-3">
+                    <button type="submit" class="px-4 py-2 bg-brand-900 text-white rounded-xl text-sm font-semibold">Tampilkan Santri</button>
+                </div>
             </noscript>
         </form>
 
+        <p class="text-[11px] text-gray-500 mt-3" id="filterHint">
+            Pilih Marhalah, lalu Kelas, lalu Nama Santri. Rincian pembayaran akan muncul setelah ketiganya dipilih.
+        </p>
+
         <!-- Informasi Santri Terpilih -->
         @if($selectedStudent)
-            <div class="mt-4 p-4 rounded-xl bg-blue-50/70 border border-blue-100 text-xs sm:text-sm grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div id="selectedStudentInfo" class="mt-4 p-4 rounded-xl bg-blue-50/70 border border-blue-100 text-xs sm:text-sm grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                     <span class="text-gray-500 text-xs">Nama Lengkap:</span>
                     <p class="font-bold text-gray-900">{{ $selectedStudent->nama_lengkap }}</p>
@@ -69,7 +103,7 @@
 
     <!-- Step 2: Form Input Transaksi -->
     @if($selectedStudent)
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <div id="paymentStep" class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
             <h2 class="text-sm font-bold text-brand-900 uppercase tracking-wider mb-4 flex items-center">
                 <span class="w-6 h-6 rounded-full bg-brand-900 text-white text-xs flex items-center justify-center mr-2">2</span>
                 Rincian Pembayaran
@@ -130,8 +164,8 @@
                             </label>
                             <select name="payment_method" id="payment_method" required
                                     class="w-full text-sm rounded-xl border-gray-300 py-2.5 px-3 focus:ring-brand-800 focus:border-brand-800 bg-white">
-                                <option value="transfer" {{ old('payment_method') == 'transfer' ? 'selected' : '' }}>Transfer Bank (BSI / Mandiri / dll)</option>
-                                <option value="cash" {{ old('payment_method') == 'cash' ? 'selected' : '' }}>Tunai / Cash (Kasir Kantor)</option>
+                                <option value="transfer" {{ old('payment_method') == 'transfer' ? 'selected' : '' }}>Transfer Bank BSI (Rekening Pesantren)</option>
+                                <option value="cash" {{ old('payment_method') == 'cash' ? 'selected' : '' }}>Tunai / Cash</option>
                             </select>
                         </div>
                     </div>
@@ -160,6 +194,65 @@
 </div>
 
 <script>
+    (function () {
+        const form = document.getElementById('studentFilterForm');
+        const kelompokSelect = document.getElementById('filterKelompok');
+        const kelasSelect = document.getElementById('filterKelas');
+        const santriSelect = document.getElementById('filterSantri');
+        const hint = document.getElementById('filterHint');
+
+        function refreshFilters(preserveSelection) {
+            const kelompok = kelompokSelect.value;
+
+            // Kelas hanya menampilkan pilihan milik marhalah yang dipilih.
+            Array.from(kelasSelect.options).forEach(function (option) {
+                if (!option.value) return;
+                const cocok = kelompok !== '' && option.dataset.kelompok === kelompok;
+                option.hidden = !cocok;
+                option.disabled = !cocok;
+            });
+
+            kelasSelect.disabled = kelompok === '';
+            if (!preserveSelection && kelasSelect.selectedOptions[0]?.disabled) {
+                kelasSelect.value = '';
+            }
+
+            const kelas = kelasSelect.value;
+
+            // Nama santri baru bisa dipilih setelah marhalah dan kelas ditentukan.
+            Array.from(santriSelect.options).forEach(function (option) {
+                if (!option.value) return;
+                const cocok = kelompok !== '' && kelas !== ''
+                    && option.dataset.kelompok === kelompok
+                    && option.dataset.kelas === kelas;
+                option.hidden = !cocok;
+                option.disabled = !cocok;
+            });
+
+            santriSelect.disabled = kelompok === '' || kelas === '';
+            if (!preserveSelection && santriSelect.selectedOptions[0]?.disabled) {
+                santriSelect.value = '';
+            }
+
+            const adaSantri = santriSelect.value !== '';
+
+            // Saat pilihan diubah, sembunyikan sementara info & formulir santri lama
+            // agar tidak terjadi salah input untuk santri yang berbeda.
+            document.getElementById('selectedStudentInfo')?.classList.toggle('hidden', !adaSantri);
+            document.getElementById('paymentStep')?.classList.toggle('hidden', !adaSantri);
+
+            if (hint) {
+                hint.classList.toggle('hidden', kelompok !== '' && kelas !== '' && adaSantri);
+            }
+        }
+
+        kelompokSelect.addEventListener('change', function () { refreshFilters(false); });
+        kelasSelect.addEventListener('change', function () { refreshFilters(false); });
+
+        // Saat halaman dimuat kembali dengan santri terpilih, pertahankan pilihan.
+        refreshFilters(santriSelect.value !== '');
+    })();
+
     function updateSuggestedAmount(selectElement) {
         const selectedOption = selectElement.options[selectElement.selectedIndex];
         const remaining = selectedOption.getAttribute('data-remaining');

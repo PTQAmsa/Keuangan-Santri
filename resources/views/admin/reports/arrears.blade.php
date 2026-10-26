@@ -23,20 +23,16 @@
             <p class="text-xs sm:text-sm text-gray-500 mt-0.5">Daftar santri yang memiliki tagihan belum lunas / angsuran aktif</p>
         </div>
 
-        <!-- Quick Switch Tab -->
-        <div class="flex items-center bg-gray-100 p-1 rounded-xl self-start md:self-auto text-xs font-semibold">
-            <a href="{{ route('admin.reports.cash') }}" class="px-4 py-2 rounded-lg text-gray-600 hover:text-brand-900 transition">
-                <i class="fa-solid fa-money-bill-wave mr-1 text-emerald-600"></i> Kas Masuk
-            </a>
-            <a href="{{ route('admin.reports.arrears') }}" class="px-4 py-2 rounded-lg bg-white text-brand-900 shadow-sm">
-                <i class="fa-solid fa-clock-rotate-left mr-1 text-rose-500"></i> Rekap Tunggakan
-            </a>
-        </div>
+        <!-- Navigasi laporan (Kas Keluar sudah ada di menu utama, tidak diulang di sini) -->
+        @include('admin.reports._tabs')
     </div>
 
     <!-- Filter Bar -->
     <div class="bg-white rounded-2xl p-5 border border-gray-200/80 shadow-sm">
         <form method="GET" action="{{ route('admin.reports.arrears') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+            <input type="hidden" name="sort_by" value="{{ $sortBy }}">
+            <input type="hidden" name="sort_order" value="{{ $sortOrder }}">
+
             <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1">Cari Santri / NIS</label>
                 <div class="relative">
@@ -142,24 +138,52 @@
                 <a href="{{ route('admin.reports.arrears.pdf', request()->query()) }}" target="_blank" class="inline-flex items-center px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold shadow-sm transition">
                     <i class="fa-solid fa-file-pdf mr-1.5"></i> Unduh PDF
                 </a>
-                <button onclick="window.print()" class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 rounded-xl text-xs font-semibold shadow-sm transition">
-                    <i class="fa-solid fa-print mr-1.5"></i> Cetak
-                </button>
             </div>
         </div>
 
+        @php
+            $sortUrl = function ($column, $currentSort, $currentOrder) {
+                $order = ($currentSort === $column && $currentOrder === 'asc') ? 'desc' : 'asc';
+
+                return request()->fullUrlWithQuery(['sort_by' => $column, 'sort_order' => $order]);
+            };
+
+            $sortIcon = function ($column, $currentSort, $currentOrder) {
+                if ($currentSort !== $column) {
+                    return '<i class="fa-solid fa-sort text-gray-300 ml-1"></i>';
+                }
+
+                return $currentOrder === 'asc'
+                    ? '<i class="fa-solid fa-arrow-up-short-wide text-brand-900 ml-1"></i>'
+                    : '<i class="fa-solid fa-arrow-down-wide-short text-brand-900 ml-1"></i>';
+            };
+        @endphp
+
         <div class="overflow-x-auto">
             <table class="w-full text-left text-xs text-gray-600">
-                <thead class="bg-gray-100 text-gray-700 font-bold uppercase text-[11px] tracking-wider border-b border-gray-200">
+                <thead class="bg-gray-100 text-gray-700 font-bold uppercase text-[11px] tracking-wider border-b border-gray-200 select-none">
                     <tr>
                         <th class="py-3 px-4 text-center">No</th>
-                        <th class="py-3 px-4">Santri & Kelas</th>
-                        <th class="py-3 px-4">Wali Santri & Kontak</th>
-                        <th class="py-3 px-4">Rincian Tagihan Tertunggak</th>
-                        <th class="py-3 px-4 text-right">Total Tunggakan</th>
-                        @if($canManageFinances)
-                            <th class="py-3 px-4 text-center">Aksi Cepat</th>
-                        @endif
+                        <th class="py-3 px-4">
+                            <a href="{{ $sortUrl('student_name', $sortBy, $sortOrder) }}" class="inline-flex items-center hover:text-brand-900 transition" title="Urutkan Nama Santri">
+                                <span>Santri &amp; Kelas</span>{!! $sortIcon('student_name', $sortBy, $sortOrder) !!}
+                            </a>
+                        </th>
+                        <th class="py-3 px-4">
+                            <a href="{{ $sortUrl('wali', $sortBy, $sortOrder) }}" class="inline-flex items-center hover:text-brand-900 transition" title="Urutkan Wali Santri">
+                                <span>Wali Santri &amp; Kontak</span>{!! $sortIcon('wali', $sortBy, $sortOrder) !!}
+                            </a>
+                        </th>
+                        <th class="py-3 px-4">
+                            <a href="{{ $sortUrl('detail', $sortBy, $sortOrder) }}" class="inline-flex items-center hover:text-brand-900 transition" title="Urutkan Jumlah Tagihan">
+                                <span>Rincian Tagihan Tertunggak</span>{!! $sortIcon('detail', $sortBy, $sortOrder) !!}
+                            </a>
+                        </th>
+                        <th class="py-3 px-4 text-right">
+                            <a href="{{ $sortUrl('total_tunggakan', $sortBy, $sortOrder) }}" class="inline-flex items-center justify-end hover:text-brand-900 transition" title="Urutkan Total Tunggakan">
+                                <span>Total Tunggakan</span>{!! $sortIcon('total_tunggakan', $sortBy, $sortOrder) !!}
+                            </a>
+                        </th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -202,9 +226,9 @@
                                                 <span class="text-gray-400 block text-[10px]">Tempo: {{ $inv->due_date ? $inv->due_date->format('d/m/Y') : '-' }}</span>
                                             </div>
                                             <div class="text-right whitespace-nowrap">
-                                                <span class="font-bold text-rose-600">Rp {{ number_format($inv->remaining_amount, 0, ',', '.') }}</span>
+                                                <span class="font-bold text-gray-900">Rp {{ number_format($inv->remaining_amount, 0, ',', '.') }}</span>
                                                 @if($inv->status == 'partial')
-                                                    <span class="block text-[9px] text-amber-600 font-semibold">(Cicilan)</span>
+                                                    <span class="block text-[9px] text-gray-600 font-semibold">(Cicilan)</span>
                                                 @endif
                                             </div>
                                         </div>
@@ -214,17 +238,10 @@
                             <td class="py-3 px-4 text-right font-extrabold text-rose-600 text-sm whitespace-nowrap">
                                 Rp {{ number_format($item['total_tunggakan'], 0, ',', '.') }}
                             </td>
-                            @if($canManageFinances)
-                                <td class="py-3 px-4 text-center whitespace-nowrap">
-                                    <a href="{{ route('admin.cashier', ['student_id' => $item['student']->id]) }}" class="inline-flex items-center px-3 py-1.5 rounded-xl bg-brand-900 hover:bg-brand-800 text-white text-xs font-semibold shadow-sm transition">
-                                        <i class="fa-solid fa-cash-register mr-1.5 text-gold-400"></i> Bayar di Kasir
-                                    </a>
-                                </td>
-                            @endif
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ $canManageFinances ? 6 : 5 }}" class="py-12 text-center text-gray-400">
+                            <td colspan="5" class="py-12 text-center text-gray-400">
                                 <i class="fa-solid fa-circle-check text-4xl mb-2 text-emerald-400 block"></i>
                                 MasyaAllah, tidak ada santri yang memiliki tunggakan untuk filter ini!
                             </td>
@@ -238,9 +255,6 @@
                             <td class="py-3 px-4 text-right text-rose-700 font-black text-base">
                                 Rp {{ number_format($totalNilaiTunggakan, 0, ',', '.') }}
                             </td>
-                            @if($canManageFinances)
-                                <td></td>
-                            @endif
                         </tr>
                     </tfoot>
                 @endif

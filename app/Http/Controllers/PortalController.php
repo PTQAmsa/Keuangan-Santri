@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Student;
 use App\Services\ActivityLogService;
 use App\Services\StudentFinancialCardService;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
@@ -102,7 +101,7 @@ class PortalController
     /**
      * Dashboard Wali Santri
      */
-    public function dashboard()
+    public function dashboard(StudentFinancialCardService $cardService)
     {
         $studentId = session('portal_student_id');
         if (! $studentId) {
@@ -111,30 +110,48 @@ class PortalController
 
         $student = Student::with(['invoices.category', 'payments.receipt', 'payments.invoice'])->findOrFail($studentId);
 
-        // Untuk portal wali santri: tagihan non-SPP (seperti wakaf/fasilitas) selalu tampil jika belum lunas,
-        // sedangkan tagihan rutin SPP bulanan dibatasi hanya sampai 1 bulan ke depan (bulan depan)
-        $nextMonthDate = now()->copy()->addMonth();
+        // Tagihan untuk wali dibatasi sampai bulan berjalan: kewajiban bulan-bulan
+        // mendatang belum ditampilkan agar tidak terasa membebani. Wakaf selalu
+        // tampil karena merupakan komitmen, bukan tagihan bulanan.
+        $activeInvoices = $cardService->limitArrearsToCurrentMonth(
+            $student->invoices()
+                ->with('category')
+                ->whereIn('status', ['unpaid', 'partial'])
+                ->latest()
+                ->get(),
+            now()
+        );
 
-        $activeInvoices = $student->invoices()
-            ->whereIn('status', ['unpaid', 'partial'])
-            ->where(function ($q) use ($nextMonthDate) {
-                // Tagihan umum (non-periodik) ATAU tagihan bulanan sampai maksimal 1 bulan ke depan
-                $q->whereNull('period_month')
-                    ->orWhere(function ($sub) use ($nextMonthDate) {
-                        $sub->where('period_year', '<', $nextMonthDate->year)
-                            ->orWhere(function ($sub2) use ($nextMonthDate) {
-                                $sub2->where('period_year', '=', $nextMonthDate->year)
-                                    ->where('period_month', '<=', $nextMonthDate->month);
-                            });
-                    });
-            })
-            ->latest()
-            ->get();
+        $totalTunggakan = (float) $activeInvoices->sum(fn ($invoice) => $invoice->remaining_amount);
+        $batasTunggakanLabel = now()->translatedFormat('F Y');
+        $batasTunggakanCatatan = 'Dihitung sampai '.$batasTunggakanLabel.'.';
 
         $paidInvoices = $student->invoices()->where('status', 'paid')->latest()->get();
         $payments = $student->payments()->with(['receipt', 'invoice'])->latest()->get();
 
-        return view('portal.dashboard', compact('student', 'activeInvoices', 'paidInvoices', 'payments'));
+        return view('portal.dashboard', compact(
+            'student',
+            'activeInvoices',
+            'paidInvoices',
+            'payments',
+            'totalTunggakan',
+            'batasTunggakanLabel',
+            'batasTunggakanCatatan'
+        ));
+    }
+
+    /**
+     * Profil santri (hanya baca) beserta pintu masuk untuk mengganti PIN.
+     */
+    public function profile()
+    {
+        $student = $this->currentStudent();
+
+        if (! $student) {
+            return redirect()->route('portal.login');
+        }
+
+        return view('portal.profile', compact('student'));
     }
 
     /**
@@ -152,9 +169,9 @@ class PortalController
     }
 
     /**
-     * Unduh kartu keuangan santri (versi wali) dalam bentuk PDF.
+     * Unduh daftar tagihan santri (versi wali, maksimal satu semester).
      */
-    public function cardPdf(StudentFinancialCardService $cardService)
+    public function cardInvoicesPdf(StudentFinancialCardService $cardService)
     {
         $student = $this->currentStudent();
 
@@ -162,10 +179,21 @@ class PortalController
             return redirect()->route('portal.login');
         }
 
-        $pdf = Pdf::loadView('pdf.student-card', $cardService->build($student))
-            ->setPaper('a4', 'portrait');
+        return $cardService->invoicesPdf($student);
+    }
 
-        return $pdf->stream('Kartu-Keuangan-'.$student->nis.'.pdf');
+    /**
+     * Unduh riwayat pembayaran & kuitansi santri (versi wali, maksimal satu semester).
+     */
+    public function cardPaymentsPdf(StudentFinancialCardService $cardService)
+    {
+        $student = $this->currentStudent();
+
+        if (! $student) {
+            return redirect()->route('portal.login');
+        }
+
+        return $cardService->paymentsPdf($student);
     }
 
     /**

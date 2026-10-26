@@ -9,19 +9,13 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
         <div>
             <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Rekapitulasi Semua Tagihan Santri</h1>
-            <p class="text-xs sm:text-sm text-gray-500 mt-0.5">Daftar seluruh invoice (SPP, Wakaf, Fasilitas, Buku/Kitab & Iuran Kondisional/Rihlah)</p>
+            <p class="text-xs sm:text-sm text-gray-500 mt-0.5">Daftar seluruh invoice (SPP, Wakaf, Fasilitas, Buku/Kitab & Iuran Kondisional)</p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
             <!-- Tombol Buka Modal Buat Tagihan Baru -->
             <button type="button" onclick="openInvoiceModal()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-sm transition flex items-center">
-                <i class="fa-solid fa-plus-circle mr-1.5 text-sm"></i> Terbitkan Tagihan Baru (Kitab / Iuran)
+                <i class="fa-solid fa-plus-circle mr-1.5 text-sm"></i> Terbitkan Tagihan Baru
             </button>
-            <a href="{{ route('admin.students') }}" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-semibold shadow-sm transition flex items-center">
-                <i class="fa-solid fa-user-gear mr-1.5 text-sm"></i> Data Santri (Masuk / Keluar)
-            </a>
-            <a href="{{ route('admin.cashier') }}" class="px-3.5 py-2 bg-brand-900 hover:bg-brand-800 text-white rounded-xl text-xs font-semibold shadow-sm transition">
-                <i class="fa-solid fa-cash-register mr-1.5 text-gold-400"></i> Meja Kasir
-            </a>
         </div>
     </div>
 
@@ -268,6 +262,9 @@
                                                     'due_date' => $inv->due_date?->format('Y-m-d'),
                                                     'notes' => $inv->notes,
                                                     'paid' => (float) $inv->paid_amount,
+                                                    'edit_count' => (int) $inv->edit_count,
+                                                    'student' => $inv->student->nama_lengkap ?? '-',
+                                                    'nis' => $inv->student->nis ?? '-',
                                                 ]) }}"
                                                 onclick="openEditInvoice(this)"
                                                 class="inline-flex items-center px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg text-[11px] font-semibold border border-amber-200 transition" title="Ubah tagihan">
@@ -276,7 +273,14 @@
 
                                         @if($inv->paid_amount <= 0)
                                             <button type="button"
-                                                    data-invoice="{{ json_encode(['id' => $inv->id, 'number' => $inv->invoice_number, 'title' => $inv->title]) }}"
+                                                    data-invoice="{{ json_encode([
+                                                        'id' => $inv->id,
+                                                        'number' => $inv->invoice_number,
+                                                        'title' => $inv->title,
+                                                        'student' => $inv->student->nama_lengkap ?? '-',
+                                                        'nis' => $inv->student->nis ?? '-',
+                                                        'amount' => (float) $inv->amount,
+                                                    ]) }}"
                                                     onclick="openCancelInvoice(this)"
                                                     class="inline-flex items-center px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-[11px] font-semibold border border-rose-200 transition" title="Batalkan tagihan">
                                                 <i class="fa-solid fa-ban mr-1"></i>
@@ -343,7 +347,7 @@
                     <option value="">-- Pilih Pos Kategori --</option>
                     @foreach($categories as $cat)
                         <option value="{{ $cat->id }}" data-amount="{{ (int)$cat->default_amount }}" data-name="{{ $cat->name }}">
-                            {{ $cat->name }} (Standar: Rp {{ number_format($cat->default_amount, 0, ',', '.') }})
+                            {{ $cat->name }} (Rp {{ number_format($cat->default_amount, 0, ',', '.') }})
                         </option>
                     @endforeach
                 </select>
@@ -352,7 +356,7 @@
             <!-- 2. Target Santri -->
             <div>
                 <label class="block font-bold text-gray-700 uppercase mb-1">Target Santri Penerima Tagihan <span class="text-rose-500">*</span></label>
-                <div class="grid grid-cols-3 gap-2 mb-2">
+                <div class="grid grid-cols-2 gap-2 mb-2">
                     <label class="flex items-center p-2 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50">
                         <input type="radio" name="target_type" value="all" checked onchange="toggleTargetFields(this.value)" class="text-brand-900 focus:ring-brand-800">
                         <span class="ml-1.5 font-semibold text-gray-800">Semua Santri</span>
@@ -362,8 +366,12 @@
                         <span class="ml-1.5 font-semibold text-gray-800">Per Kelas</span>
                     </label>
                     <label class="flex items-center p-2 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50">
-                        <input type="radio" name="target_type" value="single" onchange="toggleTargetFields(this.value)" class="text-brand-900 focus:ring-brand-800">
-                        <span class="ml-1.5 font-semibold text-gray-800">1 Santri</span>
+                        <input type="radio" name="target_type" value="putra" onchange="toggleTargetFields(this.value)" class="text-brand-900 focus:ring-brand-800">
+                        <span class="ml-1.5 font-semibold text-gray-800">Marhalah Putra</span>
+                    </label>
+                    <label class="flex items-center p-2 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="target_type" value="putri" onchange="toggleTargetFields(this.value)" class="text-brand-900 focus:ring-brand-800">
+                        <span class="ml-1.5 font-semibold text-gray-800">Marhalah Putri</span>
                     </label>
                 </div>
 
@@ -373,16 +381,6 @@
                         <option value="">-- Pilih Kelas --</option>
                         @foreach($classes as $c)
                             <option value="{{ $c }}">Kelas {{ $c }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <!-- Pilihan Santri Spesifik (Jika target_type = single) -->
-                <div id="targetStudentDiv" class="hidden mb-2">
-                    <select name="student_id" class="w-full text-xs rounded-xl border-gray-300 py-2 px-3 bg-gray-50">
-                        <option value="">-- Pilih Santri --</option>
-                        @foreach($students as $s)
-                            <option value="{{ $s->id }}">{{ $s->nama_lengkap }} (Kelas {{ $s->kelas }})</option>
                         @endforeach
                     </select>
                 </div>
@@ -419,7 +417,7 @@
             <!-- Notice Otomatisasi -->
             <div class="p-3 bg-blue-50 rounded-xl border border-blue-100 flex items-start space-x-2 text-[11px] text-blue-800">
                 <i class="fa-solid fa-circle-check text-blue-600 mt-0.5"></i>
-                <p>Setelah form disimpan, data langsung tersimpan di database resmi dan tagihan otomatis muncul di <strong>Portal Wali Santri</strong> serta di <strong>Meja Kasir</strong>.</p>
+                <p>Setelah form disimpan, data langsung tersimpan di database resmi dan tagihan otomatis muncul di <strong>Portal Wali Santri</strong> serta di menu <strong>Kasir</strong>.</p>
             </div>
 
             <!-- Modal Action Buttons -->
@@ -446,7 +444,6 @@
 
     function toggleTargetFields(targetType) {
         document.getElementById('targetClassDiv').classList.toggle('hidden', targetType !== 'class');
-        document.getElementById('targetStudentDiv').classList.toggle('hidden', targetType !== 'single');
     }
 
     function applyCategoryDefault(select) {
@@ -467,13 +464,43 @@
         const data = JSON.parse(button.dataset.invoice);
         document.getElementById('editInvoiceForm').action = "{{ url('admin/tagihan') }}/" + data.id;
         document.getElementById('editInvoiceNumber').textContent = data.number || '-';
+        document.getElementById('editInvoiceStudent').textContent = data.student || '-';
+        document.getElementById('editInvoiceNis').textContent = data.nis || '-';
         document.getElementById('editInvoiceTitle').value = data.title || '';
         document.getElementById('editInvoiceAmount').value = data.amount;
         document.getElementById('editInvoiceDueDate').value = data.due_date || '';
         document.getElementById('editInvoiceNotes').value = data.notes || '';
+
+        const amountInput = document.getElementById('editInvoiceAmount');
+        const amountInfo = document.getElementById('editInvoiceAmountInfo');
+        const syncAmountInfo = () => {
+            amountInfo.textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(amountInput.value || 0);
+        };
+        amountInput.oninput = syncAmountInfo;
+        syncAmountInfo();
+
         document.getElementById('editInvoicePaidInfo').textContent = data.paid > 0
             ? 'Sudah dibayar: Rp ' + new Intl.NumberFormat('id-ID').format(data.paid)
             : 'Belum ada pembayaran.';
+
+        // Kuota perubahan hanya ditampilkan setelah tombol Ubah diklik.
+        const editCount = data.edit_count || 0;
+        const sisa = Math.max(0, 2 - editCount);
+        const quotaBox = document.getElementById('editInvoiceQuota');
+        const quotaText = document.getElementById('editInvoiceQuotaText');
+        const submit = document.getElementById('editInvoiceSubmit');
+
+        if (sisa === 0) {
+            quotaBox.className = 'p-3 bg-rose-50 border border-rose-200 rounded-xl text-[11px] text-rose-900';
+            quotaText.textContent = 'Tagihan ini sudah diubah 2 kali. Data tagihan tidak dapat diubah lagi; gunakan pembatalan lalu terbitkan tagihan pengganti bila perlu.';
+            submit.disabled = true;
+            submit.classList.add('disabled:bg-gray-300', 'disabled:cursor-not-allowed');
+        } else {
+            quotaBox.className = 'p-3 bg-blue-50 border border-blue-100 rounded-xl text-[11px] text-blue-900';
+            quotaText.textContent = 'Sisa kesempatan ubah data: ' + sisa + ' kali';
+            submit.disabled = false;
+        }
+
         document.getElementById('editInvoiceModal').classList.remove('hidden');
     }
 
@@ -483,6 +510,9 @@
         document.getElementById('cancelInvoiceForm').action = "{{ url('admin/tagihan') }}/" + data.id + "/batal";
         document.getElementById('cancelInvoiceNumber').textContent = data.number || '-';
         document.getElementById('cancelInvoiceSummary').textContent = data.title || '-';
+        document.getElementById('cancelInvoiceStudent').textContent = data.student || '-';
+        document.getElementById('cancelInvoiceNis').textContent = data.nis || '-';
+        document.getElementById('cancelInvoiceAmount').textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(data.amount || 0);
         document.getElementById('cancelInvoiceModal').classList.remove('hidden');
     }
 </script>
@@ -503,6 +533,23 @@
         <form id="editInvoiceForm" method="POST" class="p-6 space-y-4 text-xs">
             @csrf
             @method('PATCH')
+
+            <div class="p-3 bg-amber-50 border border-amber-100 rounded-xl text-[11px] text-amber-900">
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <div>
+                        <p class="text-[10px] font-bold uppercase text-amber-500">Nama Santri</p>
+                        <p class="font-bold text-amber-900" id="editInvoiceStudent">-</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold uppercase text-amber-500">NIS</p>
+                        <p class="font-semibold text-amber-900" id="editInvoiceNis">-</p>
+                    </div>
+                </div>
+                <div>
+                    <p class="text-[10px] font-bold uppercase text-amber-500">Nominal Tagihan</p>
+                    <p class="font-bold text-amber-900" id="editInvoiceAmountInfo">-</p>
+                </div>
+            </div>
 
             <div>
                 <label class="block font-bold text-gray-700 uppercase mb-1">Uraian Tagihan <span class="text-rose-500">*</span></label>
@@ -535,9 +582,14 @@
                 Nominal tidak boleh lebih kecil dari total yang sudah dibayar. Perubahan tercatat di Log Aktivitas.
             </div>
 
+            <div class="p-3 bg-blue-50 border border-blue-100 rounded-xl text-[11px] text-blue-900" id="editInvoiceQuota">
+                <i class="fa-solid fa-circle-info mr-1"></i>
+                <span id="editInvoiceQuotaText">Sisa kesempatan ubah data: 2 kali</span>
+            </div>
+
             <div class="flex items-center justify-end space-x-2 pt-2">
                 <button type="button" onclick="document.getElementById('editInvoiceModal').classList.add('hidden')" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold transition">Batal</button>
-                <button type="submit" class="px-5 py-2 bg-brand-900 hover:bg-brand-800 text-white rounded-xl font-bold shadow-md transition">
+                <button type="submit" id="editInvoiceSubmit" class="px-5 py-2 bg-brand-900 hover:bg-brand-800 text-white rounded-xl font-bold shadow-md transition disabled:bg-gray-300 disabled:cursor-not-allowed">
                     <i class="fa-solid fa-floppy-disk mr-1.5"></i> Simpan Perubahan
                 </button>
             </div>
@@ -563,8 +615,24 @@
             @method('PATCH')
 
             <div class="p-3 bg-rose-50 border border-rose-100 rounded-xl text-[11px] text-rose-900">
-                <p class="font-semibold" id="cancelInvoiceSummary">-</p>
-                <p class="mt-1">Tagihan berstatus <strong>DIBATALKAN</strong> tidak akan dihitung sebagai tunggakan dan tidak muncul di portal wali.</p>
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <div>
+                        <p class="text-[10px] font-bold uppercase text-rose-400">Nama Santri</p>
+                        <p class="font-bold text-rose-900" id="cancelInvoiceStudent">-</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold uppercase text-rose-400">NIS</p>
+                        <p class="font-semibold text-rose-900" id="cancelInvoiceNis">-</p>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <p class="text-[10px] font-bold uppercase text-rose-400">Nominal Tagihan</p>
+                    <p class="font-bold text-rose-900" id="cancelInvoiceAmount">-</p>
+                </div>
+                <div class="pt-2 border-t border-rose-200">
+                    <p class="font-semibold" id="cancelInvoiceSummary">-</p>
+                    <p class="mt-1">Tagihan berstatus <strong>DIBATALKAN</strong> tidak akan dihitung sebagai tunggakan dan tidak muncul di portal wali.</p>
+                </div>
             </div>
 
             <div>

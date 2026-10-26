@@ -34,8 +34,8 @@
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gold-500">
                             <i class="fa-solid fa-id-card"></i>
                         </span>
-                        <input type="text" name="nis" id="nis" value="{{ old('nis', $demoMode ? '202601001' : '') }}" required
-                            placeholder="Contoh: 202601001"
+                        <input type="text" name="nis" id="nis" value="{{ old('nis', $demoMode ? 'DMY00001' : '') }}" required
+                            placeholder="Contoh: DMY00001"
                             class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gold-400 focus:border-gold-400 text-sm transition font-medium">
                     </div>
                 </div>
@@ -48,13 +48,13 @@
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gold-500">
                             <i class="fa-brands fa-whatsapp text-base"></i>
                         </span>
-                        <input type="password" name="identifier" id="identifier" value="{{ old('identifier', $demoMode ? '085692253516' : '') }}" required
+                        <input type="password" name="identifier" id="identifier" value="{{ old('identifier', $demoMode ? '100001' : '') }}" required
                             placeholder="Nomor WA terdaftar atau PIN 6 digit"
                             class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gold-400 focus:border-gold-400 text-sm transition">
                     </div>
                     <p class="text-[11px] text-gray-500 mt-1.5">
                         *Masukkan no. WA wali yang terdaftar atau PIN 6 digit.
-                        @if($demoMode) PIN awal demo: <code>123456</code>.@endif
+                        @if($demoMode) PIN demo: <code>100001</code> (sesuai data santri).@endif
                     </p>
                 </div>
 
@@ -79,22 +79,22 @@
                     <div class="space-y-1.5 text-gray-700">
                         <div class="flex items-center justify-between p-1.5 rounded-lg bg-white/80 border border-gold-200">
                             <div>
-                                <strong class="text-brand-900">Muhammad Salman</strong> (Reguler)
-                                <span class="block text-[11px] text-gray-500">NIS: <code>202601001</code> | WA: <code>085692253516</code></span>
+                                <strong class="text-brand-900">Maulana Rahman Yusuf</strong> (Putra - 1 Reguler)
+                                <span class="block text-[11px] text-gray-500">NIS: <code>DMY00001</code> | PIN: <code>100001</code></span>
                             </div>
-                            <span class="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded">3 Bln Tagihan</span>
+                            <span class="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded">Akun Utama</span>
                         </div>
                         <div class="flex items-center justify-between p-1.5 rounded-lg bg-white/80 border border-gold-200">
                             <div>
-                                <strong class="text-brand-900">Ahmad Iqbal</strong> (Beasiswa 50%)
-                                <span class="block text-[11px] text-gray-500">NIS: <code>202601004</code> | WA: <code>085712345678</code></span>
+                                <strong class="text-brand-900">Tian Saputra</strong> (Beasiswa 50%)
+                                <span class="block text-[11px] text-gray-500">NIS: <code>DMY00010</code> | PIN: <code>100010</code></span>
                             </div>
                             <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">Beasiswa Putra</span>
                         </div>
                         <div class="flex items-center justify-between p-1.5 rounded-lg bg-white/80 border border-gold-200">
                             <div>
-                                <strong class="text-brand-900">Naysila Aulia</strong> (Beasiswa 50%)
-                                <span class="block text-[11px] text-gray-500">NIS: <code>202601005</code> | WA: <code>085898765432</code></span>
+                                <strong class="text-brand-900">Aira Syhanaz Zaneta</strong> (Beasiswa 50%)
+                                <span class="block text-[11px] text-gray-500">NIS: <code>DMY00059</code> | PIN: <code>100059</code></span>
                             </div>
                             <span class="text-[10px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded">Beasiswa Putri</span>
                         </div>

@@ -52,7 +52,13 @@ class ExpenseManagementTest extends TestCase
         $rangeResponse->assertOk();
         $rangeResponse->assertSee('Pembelian alat kebersihan asrama');
         $rangeResponse->assertSee('EXP-202607-0001');
-        $rangeResponse->assertSee('Rp 2.350.000');
+
+        $rangeTotal = Expense::notVoided()
+            ->whereDate('expense_date', '>=', '2026-07-01')
+            ->whereDate('expense_date', '<=', '2026-10-31')
+            ->sum('amount');
+
+        $rangeResponse->assertSee('Rp '.number_format((float) $rangeTotal, 0, ',', '.'));
     }
 
     public function test_bendahara_can_create_expense_and_it_is_logged(): void

@@ -21,7 +21,7 @@
                 <div>
                     <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Santri Aktif Terdaftar</p>
                     <p class="text-3xl font-extrabold text-brand-900 mt-1">{{ $totalSantri }}</p>
-                    <p class="text-xs text-gray-400 mt-1">Muadalah Mu'allimien &bull; 6 tahun</p>
+                    <p class="text-xs text-gray-400 mt-1">Aktif per {{ now()->translatedFormat('F Y') }}</p>
                 </div>
                 <div class="w-12 h-12 rounded-xl bg-blue-50 text-brand-800 flex items-center justify-center text-2xl">
                     <i class="fa-solid fa-users"></i>
@@ -72,11 +72,11 @@
         <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
             <div class="flex items-start justify-between">
                 <div>
-                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Tunggakan Santri</p>
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Tunggakan Santri Bulan Ini</p>
                     <p class="text-2xl font-extrabold text-rose-600 mt-1">
                         Rp {{ number_format($totalTunggakan, 0, ',', '.') }}
                     </p>
-                    <p class="text-xs text-gray-400 mt-1">Seluruh tagihan belum lunas</p>
+                    <p class="text-xs text-gray-400 mt-1">s.d. {{ now()->translatedFormat('F Y') }}</p>
                 </div>
                 <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-2xl">
                     <i class="fa-solid fa-clock-rotate-left"></i>
@@ -144,7 +144,7 @@
                     <div class="p-4 hover:bg-gray-50/50 flex items-center justify-between">
                         <div class="space-y-0.5">
                             <p class="font-bold text-gray-900">{{ $pay->student->nama_lengkap }} ({{ $pay->student->kelas }})</p>
-                            <p class="text-xs text-gray-500">{{ $pay->invoice->title }}</p>
+                            <p class="text-xs text-gray-500">{{ $pay->invoice?->receipt_title ?? '-' }}</p>
                             <p class="text-[11px] font-mono text-gray-400">{{ $pay->receipt->receipt_number ?? '-' }} • {{ $pay->payment_date->format('d/m/Y') }}</p>
                         </div>
                         <div class="text-right space-y-1">

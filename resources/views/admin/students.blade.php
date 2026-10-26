@@ -27,9 +27,6 @@
             <button type="button" onclick="openStudentModal()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-sm transition flex items-center">
                 <i class="fa-solid fa-user-plus mr-1.5 text-sm"></i> Tambah Santri Baru
             </button>
-            <a href="{{ route('admin.invoices') }}" class="px-3.5 py-2 bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 rounded-xl text-xs font-semibold shadow-sm transition flex items-center">
-                <i class="fa-solid fa-file-invoice mr-1.5 text-sm"></i> Kembali ke Tagihan
-            </a>
         </div>
     </div>
 

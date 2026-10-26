@@ -42,6 +42,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Nama petugas pada tanda tangan kuitansi tanpa embel-embel jabatan.
+     */
+    public function receiptName(): string
+    {
+        return trim((string) preg_replace('/\s*\([^)]*\)\s*$/', '', (string) $this->name));
+    }
+
+    /**
      * Gelar penanda tangan yang dicetak pada kuitansi.
      * Bendahara 1 & 2 memakai jabatannya, sedangkan akun lain memakai sebutan umum.
      */
@@ -52,5 +60,13 @@ class User extends Authenticatable
         }
 
         return 'Bendahara / Kasir Keuangan';
+    }
+
+    /**
+     * Jabatan singkat di atas nama penanda tangan kuitansi.
+     */
+    public function receiptPosition(): string
+    {
+        return trim((string) preg_replace('/\s+PTQ\s+Amsa001\s*$/i', '', $this->receiptTitle()));
     }
 }

@@ -30,7 +30,7 @@
                 <div>
                     <label for="nis" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">NIS Santri</label>
                     <input type="text" name="nis" id="nis" value="{{ old('nis') }}" required
-                           placeholder="Contoh: 202601001"
+                           placeholder="Contoh: DMY00001"
                            class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gold-400 focus:border-gold-400 text-sm">
                 </div>
 
