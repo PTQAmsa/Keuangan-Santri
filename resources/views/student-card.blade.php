@@ -111,7 +111,7 @@
             <span class="text-xs text-gray-500">{{ $invoices->count() }} dokumen</span>
         </div>
         <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs sm:text-sm">
+            <table data-sortable class="w-full text-left border-collapse text-xs sm:text-sm">
                 <thead>
                     <tr class="bg-gray-50 text-gray-600 uppercase text-[11px] font-semibold border-b border-gray-200">
                         <th class="py-3 px-3">Tanggal</th>
@@ -190,7 +190,7 @@
             <span class="text-xs text-gray-500">{{ $payments->count() }} pembayaran</span>
         </div>
         <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs sm:text-sm">
+            <table data-sortable class="w-full text-left border-collapse text-xs sm:text-sm">
                 <thead>
                     <tr class="bg-gray-50 text-gray-600 uppercase text-[11px] font-semibold border-b border-gray-200">
                         <th class="py-3 px-3">Tanggal</th>
@@ -201,7 +201,7 @@
                         <th class="py-3 px-3">Diterima Dari</th>
                         <th class="py-3 px-3">Petugas</th>
                         <th class="py-3 px-3 text-center">Status</th>
-                        <th class="py-3 px-3 text-center">Dokumen</th>
+                        <th data-nosort class="py-3 px-3 text-center">Dokumen</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -271,7 +271,7 @@
             </div>
         </div>
         <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs sm:text-sm">
+            <table data-sortable class="w-full text-left border-collapse text-xs sm:text-sm">
                 <thead>
                     <tr class="bg-gray-50 text-gray-600 uppercase text-[11px] font-semibold border-b border-gray-200">
                         <th class="py-3 px-3">Tanggal</th>

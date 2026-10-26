@@ -98,12 +98,12 @@
             <table class="w-full text-left border-collapse text-xs sm:text-sm">
                 <thead class="bg-gray-50 text-[11px] uppercase tracking-wider text-gray-500">
                     <tr>
-                        <th class="px-5 py-3 font-semibold">Bulan</th>
-                        <th class="px-4 py-3 font-semibold text-right">Kas Masuk</th>
-                        <th class="px-4 py-3 font-semibold text-right">Kas Keluar</th>
-                        <th class="px-4 py-3 font-semibold text-right">Saldo Akhir</th>
-                        <th class="px-4 py-3 font-semibold text-center">Transaksi</th>
-                        <th class="px-4 py-3 font-semibold">Status</th>
+                        <x-sort-th column="month" label="Bulan" :sort-by="$sortBy" :sort-order="$sortOrder" class="px-5 py-3 font-semibold" />
+                        <x-sort-th column="in" label="Kas Masuk" :sort-by="$sortBy" :sort-order="$sortOrder" align="right" class="px-4 py-3 font-semibold" />
+                        <x-sort-th column="out" label="Kas Keluar" :sort-by="$sortBy" :sort-order="$sortOrder" align="right" class="px-4 py-3 font-semibold" />
+                        <x-sort-th column="balance" label="Saldo Akhir" :sort-by="$sortBy" :sort-order="$sortOrder" align="right" class="px-4 py-3 font-semibold" />
+                        <x-sort-th column="count" label="Transaksi" :sort-by="$sortBy" :sort-order="$sortOrder" align="center" class="px-4 py-3 font-semibold" />
+                        <x-sort-th column="status" label="Status" :sort-by="$sortBy" :sort-order="$sortOrder" class="px-4 py-3 font-semibold" />
                         <th class="px-5 py-3 font-semibold text-right">Aksi</th>
                     </tr>
                 </thead>

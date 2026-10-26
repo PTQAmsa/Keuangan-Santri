@@ -42,6 +42,31 @@ class BisyarahController
             ->orderBy('nama_lengkap')
             ->get();
 
+        // Urutkan lewat klik judul kolom. Sebagian kolom berasal dari catatan
+        // bisyarah bulan ini, jadi diurutkan setelah data diambil.
+        $allowedSorts = ['teacher', 'whatsapp', 'recorded', 'amount', 'method', 'account'];
+        $sortBy = (string) $request->input('sort_by', 'teacher');
+        $sortOrder = strtolower((string) $request->input('sort_order', 'asc')) === 'desc' ? 'desc' : 'asc';
+
+        if (! in_array($sortBy, $allowedSorts, true)) {
+            $sortBy = 'teacher';
+        }
+
+        $teachers = $teachers
+            ->sortBy(function (Teacher $teacher) use ($payments, $sortBy) {
+                $payment = $payments->get($teacher->id);
+
+                return match ($sortBy) {
+                    'whatsapp' => (string) $teacher->no_whatsapp,
+                    'recorded' => $payment ? 1 : 0,
+                    'amount' => $payment ? (float) $payment->amount : -1.0,
+                    'method' => $payment?->payment_method ?? '',
+                    'account' => $payment?->bank_account_number ?? '',
+                    default => mb_strtolower($teacher->nama_lengkap),
+                };
+            }, SORT_REGULAR, $sortOrder === 'desc')
+            ->values();
+
         $activeTeacherCount = Teacher::active()->count();
         $activeRecordedCount = $teachers
             ->where('is_active', true)
@@ -81,6 +106,8 @@ class BisyarahController
             'totalCash' => $totalCash,
             'closing' => $closing,
             'isLocked' => $isLocked,
+            'sortBy' => $sortBy,
+            'sortOrder' => $sortOrder,
         ]);
     }
 

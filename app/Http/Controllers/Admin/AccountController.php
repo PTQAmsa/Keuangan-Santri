@@ -18,15 +18,36 @@ class AccountController
     /**
      * Daftar akun pengurus (khusus Administrator).
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::orderByRaw("CASE role WHEN 'admin' THEN 0 WHEN 'bendahara' THEN 1 ELSE 2 END")
-            ->orderBy('name')
-            ->get();
+        // Kolom yang bisa diurutkan lewat klik judul kolom.
+        $allowedSorts = [
+            'name' => 'name',
+            'email' => 'email',
+            'role' => "CASE role WHEN 'admin' THEN 0 WHEN 'bendahara' THEN 1 ELSE 2 END",
+            'status' => 'is_active',
+        ];
+
+        $sortBy = (string) $request->input('sort_by', 'role');
+        $sortOrder = strtolower((string) $request->input('sort_order', 'asc')) === 'desc' ? 'desc' : 'asc';
+
+        if (! array_key_exists($sortBy, $allowedSorts)) {
+            $sortBy = 'role';
+        }
+
+        $query = User::query();
+
+        if ($sortBy === 'role') {
+            $query->orderByRaw($allowedSorts['role'].' '.$sortOrder);
+        } else {
+            $query->orderBy($allowedSorts[$sortBy], $sortOrder);
+        }
+
+        $users = $query->orderBy('name')->get();
 
         $roles = UserRole::cases();
 
-        return view('admin.accounts', compact('users', 'roles'));
+        return view('admin.accounts', compact('users', 'roles', 'sortBy', 'sortOrder'));
     }
 
     /**

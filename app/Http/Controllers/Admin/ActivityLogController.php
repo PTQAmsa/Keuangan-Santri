@@ -22,7 +22,29 @@ class ActivityLogController
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
 
-        $query = ActivityLog::with(['user', 'student'])->orderByDesc('id');
+        // Kolom yang bisa diurutkan lewat klik judul kolom.
+        $allowedSorts = [
+            'time' => 'activity_logs.created_at',
+            'user' => 'users.name',
+            'module' => 'activity_logs.module',
+            'action' => 'activity_logs.action',
+            'description' => 'activity_logs.description',
+        ];
+
+        $sortBy = (string) $request->input('sort_by', 'time');
+        $sortOrder = strtolower((string) $request->input('sort_order', 'desc')) === 'asc' ? 'asc' : 'desc';
+
+        if (! array_key_exists($sortBy, $allowedSorts)) {
+            $sortBy = 'time';
+        }
+
+        $query = ActivityLog::with(['user', 'student'])->select('activity_logs.*');
+
+        if ($sortBy === 'user') {
+            $query->leftJoin('users', 'activity_logs.user_id', '=', 'users.id');
+        }
+
+        $query->orderBy($allowedSorts[$sortBy], $sortOrder)->orderByDesc('activity_logs.id');
 
         if ($search) {
             $query->where('description', 'like', "%{$search}%");
@@ -41,11 +63,11 @@ class ActivityLogController
         }
 
         if ($startDate) {
-            $query->whereDate('created_at', '>=', $startDate);
+            $query->whereDate('activity_logs.created_at', '>=', $startDate);
         }
 
         if ($endDate) {
-            $query->whereDate('created_at', '<=', $endDate);
+            $query->whereDate('activity_logs.created_at', '<=', $endDate);
         }
 
         $logs = $query->paginate(20)->withQueryString();
@@ -70,7 +92,9 @@ class ActivityLogController
             'module',
             'action',
             'startDate',
-            'endDate'
+            'endDate',
+            'sortBy',
+            'sortOrder'
         ));
     }
 }

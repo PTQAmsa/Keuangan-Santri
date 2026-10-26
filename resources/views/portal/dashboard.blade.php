@@ -187,7 +187,7 @@
             </div>
         @else
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                <table data-sortable class="w-full text-left border-collapse text-xs sm:text-sm">
                     <thead>
                         <tr class="bg-gray-50 text-gray-600 uppercase text-[11px] font-semibold border-b border-gray-200">
                             <th class="py-3 px-4">No. Kuitansi</th>
@@ -195,7 +195,7 @@
                             <th class="py-3 px-4">Nominal Masuk</th>
                             <th class="py-3 px-4">Tanggal Bayar</th>
                             <th class="py-3 px-4">Metode</th>
-                            <th class="py-3 px-4 text-center">Aksi Dokumen</th>
+                            <th data-nosort class="py-3 px-4 text-center">Aksi Dokumen</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">

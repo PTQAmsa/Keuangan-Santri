@@ -37,8 +37,24 @@ class TeacherController
             $query->where('status', $status);
         }
 
+        // Kolom yang bisa diurutkan lewat klik judul kolom.
+        $allowedSorts = [
+            'teacher' => 'nama_lengkap',
+            'whatsapp' => 'no_whatsapp',
+            'status' => 'status',
+            'notes' => 'notes',
+        ];
+
+        $sortBy = (string) $request->input('sort_by', 'teacher');
+        $sortOrder = strtolower((string) $request->input('sort_order', 'asc')) === 'desc' ? 'desc' : 'asc';
+
+        if (! array_key_exists($sortBy, $allowedSorts)) {
+            $sortBy = 'teacher';
+        }
+
         $teachers = $query
             ->orderByDesc('is_active')
+            ->orderBy($allowedSorts[$sortBy], $sortOrder)
             ->orderBy('nama_lengkap')
             ->get();
 
@@ -57,6 +73,8 @@ class TeacherController
             'teachers',
             'search',
             'status',
+            'sortBy',
+            'sortOrder',
             'statuses',
             'active',
             'inactive',

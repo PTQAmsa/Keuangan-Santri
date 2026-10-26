@@ -18,12 +18,36 @@ class StudentController
         $status = $request->input('status');
         $kelompok = $request->input('kelompok');
 
+        // Kolom yang bisa diurutkan lewat klik judul kolom.
+        $allowedSorts = [
+            'student' => 'nama_lengkap',
+            'kelas' => 'kelas',
+            'wali' => 'nama_wali',
+            'beasiswa' => 'diskon_beasiswa',
+            'sisa_tagihan' => null, // dihitung dari tagihan, diurutkan setelah data diambil
+            'status' => 'status',
+        ];
+
+        $sortBy = (string) $request->input('sort_by', 'student');
+        $sortOrder = strtolower((string) $request->input('sort_order', 'asc')) === 'desc' ? 'desc' : 'asc';
+
+        if (! array_key_exists($sortBy, $allowedSorts)) {
+            $sortBy = 'student';
+        }
+
         $query = Student::query()
             ->with(['invoices' => function ($query) {
                 $query->whereIn('status', ['unpaid', 'partial']);
             }])
-            ->kelompok($kelompok)
-            ->orderBy('nama_lengkap');
+            ->kelompok($kelompok);
+
+        if ($allowedSorts[$sortBy] !== null) {
+            $query->orderBy($allowedSorts[$sortBy], $sortOrder);
+        }
+
+        if ($sortBy !== 'student') {
+            $query->orderBy('nama_lengkap');
+        }
 
         if ($search) {
             $query->where(function ($query) use ($search) {
@@ -40,6 +64,12 @@ class StudentController
 
         $students = $query->get();
 
+        if ($sortBy === 'sisa_tagihan') {
+            $students = $students
+                ->sortBy(fn (Student $student) => (float) $student->invoices->sum(fn ($invoice) => $invoice->remaining_amount), SORT_REGULAR, $sortOrder === 'desc')
+                ->values();
+        }
+
         $totalAktif = Student::where('status', 'aktif')->count();
         $totalNonaktif = Student::where('status', '!=', 'aktif')->count();
         $totalBeasiswa = Student::where('diskon_beasiswa', '>', 0)->count();
@@ -51,6 +81,8 @@ class StudentController
             'search',
             'status',
             'kelompok',
+            'sortBy',
+            'sortOrder',
             'totalAktif',
             'totalNonaktif',
             'totalBeasiswa',

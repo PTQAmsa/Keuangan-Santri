@@ -127,11 +127,11 @@
             <table class="w-full text-left text-xs text-gray-600">
                 <thead class="bg-gray-100 text-gray-700 font-bold uppercase text-[11px] tracking-wider border-b border-gray-200">
                     <tr>
-                        <th class="py-3 px-4 whitespace-nowrap">Waktu</th>
-                        <th class="py-3 px-4">Pengguna</th>
-                        <th class="py-3 px-4 text-center">Modul</th>
-                        <th class="py-3 px-4 text-center">Aksi</th>
-                        <th class="py-3 px-4">Keterangan</th>
+                        <x-sort-th column="time" label="Waktu" :sort-by="$sortBy" :sort-order="$sortOrder" class="py-3 px-4 whitespace-nowrap" />
+                        <x-sort-th column="user" label="Pengguna" :sort-by="$sortBy" :sort-order="$sortOrder" class="py-3 px-4" />
+                        <x-sort-th column="module" label="Modul" :sort-by="$sortBy" :sort-order="$sortOrder" align="center" class="py-3 px-4" />
+                        <x-sort-th column="action" label="Aksi" :sort-by="$sortBy" :sort-order="$sortOrder" align="center" class="py-3 px-4" />
+                        <x-sort-th column="description" label="Keterangan" :sort-by="$sortBy" :sort-order="$sortOrder" class="py-3 px-4" />
                         <th class="py-3 px-4">Rincian</th>
                     </tr>
                 </thead>

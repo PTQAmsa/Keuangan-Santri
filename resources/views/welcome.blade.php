@@ -350,11 +350,7 @@
         </div>
     </footer>
 
-    <!-- Tombol kembali ke atas: muncul setelah digulir cukup jauh, biru, berubah kuning saat ditekan -->
-    <button type="button" id="back-to-top" aria-label="Kembali ke atas" title="Kembali ke atas"
-            class="pointer-events-none fixed bottom-5 right-5 z-40 flex h-12 w-12 translate-y-4 items-center justify-center rounded-full bg-blue-600 text-white opacity-0 shadow-lg shadow-blue-900/30 transition-all duration-200 hover:bg-blue-700 active:bg-amber-500 active:text-slate-900 sm:bottom-6 sm:right-6">
-        <i class="fa-solid fa-arrow-up text-lg"></i>
-    </button>
+    @include('layouts.partials.back-to-top')
 
     <script>
         (function () {
@@ -362,35 +358,11 @@
 
             // Bayangan navbar muncul setelah halaman digulir.
             var header = document.getElementById('site-header');
-            var backToTop = document.getElementById('back-to-top');
-
-            function onScroll() {
-                var y = window.scrollY || document.documentElement.scrollTop;
-                if (header) header.classList.toggle('shadow-md', y > 8);
-
-                if (backToTop) {
-                    var show = y > window.innerHeight * 0.6;
-                    backToTop.classList.toggle('opacity-0', !show);
-                    backToTop.classList.toggle('translate-y-4', !show);
-                    backToTop.classList.toggle('pointer-events-none', !show);
-                }
+            function syncHeaderShadow() {
+                if (header) header.classList.toggle('shadow-md', (window.scrollY || 0) > 8);
             }
-
-            window.addEventListener('scroll', onScroll, { passive: true });
-            onScroll();
-
-            if (backToTop) {
-                backToTop.addEventListener('click', function () {
-                    // Warna kuning dipertahankan sebentar sebagai umpan balik sentuhan di HP.
-                    backToTop.classList.remove('bg-blue-600', 'text-white', 'hover:bg-blue-700');
-                    backToTop.classList.add('bg-amber-500', 'text-slate-900');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                    setTimeout(function () {
-                        backToTop.classList.remove('bg-amber-500', 'text-slate-900');
-                        backToTop.classList.add('bg-blue-600', 'text-white', 'hover:bg-blue-700');
-                    }, 900);
-                });
-            }
+            window.addEventListener('scroll', syncHeaderShadow, { passive: true });
+            syncHeaderShadow();
 
             // Bila login gagal, gulir ke kartu login agar pesan kesalahannya langsung terlihat.
             @if($errors->any())

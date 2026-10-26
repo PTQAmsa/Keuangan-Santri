@@ -90,6 +90,8 @@
     </div>
 
     @include('layouts.partials.scripts')
+    @include('layouts.partials.table-sort')
+    @include('layouts.partials.back-to-top')
 </body>
 @else
 <body class="flex min-h-screen flex-col justify-between bg-slate-50 font-sans text-slate-800 antialiased">
@@ -108,6 +110,9 @@
             <p>Layanan Keuangan WhatsApp: <a href="https://wa.me/6285692253516" target="_blank" class="font-semibold text-brand-700 hover:underline">+62 856-9225-3516</a> | Website: <a href="https://www.ptqamsa.id" target="_blank" class="font-semibold text-brand-700 hover:underline">www.ptqamsa.id</a></p>
         </div>
     </footer>
+
+    @include('layouts.partials.table-sort')
+    @include('layouts.partials.back-to-top')
 </body>
 @endif
 </html>

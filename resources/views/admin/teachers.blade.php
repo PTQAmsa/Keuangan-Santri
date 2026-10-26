@@ -115,10 +115,10 @@
                 <table class="w-full text-left border-collapse text-xs sm:text-sm">
                     <thead class="bg-gray-50 text-[11px] uppercase tracking-wider text-gray-500">
                         <tr>
-                            <th class="px-5 py-3 font-semibold">Guru</th>
-                            <th class="px-4 py-3 font-semibold">WhatsApp</th>
-                            <th class="px-4 py-3 font-semibold">Status</th>
-                            <th class="px-4 py-3 font-semibold">Catatan</th>
+                            <x-sort-th column="teacher" label="Guru" :sort-by="$sortBy" :sort-order="$sortOrder" class="px-5 py-3 font-semibold" />
+                            <x-sort-th column="whatsapp" label="WhatsApp" :sort-by="$sortBy" :sort-order="$sortOrder" class="px-4 py-3 font-semibold" />
+                            <x-sort-th column="status" label="Status" :sort-by="$sortBy" :sort-order="$sortOrder" class="px-4 py-3 font-semibold" />
+                            <x-sort-th column="notes" label="Catatan" :sort-by="$sortBy" :sort-order="$sortOrder" class="px-4 py-3 font-semibold" />
                             <th class="px-5 py-3 font-semibold text-right">Aksi</th>
                         </tr>
                     </thead>

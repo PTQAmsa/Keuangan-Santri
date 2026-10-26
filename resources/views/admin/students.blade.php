@@ -120,12 +120,12 @@
                 <thead class="bg-gray-100 text-gray-700 font-bold uppercase text-[11px] tracking-wider border-b border-gray-200">
                     <tr>
                         <th class="py-3 px-4 text-center">No</th>
-                        <th class="py-3 px-4">Santri</th>
-                        <th class="py-3 px-4">Marhalah, Kelas &amp; Kamar</th>
-                        <th class="py-3 px-4">Wali Santri & Kontak</th>
-                        <th class="py-3 px-4 text-center">Beasiswa</th>
-                        <th class="py-3 px-4 text-right">Sisa Tagihan</th>
-                        <th class="py-3 px-4 text-center">Status</th>
+                        <x-sort-th column="student" label="Santri" :sort-by="$sortBy" :sort-order="$sortOrder" class="py-3 px-4" />
+                        <x-sort-th column="kelas" label="Marhalah, Kelas & Kamar" :sort-by="$sortBy" :sort-order="$sortOrder" class="py-3 px-4" />
+                        <x-sort-th column="wali" label="Wali Santri & Kontak" :sort-by="$sortBy" :sort-order="$sortOrder" class="py-3 px-4" />
+                        <x-sort-th column="beasiswa" label="Beasiswa" :sort-by="$sortBy" :sort-order="$sortOrder" align="center" class="py-3 px-4" />
+                        <x-sort-th column="sisa_tagihan" label="Sisa Tagihan" :sort-by="$sortBy" :sort-order="$sortOrder" align="right" class="py-3 px-4" />
+                        <x-sort-th column="status" label="Status" :sort-by="$sortBy" :sort-order="$sortOrder" align="center" class="py-3 px-4" />
                         <th class="py-3 px-4 text-center">Aksi</th>
                     </tr>
                 </thead>

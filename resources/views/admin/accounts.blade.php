@@ -32,10 +32,10 @@
             <table class="w-full text-left border-collapse text-xs sm:text-sm">
                 <thead>
                     <tr class="bg-gray-50 text-gray-600 uppercase text-[11px] font-semibold border-b border-gray-200">
-                        <th class="py-3 px-4">Nama &amp; Jabatan</th>
-                        <th class="py-3 px-4">Email</th>
-                        <th class="py-3 px-4 text-center">Peran</th>
-                        <th class="py-3 px-4 text-center">Status</th>
+                        <x-sort-th column="name" label="Nama & Jabatan" :sort-by="$sortBy" :sort-order="$sortOrder" class="py-3 px-4" />
+                        <x-sort-th column="email" label="Email" :sort-by="$sortBy" :sort-order="$sortOrder" class="py-3 px-4" />
+                        <x-sort-th column="role" label="Peran" :sort-by="$sortBy" :sort-order="$sortOrder" align="center" class="py-3 px-4" />
+                        <x-sort-th column="status" label="Status" :sort-by="$sortBy" :sort-order="$sortOrder" align="center" class="py-3 px-4" />
                         <th class="py-3 px-4 text-center">Aksi</th>
                     </tr>
                 </thead>

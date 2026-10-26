@@ -55,12 +55,35 @@ class BookClosingController
         $closedCount = $closings->filter(fn (BookClosing $closing) => $closing->isClosed())->count();
         $saldoTahun = $rows === [] ? 0.0 : (float) end($rows)['summary']['closing_balance'];
 
+        // Urutkan lewat klik judul kolom. Urutan bawaan: Januari sampai Desember.
+        $allowedSorts = ['month', 'in', 'out', 'balance', 'count', 'status'];
+        $sortBy = (string) $request->input('sort_by', 'month');
+        $sortOrder = strtolower((string) $request->input('sort_order', 'asc')) === 'desc' ? 'desc' : 'asc';
+
+        if (! in_array($sortBy, $allowedSorts, true)) {
+            $sortBy = 'month';
+        }
+
+        $rows = collect($rows)
+            ->sortBy(fn (array $row) => match ($sortBy) {
+                'in' => $row['summary']['total_in'],
+                'out' => $row['summary']['total_out'],
+                'balance' => $row['summary']['closing_balance'],
+                'count' => $row['summary']['payment_count'] + $row['summary']['expense_count'],
+                'status' => $row['closing']?->isClosed() ? 2 : ($row['is_future'] ? 0 : 1),
+                default => $row['month'],
+            }, SORT_REGULAR, $sortOrder === 'desc')
+            ->values()
+            ->all();
+
         return view('admin.reports.closing', compact(
             'rows',
             'year',
             'totals',
             'closedCount',
             'saldoTahun',
+            'sortBy',
+            'sortOrder',
         ));
     }
 
