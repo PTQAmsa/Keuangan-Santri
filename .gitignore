@@ -25,3 +25,7 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Rekapan data riil (berisi data pribadi), jangan masuk repo
+/*.csv
+/*.xlsx
