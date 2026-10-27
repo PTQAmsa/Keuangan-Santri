@@ -32,7 +32,7 @@ class PortalController
         $demoMode = (bool) config('app.demo_mode');
 
         return view('portal.login', [
-            'prefillNis' => $quick !== '' && ! $quickIsPhone ? $quick : ($demoMode ? 'DMY00001' : ''),
+            'prefillNis' => $quick !== '' && ! $quickIsPhone ? $quick : ($demoMode ? 'UJI00001' : ''),
             'prefillIdentifier' => $quickIsPhone ? $quick : ($demoMode ? '100001' : ''),
         ]);
     }

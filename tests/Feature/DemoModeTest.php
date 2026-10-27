@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Database\Seeders\DemoAccountSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -45,7 +46,27 @@ class DemoModeTest extends TestCase
         $this->get(route('portal.login'))
             ->assertOk()
             ->assertSee('Akun Santri untuk Uji Coba')
-            ->assertSee('DMY00001')
+            ->assertSee('UJI00001')
             ->assertSee('100001');
+    }
+
+    public function test_seeded_test_accounts_can_log_in_to_the_portal_with_pin_only(): void
+    {
+        $this->seed(DemoAccountSeeder::class);
+
+        $this->post(route('portal.login.post'), [
+            'nis' => 'UJI00001',
+            'identifier' => '100001',
+        ])->assertRedirect(route('portal.dashboard'));
+
+        $this->get(route('portal.dashboard'))
+            ->assertOk()
+            ->assertSee('Santri Uji Coba Putra')
+            ->assertSee('Uji Coba');
+
+        // Akun uji coba tidak ikut terhapus saat data riil menggantikan dummy.
+        $this->artisan('santri:import', ['file' => __DIR__.'/../Fixtures/santri-impor.csv', '--hapus-dummy' => true])->assertSuccessful();
+        $this->assertDatabaseHas('students', ['nis' => 'UJI00001']);
+        $this->assertDatabaseHas('students', ['nis' => 'UJI00002']);
     }
 }

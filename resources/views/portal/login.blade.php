@@ -22,8 +22,8 @@
                     <label for="nis" class="mb-1.5 block text-xs font-semibold text-slate-700">Nomor Induk Santri (NIS)</label>
                     <div class="relative">
                         <i class="fa-solid fa-id-card pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i>
-                        <input type="text" name="nis" id="nis" value="{{ old('nis', $prefillNis ?? ($demoMode ? 'DMY00001' : '')) }}" required
-                            placeholder="Contoh: DMY00001"
+                        <input type="text" name="nis" id="nis" value="{{ old('nis', $prefillNis ?? ($demoMode ? 'UJI00001' : '')) }}" required
+                            placeholder="Contoh: 2026001"
                             class="h-11 w-full rounded-xl border border-slate-300 bg-slate-50 pl-10 pr-3 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/30">
                     </div>
                 </div>
@@ -60,24 +60,17 @@
                     <div class="space-y-1.5">
                         <div class="flex items-center justify-between rounded-lg border border-amber-200 bg-white p-2">
                             <div>
-                                <strong class="text-slate-900">Maulana Rahman Yusuf</strong> (Putra - 1 Reguler)
-                                <span class="block text-[11px] text-slate-500">NIS: <code>DMY00001</code> | PIN: <code>100001</code></span>
+                                <strong class="text-slate-900">Santri Uji Coba Putra</strong> (masuk dengan PIN)
+                                <span class="block text-[11px] text-slate-500">NIS: <code>UJI00001</code> | PIN: <code>100001</code></span>
                             </div>
-                            <span class="rounded bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">Akun Utama</span>
+                            <span class="rounded bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">Uji Coba Putra</span>
                         </div>
                         <div class="flex items-center justify-between rounded-lg border border-amber-200 bg-white p-2">
                             <div>
-                                <strong class="text-slate-900">Tian Saputra</strong> (Beasiswa 50%)
-                                <span class="block text-[11px] text-slate-500">NIS: <code>DMY00010</code> | PIN: <code>100010</code></span>
+                                <strong class="text-slate-900">Santri Uji Coba Putri</strong> (masuk dengan PIN)
+                                <span class="block text-[11px] text-slate-500">NIS: <code>UJI00002</code> | PIN: <code>100002</code></span>
                             </div>
-                            <span class="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">Beasiswa Putra</span>
-                        </div>
-                        <div class="flex items-center justify-between rounded-lg border border-amber-200 bg-white p-2">
-                            <div>
-                                <strong class="text-slate-900">Aira Syhanaz Zaneta</strong> (Beasiswa 50%)
-                                <span class="block text-[11px] text-slate-500">NIS: <code>DMY00059</code> | PIN: <code>100059</code></span>
-                            </div>
-                            <span class="rounded bg-purple-100 px-2 py-0.5 text-[10px] font-bold text-purple-700">Beasiswa Putri</span>
+                            <span class="rounded bg-purple-100 px-2 py-0.5 text-[10px] font-bold text-purple-700">Uji Coba Putri</span>
                         </div>
                     </div>
                 </div>

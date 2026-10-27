@@ -78,6 +78,7 @@ class StudentImportService
      *
      * @return array{
      *     imported: array<int, array{nis: string, nama: string, wali: string, wa: string, pin: string}>,
+     *     updated: array<int, array{nis: string, nama: string}>,
      *     skipped: array<int, array{baris: int, nama: string, alasan: string}>,
      *     dummy_deleted: int,
      *     missing_wa: int
@@ -102,6 +103,7 @@ class StudentImportService
             }
 
             $imported = [];
+            $updated = [];
             $skipped = [];
             $missingWa = 0;
 
@@ -119,51 +121,55 @@ class StudentImportService
                 $group = $this->resolveGroup($row['marhalah'] ?? '', $row['jenis_kelamin'] ?? '', $marhalah);
                 $nis = $this->limit($row['nis'] ?? '', 20);
 
-                if ($nis === '') {
-                    if ($this->alreadyExists($nama, $tahunMasuk, $group)) {
-                        $skipped[] = ['baris' => $line, 'nama' => $nama, 'alasan' => 'Sudah ada santri dengan nama dan tahun masuk yang sama'];
+                // Baris yang santrinya sudah ada (NIS sama, atau nama + tahun masuk sama)
+                // memperbarui data profil tanpa mengubah PIN wali.
+                $existing = $nis !== ''
+                    ? Student::where('nis', $nis)->first()
+                    : $this->findExisting($nama, $tahunMasuk, $group);
 
-                        continue;
-                    }
+                $wa = $this->normalizePhone($row['wa'] ?? '');
+                [$hubungan, $hubunganDetail] = $this->mapHubungan($row['hubungan'] ?? '', $row['hubungan_detail'] ?? '');
 
-                    $nis = $this->nextNis($tahunMasuk);
-                } elseif (Student::where('nis', $nis)->exists()) {
-                    $skipped[] = ['baris' => $line, 'nama' => $nama, 'alasan' => 'NIS '.$nis.' sudah terdaftar'];
+                $profile = [
+                    'nisn' => $this->limit($row['nisn'] ?? '', 20) ?: $existing?->nisn,
+                    'nama_lengkap' => $nama,
+                    'jenis_kelamin' => $group === 'putri' ? 'P' : 'L',
+                    'santri_group' => $group,
+                    'kelas' => $this->limit($row['kelas'] ?? '', 20) ?: ($existing?->kelas ?: 'Angkatan '.$tahunMasuk),
+                    'kamar_asrama' => $this->limit($row['kamar'] ?? '', 50) ?: $existing?->kamar_asrama,
+                    'tahun_masuk' => $tahunMasuk,
+                    'status' => $this->mapStatus($row['status'] ?? '', $existing?->status),
+                    'kota_asal' => $this->limit($row['asal'] ?? '', 50) ?: $existing?->kota_asal,
+                    'alamat_lengkap' => trim($row['alamat'] ?? '') ?: $existing?->alamat_lengkap,
+                    'nama_wali' => $this->limit($row['wali'] ?? '', 100) ?: ($existing?->nama_wali ?: '-'),
+                    'no_whatsapp_wali' => $wa !== '' ? $wa : (string) ($existing?->no_whatsapp_wali ?? ''),
+                    'hubungan_wali' => $hubungan,
+                    'hubungan_wali_detail' => $hubunganDetail,
+                    'diskon_beasiswa' => $this->parseDiscount($row['diskon'] ?? '', $existing?->diskon_beasiswa),
+                    'bebas_wakaf' => $this->parseBoolean($row['bebas_wakaf'] ?? '', (bool) $existing?->bebas_wakaf),
+                ];
+
+                if ($profile['no_whatsapp_wali'] === '') {
+                    $missingWa++;
+                }
+
+                if ($existing) {
+                    $existing->fill($profile)->save();
+
+                    $updated[] = ['nis' => $existing->nis, 'nama' => $nama];
 
                     continue;
                 }
 
-                $wa = $this->normalizePhone($row['wa'] ?? '');
-
-                if ($wa === '') {
-                    $missingWa++;
-                }
-
+                $nis = $nis !== '' ? $nis : $this->nextNis($tahunMasuk);
                 $pin = $this->generatePin();
-                [$hubungan, $hubunganDetail] = $this->mapHubungan($row['hubungan'] ?? '', $row['hubungan_detail'] ?? '');
 
-                Student::create([
+                Student::create($profile + [
                     'nis' => $nis,
-                    'nisn' => $this->limit($row['nisn'] ?? '', 20) ?: null,
-                    'nama_lengkap' => $nama,
-                    'jenis_kelamin' => $group === 'putri' ? 'P' : 'L',
-                    'santri_group' => $group,
-                    'kelas' => $this->limit($row['kelas'] ?? '', 20) ?: 'Angkatan '.$tahunMasuk,
-                    'kamar_asrama' => $this->limit($row['kamar'] ?? '', 50) ?: null,
-                    'tahun_masuk' => $tahunMasuk,
-                    'status' => $this->mapStatus($row['status'] ?? ''),
-                    'kota_asal' => $this->limit($row['asal'] ?? '', 50) ?: null,
-                    'alamat_lengkap' => trim($row['alamat'] ?? '') ?: null,
-                    'nama_wali' => $this->limit($row['wali'] ?? '', 100) ?: '-',
-                    'no_whatsapp_wali' => $wa,
-                    'hubungan_wali' => $hubungan,
-                    'hubungan_wali_detail' => $hubunganDetail,
                     'pin_portal' => $pin,
                     'must_change_pin' => true,
                     'pin_changed_at' => null,
                     'pin_reset_requested_at' => null,
-                    'diskon_beasiswa' => $this->parseDiscount($row['diskon'] ?? ''),
-                    'bebas_wakaf' => $this->parseBoolean($row['bebas_wakaf'] ?? ''),
                 ]);
 
                 $imported[] = [
@@ -178,11 +184,12 @@ class StudentImportService
             ActivityLogService::record(
                 module: ActivityModule::Student,
                 action: ActivityAction::Created,
-                description: 'Mengimpor '.count($imported).' data santri '.$marhalah.' dari berkas '.basename($path).'.',
+                description: 'Mengimpor '.count($imported).' santri baru dan memperbarui '.count($updated).' santri '.$marhalah.' dari berkas '.basename($path).'.',
                 properties: [
                     'Berkas' => basename($path),
                     'Marhalah' => ucfirst($marhalah),
-                    'Santri Diimpor' => (string) count($imported),
+                    'Santri Baru' => (string) count($imported),
+                    'Santri Diperbarui' => (string) count($updated),
                     'Baris Dilewati' => (string) count($skipped),
                     'Data Dummy Dihapus' => (string) $dummyDeleted,
                     'Belum Ada No. WhatsApp' => (string) $missingWa,
@@ -192,6 +199,7 @@ class StudentImportService
 
             return [
                 'imported' => $imported,
+                'updated' => $updated,
                 'skipped' => $skipped,
                 'dummy_deleted' => $dummyDeleted,
                 'missing_wa' => $missingWa,
@@ -232,7 +240,8 @@ class StudentImportService
             throw new \RuntimeException('Tidak dapat membuka berkas CSV: '.$path);
         }
 
-        $headers = fgetcsv($handle, 0, ',', '"', '');
+        $delimiter = $this->detectDelimiter($path);
+        $headers = fgetcsv($handle, 0, $delimiter, '"', '');
 
         if ($headers === false) {
             fclose($handle);
@@ -251,7 +260,7 @@ class StudentImportService
 
         $rows = [];
 
-        while (($data = fgetcsv($handle, 0, ',', '"', '')) !== false) {
+        while (($data = fgetcsv($handle, 0, $delimiter, '"', '')) !== false) {
             if ($data === [null] || implode('', array_map('trim', $data)) === '') {
                 continue;
             }
@@ -272,6 +281,21 @@ class StudentImportService
         fclose($handle);
 
         return $rows;
+    }
+
+    /**
+     * Excel Indonesia sering menyimpan CSV dengan pemisah titik koma.
+     */
+    private function detectDelimiter(string $path): string
+    {
+        $handle = fopen($path, 'r');
+        $firstLine = $handle ? (string) fgets($handle) : '';
+
+        if ($handle) {
+            fclose($handle);
+        }
+
+        return substr_count($firstLine, ';') > substr_count($firstLine, ',') ? ';' : ',';
     }
 
     private function mapHeader(string $header): ?string
@@ -296,12 +320,12 @@ class StudentImportService
         };
     }
 
-    private function alreadyExists(string $nama, int $tahunMasuk, string $group): bool
+    private function findExisting(string $nama, int $tahunMasuk, string $group): ?Student
     {
         return Student::where('santri_group', $group)
             ->where('tahun_masuk', $tahunMasuk)
             ->whereRaw('LOWER(nama_lengkap) = ?', [mb_strtolower($nama)])
-            ->exists();
+            ->first();
     }
 
     /**
@@ -378,9 +402,10 @@ class StudentImportService
         return ['Lainnya', $detail ?: 'Lainnya'];
     }
 
-    private function mapStatus(string $value): string
+    private function mapStatus(string $value, ?string $fallback = null): string
     {
         return match (strtolower(trim($value))) {
+            '' => $fallback ?: 'aktif',
             'lulus', 'alumni' => 'lulus',
             'pindah', 'mutasi' => 'pindah',
             'nonaktif', 'non aktif', 'non-aktif', 'keluar' => 'nonaktif',
@@ -388,15 +413,23 @@ class StudentImportService
         };
     }
 
-    private function parseDiscount(string $value): float
+    private function parseDiscount(string $value, mixed $fallback = null): float
     {
+        if (trim($value) === '') {
+            return (float) ($fallback ?? 0);
+        }
+
         $number = (float) str_replace(',', '.', preg_replace('/[^0-9,.]/', '', $value) ?? '');
 
         return max(0, min(100, $number));
     }
 
-    private function parseBoolean(string $value): bool
+    private function parseBoolean(string $value, bool $fallback = false): bool
     {
+        if (trim($value) === '') {
+            return $fallback;
+        }
+
         return in_array(strtolower(trim($value)), ['ya', 'y', 'yes', 'true', '1', 'bebas'], true);
     }
 

@@ -258,7 +258,7 @@ class AdminLayoutTest extends TestCase
             ->assertSee('Masuk ke Dasbor Santri')
             ->assertSee('action="'.route('portal.login.post').'"', false)
             ->assertSee('Akun Santri untuk Uji Coba')
-            ->assertSee('DMY00059')
+            ->assertSee('UJI00002')
             ->assertSee('id="back-to-top"', false)
             ->assertSee('Total Paket Iuran Bulanan')
             ->assertSee('Rp 1.350.000')

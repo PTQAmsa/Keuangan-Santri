@@ -39,9 +39,10 @@ class ImportSantri extends Command
         }
 
         $this->info(sprintf(
-            'Selesai: %d santri %s diimpor, %d baris dilewati, %d santri dummy dihapus.',
+            'Selesai: %d santri %s baru diimpor, %d santri diperbarui, %d baris dilewati, %d santri dummy dihapus.',
             count($result['imported']),
             $marhalah,
+            count($result['updated']),
             count($result['skipped']),
             $result['dummy_deleted'],
         ));

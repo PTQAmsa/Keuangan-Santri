@@ -33,7 +33,7 @@
                     <div class="relative">
                         <i class="fa-solid fa-id-card pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i>
                         <input type="text" name="nis" id="nis" value="{{ old('nis') }}" required
-                               placeholder="Contoh: DMY00001"
+                               placeholder="Contoh: 2026001"
                                class="h-11 w-full rounded-xl border border-slate-300 bg-slate-50 pl-10 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/30">
                     </div>
                 </div>

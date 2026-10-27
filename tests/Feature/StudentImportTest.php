@@ -39,7 +39,7 @@ class StudentImportTest extends TestCase
         Storage::fake('local');
 
         $this->artisan('santri:import', ['file' => $this->fixture, '--marhalah' => 'putra'])
-            ->expectsOutputToContain('3 santri putra diimpor, 1 baris dilewati')
+            ->expectsOutputToContain('3 santri putra baru diimpor, 0 santri diperbarui, 1 baris dilewati')
             ->assertSuccessful();
 
         $this->assertDatabaseCount('students', 3);
@@ -69,7 +69,7 @@ class StudentImportTest extends TestCase
 
         $this->assertDatabaseHas('activity_logs', [
             'module' => 'student',
-            'description' => 'Mengimpor 3 data santri putra dari berkas santri-impor.csv.',
+            'description' => 'Mengimpor 3 santri baru dan memperbarui 0 santri putra dari berkas santri-impor.csv.',
         ]);
     }
 
@@ -114,7 +114,7 @@ class StudentImportTest extends TestCase
         $this->assertDatabaseHas('students', ['id' => $dummyPutra->id]);
 
         $this->artisan('santri:import', ['file' => $this->fixture, '--hapus-dummy' => true])
-            ->expectsOutputToContain('0 santri putra diimpor, 4 baris dilewati, 1 santri dummy dihapus')
+            ->expectsOutputToContain('0 santri putra baru diimpor, 3 santri diperbarui, 1 baris dilewati, 1 santri dummy dihapus')
             ->assertSuccessful();
 
         $this->assertDatabaseMissing('students', ['id' => $dummyPutra->id]);
@@ -122,6 +122,39 @@ class StudentImportTest extends TestCase
         $this->assertDatabaseHas('students', ['id' => $dummyPutri->id]);
         $this->assertSame(1, Student::where('nama_lengkap', 'Nahdan Riandi')->count());
         $this->assertSame(2, ActivityLog::where('module', 'student')->count());
+    }
+
+    public function test_second_csv_with_semicolons_updates_existing_students_without_changing_pin(): void
+    {
+        Storage::fake('local');
+
+        $this->artisan('santri:import', ['file' => $this->fixture])->assertSuccessful();
+
+        $files = Storage::disk('local')->files('import');
+        $lines = array_values(array_filter(explode('
+', Storage::disk('local')->get($files[0]))));
+        $pinMaulana = str_getcsv($lines[1], ',', '"', '')[4];
+
+        $this->artisan('santri:import', ['file' => __DIR__.'/../Fixtures/santri-impor-update.csv'])
+            ->expectsOutputToContain('1 santri putra baru diimpor, 2 santri diperbarui, 0 baris dilewati')
+            ->assertSuccessful();
+
+        $this->assertDatabaseCount('students', 4);
+
+        $maulana = Student::where('nis', '2026001')->firstOrFail();
+        $this->assertSame('1 Reguler', $maulana->kelas);
+        $this->assertSame('Ibu Kandung', $maulana->hubungan_wali);
+        $this->assertTrue(Hash::check($pinMaulana, $maulana->pin_portal));
+
+        // Nomor WA yang sudah ada tidak boleh terhapus oleh kolom kosong di CSV baru.
+        $nahdan = Student::where('nis', '2026002')->firstOrFail();
+        $this->assertSame('085789000970', $nahdan->no_whatsapp_wali);
+        $this->assertSame('1 Reguler', $nahdan->kelas);
+
+        $baru = Student::where('nama_lengkap', 'Santri Baru Putra')->firstOrFail();
+        $this->assertSame('2025001', $baru->nis);
+        $this->assertSame('Intensif', $baru->kelas);
+        $this->assertSame('081200000001', $baru->no_whatsapp_wali);
     }
 
     public function test_missing_file_or_name_column_fails_without_writing_students(): void

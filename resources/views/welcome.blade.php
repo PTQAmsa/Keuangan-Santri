@@ -123,8 +123,8 @@
                                 <div class="relative">
                                     <i class="fa-solid fa-id-card pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i>
                                     <input type="text" name="nis" id="nis" required autocomplete="off"
-                                           value="{{ old('nis', $demoMode ? 'DMY00001' : '') }}"
-                                           placeholder="Contoh: DMY00001"
+                                           value="{{ old('nis', $demoMode ? 'UJI00001' : '') }}"
+                                           placeholder="Contoh: 2026001"
                                            class="h-11 w-full rounded-xl border border-slate-300 bg-slate-50 pl-10 pr-3 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/30">
                                 </div>
                             </div>
@@ -163,17 +163,16 @@
         <section id="skema-biaya" class="scroll-mt-20 bg-slate-50 py-12 sm:py-16">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 @if($demoMode)
-                    {{-- Sementara: akun santri uji coba untuk demo. Dihapus saat produksi (APP_DEMO_MODE=false). --}}
+                    {{-- Akun khusus uji coba (DemoAccountSeeder). Hanya tampil saat APP_DEMO_MODE=true. --}}
                     <div class="mx-auto mb-10 max-w-3xl rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-slate-800 shadow-sm sm:p-5">
                         <p class="mb-3 flex items-center gap-2 font-bold text-amber-900">
                             <span class="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] text-slate-900"><i class="fa-solid fa-key"></i></span>
                             Akun Santri untuk Uji Coba:
                         </p>
-                        <div class="grid gap-2 sm:grid-cols-3">
+                        <div class="grid gap-2 sm:grid-cols-2">
                             @foreach([
-                                ['Maulana Rahman Yusuf', 'Putra - 1 Reguler', 'DMY00001', '100001', 'Akun Utama', 'bg-amber-100 text-amber-700'],
-                                ['Tian Saputra', 'Beasiswa 50%', 'DMY00010', '100010', 'Beasiswa Putra', 'bg-emerald-100 text-emerald-700'],
-                                ['Aira Syhanaz Zaneta', 'Beasiswa 50%', 'DMY00059', '100059', 'Beasiswa Putri', 'bg-purple-100 text-purple-700'],
+                                ['Santri Uji Coba Putra', 'Putra - tanpa nomor WhatsApp, masuk dengan PIN', 'UJI00001', '100001', 'Uji Coba Putra', 'bg-amber-100 text-amber-700'],
+                                ['Santri Uji Coba Putri', 'Putri - tanpa nomor WhatsApp, masuk dengan PIN', 'UJI00002', '100002', 'Uji Coba Putri', 'bg-purple-100 text-purple-700'],
                             ] as [$name, $info, $nis, $pin, $badge, $badgeClass])
                                 <div class="rounded-lg border border-amber-200 bg-white p-3">
                                     <div class="mb-1 flex items-start justify-between gap-2">
