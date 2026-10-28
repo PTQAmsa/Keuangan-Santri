@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\IncomeCategory;
+use App\Enums\TransferChannel;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -20,6 +21,7 @@ class OtherIncome extends Model
         'amount',
         'income_date',
         'payment_method',
+        'transfer_channel',
         'source',
         'notes',
         'recorded_by',
@@ -60,7 +62,7 @@ class OtherIncome extends Model
 
     public function paymentMethodLabel(): string
     {
-        return $this->payment_method === 'cash' ? 'Tunai' : 'Transfer';
+        return TransferChannel::methodLabel((string) $this->payment_method, $this->transfer_channel);
     }
 
     /**

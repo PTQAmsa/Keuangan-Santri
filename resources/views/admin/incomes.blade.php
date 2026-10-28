@@ -129,10 +129,17 @@
             </div>
             <div>
                 <label for="payment_method" class="block text-xs font-semibold text-gray-700 mb-1">Metode <span class="text-rose-500">*</span></label>
-                <select name="payment_method" id="payment_method" required class="w-full text-sm rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800 focus:border-brand-800">
+                <select name="payment_method" id="payment_method" required onchange="toggleIncomeTransferFields()" class="w-full text-sm rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800 focus:border-brand-800">
                     <option value="cash" {{ old('payment_method', 'cash') === 'cash' ? 'selected' : '' }}>Tunai</option>
-                    <option value="transfer" {{ old('payment_method') === 'transfer' ? 'selected' : '' }}>Transfer Bank</option>
+                    <option value="transfer" {{ old('payment_method') === 'transfer' ? 'selected' : '' }}>Transfer (Bank / Dompet Digital)</option>
                 </select>
+            </div>
+            <div id="income-transfer-fields" class="lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 gap-4 bg-blue-50/60 border border-blue-100 rounded-xl p-4 {{ old('payment_method') === 'transfer' ? '' : 'hidden' }}">
+                <p class="sm:col-span-2 text-[11px] text-blue-800">
+                    <i class="fa-solid fa-building-columns mr-1"></i>
+                    Catat lewat mana uangnya masuk: rekening bank atau dompet digital. Pilih Lainnya bila tidak ada di daftar.
+                </p>
+                <x-transfer-channel-fields :channel="old('transfer_channel')" :other="old('transfer_channel_other', '')" :required="old('payment_method') === 'transfer'" />
             </div>
             <div class="lg:col-span-2">
                 <label for="description" class="block text-xs font-semibold text-gray-700 mb-1">Uraian Pemasukan <span class="text-rose-500">*</span></label>
@@ -225,7 +232,7 @@
                                 <td class="py-3 px-3 text-right font-bold {{ $income->isVoided() ? 'text-gray-400 line-through' : 'text-emerald-700' }}">
                                     Rp {{ number_format((float) $income->amount, 0, ',', '.') }}
                                 </td>
-                                <td class="py-3 px-3 text-[11px] text-gray-600">{{ $income->payment_method === 'cash' ? 'Tunai' : 'Transfer Bank' }}</td>
+                                <td class="py-3 px-3 text-[11px] text-gray-600">{{ $income->paymentMethodLabel() }}</td>
                                 <td class="py-3 px-3 text-gray-700">{{ $income->source ?: '-' }}</td>
                                 <td class="py-3 px-3 text-gray-600">{{ $income->recordedBy?->name ?? '-' }}</td>
                                 <td class="py-3 px-3 text-center">
@@ -258,4 +265,24 @@
         @endif
     </div>
 </div>
+
+<script>
+    // Pilihan bank / dompet digital hanya muncul (dan wajib) untuk metode transfer.
+    function toggleIncomeTransferFields() {
+        const method = document.getElementById('payment_method');
+        const box = document.getElementById('income-transfer-fields');
+        if (!method || !box) return;
+
+        const isTransfer = method.value === 'transfer';
+        box.classList.toggle('hidden', !isTransfer);
+
+        const channel = box.querySelector('[data-transfer-channel]');
+        if (channel) {
+            channel.required = isTransfer;
+            toggleTransferChannelOther(channel);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', toggleIncomeTransferFields);
+</script>
 @endsection

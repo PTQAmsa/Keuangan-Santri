@@ -42,6 +42,7 @@ class OtherIncomeTest extends TestCase
             'amount' => 2500000,
             'income_date' => now()->toDateString(),
             'payment_method' => 'transfer',
+            'transfer_channel' => 'BSI',
             'source' => 'H. Mahmud (Alumni)',
             'notes' => 'Transfer via BSI.',
         ], $overrides);
@@ -130,6 +131,48 @@ class OtherIncomeTest extends TestCase
         $csv->assertOk();
         $this->assertStringContainsString($income->income_code, $csv->streamedContent());
         $this->assertStringContainsString('TOTAL SELURUH KAS MASUK', $csv->streamedContent());
+    }
+
+    public function test_transfer_income_records_which_bank_or_wallet_the_money_came_through(): void
+    {
+        $bendahara = $this->userWithRole(UserRole::Bendahara);
+
+        $this->actingAs($bendahara)
+            ->post(route('admin.incomes.store'), $this->payload(['transfer_channel' => null]))
+            ->assertSessionHasErrors('transfer_channel');
+
+        $this->actingAs($bendahara)
+            ->post(route('admin.incomes.store'), $this->payload(['transfer_channel' => 'Lainnya']))
+            ->assertSessionHasErrors('transfer_channel_other');
+
+        $this->assertSame(0, OtherIncome::count());
+
+        $this->actingAs($bendahara)
+            ->post(route('admin.incomes.store'), $this->payload(['transfer_channel' => 'DANA']))
+            ->assertSessionHasNoErrors();
+
+        $dana = OtherIncome::sole();
+        $this->assertSame('DANA', $dana->transfer_channel);
+        $this->assertSame('Transfer DANA', $dana->paymentMethodLabel());
+
+        $this->actingAs($bendahara)
+            ->post(route('admin.incomes.store'), $this->payload(['description' => 'Infaq Jumat', 'transfer_channel' => 'Lainnya', 'transfer_channel_other' => 'Bank Jatim']))
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('Bank Jatim', OtherIncome::where('description', 'Infaq Jumat')->sole()->transfer_channel);
+
+        $this->actingAs($bendahara)
+            ->post(route('admin.incomes.store'), $this->payload(['description' => 'Kotak amal', 'payment_method' => 'cash', 'transfer_channel' => 'BSI']))
+            ->assertSessionHasNoErrors();
+
+        $this->assertNull(OtherIncome::where('description', 'Kotak amal')->sole()->transfer_channel);
+
+        $this->actingAs($bendahara)
+            ->get(route('admin.incomes'))
+            ->assertOk()
+            ->assertSee('Transfer DANA')
+            ->assertSee('Transfer Bank Jatim')
+            ->assertSee('Tunai');
     }
 
     public function test_other_income_validation_requires_core_fields(): void

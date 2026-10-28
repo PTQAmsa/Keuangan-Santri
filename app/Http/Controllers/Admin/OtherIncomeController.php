@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\IncomeCategory;
+use App\Enums\TransferChannel;
 use App\Models\OtherIncome;
 use App\Services\ActivityLogService;
 use App\Services\BookClosingService;
@@ -103,6 +104,8 @@ class OtherIncomeController
             'amount' => ['required', 'numeric', 'min:1', 'max:999999999999'],
             'income_date' => ['required', 'date'],
             'payment_method' => ['required', 'in:cash,transfer'],
+            'transfer_channel' => ['required_if:payment_method,transfer', 'nullable', Rule::enum(TransferChannel::class)],
+            'transfer_channel_other' => ['required_if:transfer_channel,'.TransferChannel::Lainnya->value, 'nullable', 'string', 'max:50'],
             'source' => ['required', 'string', 'max:150'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ], [
@@ -112,6 +115,9 @@ class OtherIncomeController
             'amount.min' => 'Nominal pemasukan harus lebih dari nol.',
             'income_date.required' => 'Tanggal pemasukan wajib diisi.',
             'payment_method.required' => 'Metode penerimaan wajib dipilih.',
+            'transfer_channel.required_if' => 'Pilih lewat mana transfernya masuk: bank atau dompet digital.',
+            'transfer_channel.Illuminate\Validation\Rules\Enum' => 'Saluran transfer tidak dikenali.',
+            'transfer_channel_other.required_if' => 'Tuliskan nama bank atau dompet digital lainnya.',
             'source.required' => 'Sumber / pemberi wajib diisi.',
         ], [
             'category' => 'jenis pemasukan',
@@ -119,11 +125,18 @@ class OtherIncomeController
             'amount' => 'nominal',
             'income_date' => 'tanggal',
             'payment_method' => 'metode',
+            'transfer_channel' => 'saluran transfer',
+            'transfer_channel_other' => 'nama saluran lainnya',
             'source' => 'sumber',
             'notes' => 'catatan',
         ]);
 
         $bookClosing->assertOpen($data['income_date'], 'pemasukan');
+
+        $data['transfer_channel'] = $data['payment_method'] === 'transfer'
+            ? TransferChannel::resolveName($data['transfer_channel'] ?? null, $data['transfer_channel_other'] ?? null)
+            : null;
+        unset($data['transfer_channel_other']);
 
         $data['income_code'] = OtherIncome::generateCode();
         $data['recorded_by'] = auth()->id();
@@ -134,7 +147,7 @@ class OtherIncomeController
 
         return redirect()
             ->route('admin.incomes')
-            ->with('success', 'Pemasukan '.$income->income_code.' sebesar Rp '.number_format((float) $income->amount, 0, ',', '.').' berhasil dicatat.');
+            ->with('success', 'Pemasukan '.$income->income_code.' sebesar Rp '.number_format((float) $income->amount, 0, ',', '.').' ('.$income->paymentMethodLabel().') berhasil dicatat.');
     }
 
     /**
