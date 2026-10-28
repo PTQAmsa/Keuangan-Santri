@@ -17,11 +17,23 @@ use Illuminate\Support\Str;
 class DatabaseSeeder extends Seeder
 {
     /**
+     * Sandi awal akun pengurus per peran. Mudah diingat untuk hari pertama;
+     * ganti lewat menu Akun Pengurus setelah sistem dipakai.
+     *
+     * @var array<string, string>
+     */
+    public const DEFAULT_PASSWORDS = [
+        'admin' => 'adminamsa2026',
+        'bendahara' => 'bendahara2026',
+        'pengasuh' => 'amsa2026',
+    ];
+
+    /**
      * Seed the application's database.
      */
     public function run(): void
     {
-        // 1. Akun Pengurus yang Berhak Mengakses Panel Admin (semua sandi: "password"):
+        // 1. Akun Pengurus yang Berhak Mengakses Panel Admin (sandi awal: DEFAULT_PASSWORDS):
         // - Administrator     : akses penuh
         // - Bendahara 1 & 2   : kasir, tagihan & laporan
         // - 3 Kyai / Pengasuh : hanya melihat (read-only)
@@ -31,7 +43,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Administrator Sistem',
                 'role' => UserRole::Admin,
-                'password' => Hash::make('password'),
+                'password' => Hash::make(self::DEFAULT_PASSWORDS['admin']),
             ]
         );
 
@@ -41,7 +53,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Usth. Yuni Permatasari (Bendahara 1)',
                 'jabatan' => 'Bendahara 1 PTQ Amsa001',
                 'role' => UserRole::Bendahara,
-                'password' => Hash::make('password'),
+                'password' => Hash::make(self::DEFAULT_PASSWORDS['bendahara']),
             ]
         );
 
@@ -51,7 +63,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Usth. Revina (Bendahara 2)',
                 'jabatan' => 'Bendahara 2 PTQ Amsa001',
                 'role' => UserRole::Bendahara,
-                'password' => Hash::make('password'),
+                'password' => Hash::make(self::DEFAULT_PASSWORDS['bendahara']),
             ]
         );
 
@@ -69,7 +81,7 @@ class DatabaseSeeder extends Seeder
                     'name' => $akun['name'],
                     'jabatan' => $akun['jabatan'],
                     'role' => UserRole::Pengasuh,
-                    'password' => Hash::make('password'),
+                    'password' => Hash::make(self::DEFAULT_PASSWORDS['pengasuh']),
                 ]
             );
         }

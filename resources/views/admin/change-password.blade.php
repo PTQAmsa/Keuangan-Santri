@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Ganti Kata Sandi - PTQ Amsa001')
+@section('title', 'Ganti Kata Sandi - SIKA PTQ')
 
 @section('content')
 <div class="max-w-md mx-auto my-8">

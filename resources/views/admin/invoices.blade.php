@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Rekapitulasi Tagihan Santri - PTQ Amsa001')
+@section('title', 'Rekapitulasi Tagihan Santri - SIKA PTQ')
 
 @section('content')
 <div class="space-y-6">

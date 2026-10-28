@@ -323,7 +323,7 @@
 
     <div class="bg-blue-50/60 border border-blue-100 rounded-xl p-4 text-[11px] text-blue-800">
         <p><strong>Catatan:</strong> Kartu ini merangkum seluruh tagihan dan pembayaran yang tercatat di sistem. Kuitansi berstatus <strong>Sah</strong> dapat diunduh. Transaksi berstatus <strong>Dibatalkan</strong> tidak mengubah saldo.</p>
-        <p class="mt-1">Tertampil dari Sistem Keuangan PTQ Amsa001 pada {{ now()->format('d/m/Y') }}.</p>
+        <p class="mt-1">Tertampil dari SIKA PTQ (Sistem Informasi Keuangan Amanah PTQ Amsa001) pada {{ now()->format('d/m/Y') }}.</p>
     </div>
 </div>
 @endsection

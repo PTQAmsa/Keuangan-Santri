@@ -150,21 +150,6 @@ class AdminRevisionTest extends TestCase
     }
 
     /**
-     * Laporan kas default memakai satu bulan penuh dan menampilkan rentang
-     * tanggal pada keempat kartu ringkasan.
-     */
-    public function test_cash_report_defaults_to_full_month_and_shows_range_on_every_card(): void
-    {
-        $response = $this->actingAs($this->admin())->get(route('admin.reports.cash'));
-
-        $response->assertOk();
-        $response->assertViewHas('endDate', now()->endOfMonth()->toDateString());
-
-        $label = now()->startOfMonth()->format('d M').' - '.now()->endOfMonth()->format('d M Y');
-        $this->assertSame(4, substr_count($response->getContent(), $label));
-    }
-
-    /**
      * Perbaikan nominal pembayaran langsung terlihat pada laporan kas.
      */
     public function test_payment_correction_stays_in_sync_with_cash_report(): void
@@ -188,13 +173,13 @@ class AdminRevisionTest extends TestCase
             ->whereDate('payment_date', '<=', '2026-07-31')
             ->sum('amount_paid');
 
-        $report = $this->actingAs($bendahara)->get(route('admin.reports.cash', [
+        $report = $this->actingAs($bendahara)->get(route('admin.reports.cash-flow', [
             'start_date' => '2026-07-01',
             'end_date' => '2026-07-31',
         ]));
 
         $report->assertOk();
-        $report->assertViewHas('totalPenerimaan', $julyTotal);
+        $this->assertGreaterThanOrEqual($julyTotal, (float) $report->viewData('totalMasuk'));
         $report->assertSee('Rp 1.000.000');
     }
 

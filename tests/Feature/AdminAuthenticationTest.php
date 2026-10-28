@@ -39,7 +39,7 @@ class AdminAuthenticationTest extends TestCase
     {
         $response = $this->post(route('admin.login.post'), [
             'email' => 'bendahara1@ptqamsa.id',
-            'password' => 'password',
+            'password' => 'bendahara2026',
         ]);
 
         $response->assertRedirect(route('admin.dashboard'));
@@ -117,7 +117,7 @@ class AdminAuthenticationTest extends TestCase
         $pengasuh = $this->userWithRole(UserRole::Pengasuh);
 
         $this->actingAs($pengasuh)->get(route('admin.dashboard'))->assertOk();
-        $this->actingAs($pengasuh)->get(route('admin.reports.cash'))->assertOk();
+        $this->actingAs($pengasuh)->get(route('admin.reports.cash-flow'))->assertOk();
         $this->actingAs($pengasuh)->get(route('admin.reports.arrears'))->assertOk();
     }
 

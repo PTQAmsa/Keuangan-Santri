@@ -28,6 +28,8 @@ class WhatsAppService
         $statusKet = $invoice->status === 'paid' ? 'LUNAS' : "DICICIL (Sisa: {$sisaFormatted})";
 
         $receiptUrl = $receipt ? url("/kuitansi/{$receipt->id}/download") : url('/portal');
+        $kontak = TreasurerContactService::primary();
+        $kontakBendahara = $kontak ? 'WA Bendahara: '.$kontak['display'].' | ' : '';
 
         return <<<TEXT
 *BUKTI PEMBAYARAN PTQ AMSA001 GADOG*
@@ -52,8 +54,8 @@ Alhamdulillah, pembayaran telah kami terima dengan rincian sbb:
 Jazakumullahu khairan katsiran atas amanah dan kerjasamanya. Semoga berkah bagi ananda dan keluarga.
 
 _Wassalamu'alaikum Wr. Wb._
-*Layanan Keuangan PTQ Amsa001*
-WA: +62 856-9225-3516 | Web: www.ptqamsa.id
+*SIKA PTQ - Layanan Keuangan PTQ Amsa001*
+{$kontakBendahara}Web: www.ptqamsa.id
 TEXT;
     }
 
@@ -93,7 +95,7 @@ A.n: *Pesantren Tadabbur Al-Qur'an*
 Setelah melakukan transfer, bukti transfer dapat dikonfirmasikan ke nomor ini.
 _Jazakumullahu khairan._
 
-*Layanan Keuangan PTQ Amsa001*
+*SIKA PTQ - Layanan Keuangan PTQ Amsa001*
 TEXT;
     }
 

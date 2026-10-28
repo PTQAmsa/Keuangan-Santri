@@ -4,7 +4,7 @@
     $teacherTabs = [
         [
             'route' => 'admin.teachers',
-            'label' => 'Data Guru',
+            'label' => 'Data Guru dan Staf',
             'icon' => 'fa-user-tie',
             'iconColor' => 'text-amber-600',
             'active' => request()->routeIs('admin.teachers'),

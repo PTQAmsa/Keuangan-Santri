@@ -255,7 +255,7 @@
         Dokumen ini dibatasi maksimal satu semester ({{ $semester['label'] }}); sisa wakaf yang masih berjalan tetap disertakan. Kuitansi berstatus
         <strong>Sah</strong> dapat diunduh; transaksi berstatus
         <strong>Dibatalkan</strong> tidak mengubah saldo.
-        <br>Tertampil dari Sistem Keuangan PTQ Amsa001 pada {{ now()->format('d/m/Y') }}.
+        <br>Tertampil dari SIKA PTQ (Sistem Informasi Keuangan Amanah PTQ Amsa001) pada {{ now()->format('d/m/Y') }}.
     </div>
 </body>
 </html>

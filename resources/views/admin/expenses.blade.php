@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Kas Keluar - PTQ Amsa001')
+@section('title', 'Kas Keluar - SIKA PTQ')
 
 @section('content')
 <div class="space-y-6">
@@ -10,7 +10,7 @@
             <div class="flex items-center space-x-2 text-xs text-gray-500 mb-1">
                 <a href="{{ route('admin.dashboard') }}" class="hover:text-brand-900">Admin</a>
                 <span>/</span>
-                <a href="{{ route('admin.reports.cash') }}" class="hover:text-brand-900">Laporan Keuangan</a>
+                <a href="{{ route('admin.reports.cash-flow') }}" class="hover:text-brand-900">Laporan Keuangan</a>
                 <span>/</span>
                 <span class="text-gray-800 font-semibold">Kas Keluar</span>
             </div>

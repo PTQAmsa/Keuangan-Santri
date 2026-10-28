@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Laporan Rekapitulasi Tunggakan Santri - PTQ Amsa001')
+@section('title', 'Laporan Rekapitulasi Tunggakan Santri - SIKA PTQ')
 
 @section('content')
 @php

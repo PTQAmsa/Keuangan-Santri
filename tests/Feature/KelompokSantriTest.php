@@ -68,18 +68,6 @@ class KelompokSantriTest extends TestCase
         $response->assertSee('Marhalah');
     }
 
-    public function test_cash_report_shows_marhalah_column_and_filter(): void
-    {
-        $response = $this->actingAs($this->userWithRole(UserRole::Bendahara))
-            ->get(route('admin.reports.cash', [
-                'start_date' => '2026-01-01',
-                'end_date' => '2026-12-31',
-            ]));
-
-        $response->assertOk();
-        $response->assertSee('Marhalah');
-    }
-
     public function test_wali_relation_lainnya_requires_detail(): void
     {
         $response = $this->actingAs($this->userWithRole(UserRole::Bendahara))

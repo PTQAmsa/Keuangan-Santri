@@ -110,27 +110,6 @@ class OtherIncomeTest extends TestCase
             (float) $dashboard->viewData('totalMasukBulanIni'),
         );
 
-        // Masuk ke laporan Kas Masuk, termasuk ekspor CSV.
-        $report = $this->actingAs($bendahara)->get(route('admin.reports.cash', [
-            'start_date' => now()->startOfMonth()->toDateString(),
-            'end_date' => now()->endOfMonth()->toDateString(),
-        ]));
-        $report->assertOk()
-            ->assertSee('Pemasukan Lainnya')
-            ->assertSee($income->income_code)
-            ->assertSee('Total Seluruh Kas Masuk');
-        $this->assertSame(
-            (float) $report->viewData('totalPenerimaan') + 2500000.0,
-            (float) $report->viewData('totalKasMasuk'),
-        );
-
-        $csv = $this->actingAs($bendahara)->get(route('admin.reports.cash.csv', [
-            'start_date' => now()->startOfMonth()->toDateString(),
-            'end_date' => now()->endOfMonth()->toDateString(),
-        ]));
-        $csv->assertOk();
-        $this->assertStringContainsString($income->income_code, $csv->streamedContent());
-        $this->assertStringContainsString('TOTAL SELURUH KAS MASUK', $csv->streamedContent());
     }
 
     public function test_transfer_income_records_which_bank_or_wallet_the_money_came_through(): void

@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Keuangan & Tagihan Santri - PTQ Amsa001</title>
-    <meta name="description" content="Sistem Keuangan & Tagihan Santri Terpadu Pesantren Tadabbur Al-Qur'an Amsa001 Gadog: SPP bulanan, wakaf pembangunan, kuitansi digital PDF, dan notifikasi WhatsApp.">
+    <title>SIKA PTQ - Sistem Informasi Keuangan Amanah PTQ Amsa001</title>
+    <meta name="description" content="SIKA PTQ, Sistem Informasi Keuangan Amanah Pesantren Tadabbur Al-Qur'an Amsa001 Gadog: SPP bulanan, wakaf pembangunan, kuitansi digital PDF, dan notifikasi WhatsApp.">
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <link rel="alternate icon" type="image/png" sizes="64x64" href="{{ asset('favicon.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('images/apple-touch-icon.png') }}">
@@ -34,7 +34,7 @@
                 <img src="{{ asset('images/logo-pesantren.png') }}" alt="Logo PTQ Amsa001" class="h-10 w-10 rounded-full bg-white object-contain p-0.5 shadow ring-1 ring-slate-200">
                 <span class="leading-tight">
                     <span class="block text-sm font-bold tracking-tight text-slate-900 sm:text-base">Pesantren Tadabbur Al-Qur'an Amsa001</span>
-                    <span class="hidden text-[11px] text-slate-500 sm:block">Sistem Keuangan & Tagihan Santri</span>
+                    <span class="hidden text-[11px] text-slate-500 sm:block">SIKA PTQ &middot; Sistem Informasi Keuangan Amanah</span>
                 </span>
             </a>
 
@@ -64,7 +64,8 @@
                         <i class="fa-solid fa-location-dot"></i> PTQ Amsa001 Gadog - Megamendung, Bogor
                     </div>
                     <h1 class="text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl">
-                        Sistem Keuangan &amp; Tagihan Santri Terpadu
+                        SIKA PTQ
+                        <span class="mt-2 block text-lg font-semibold text-blue-100 sm:text-2xl">Sistem Informasi Keuangan Amanah PTQ Amsa001</span>
                     </h1>
                     <p class="max-w-xl text-sm leading-relaxed text-blue-100/90 sm:text-base">
                         Pencatatan pembayaran SPP bulanan, fasilitas asrama, dan wakaf pembangunan bertahap dalam satu sistem.
@@ -319,7 +320,7 @@
                     </div>
                 </div>
                 <p class="text-xs leading-relaxed text-slate-400">
-                    Sistem Keuangan &amp; Tagihan Santri Terpadu untuk pencatatan yang tertib dan transparan bagi wali santri.
+                    SIKA PTQ, Sistem Informasi Keuangan Amanah untuk pencatatan yang tertib dan transparan bagi wali santri.
                 </p>
             </div>
 

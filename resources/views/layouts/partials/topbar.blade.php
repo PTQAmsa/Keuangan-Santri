@@ -19,7 +19,7 @@
                     @elseif($isPortal)
                         Portal Khusus Wali Santri
                     @else
-                        Sistem Keuangan & Tagihan Santri
+                        SIKA PTQ &middot; Sistem Informasi Keuangan Amanah
                     @endif
                 </span>
             </span>

@@ -8,7 +8,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Sistem Keuangan PTQ Amsa001')</title>
+    <title>@yield('title', 'SIKA PTQ - Sistem Informasi Keuangan Amanah PTQ Amsa001')</title>
     <!-- Favicon: logo resmi pesantren format SVG (di-host lokal) -->
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <link rel="alternate icon" type="image/png" sizes="64x64" href="{{ asset('favicon.png') }}">

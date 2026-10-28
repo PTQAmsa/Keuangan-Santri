@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Ganti PIN Portal - PTQ Amsa001')
+@section('title', 'Ganti PIN Portal - SIKA PTQ')
 
 @section('content')
 @php($viaWhatsApp = (bool) session('portal_login_via_wa'))

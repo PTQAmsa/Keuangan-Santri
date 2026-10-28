@@ -14,7 +14,7 @@ class Teacher extends Model
      * @var array<string, string>
      */
     public const STATUSES = [
-        'pengasuh' => 'Pengasuh',
+        'pengasuh' => 'Majelis Kyai/Nyai',
         'guru_tetap' => 'Guru Tetap',
         'guru_tidak_tetap' => 'Guru Tidak Tetap',
         'staf' => 'Staf',

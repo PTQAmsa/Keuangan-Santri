@@ -42,7 +42,7 @@ class DemoModeTest extends TestCase
             ->assertOk()
             ->assertSee('Akun Pengurus untuk Uji Coba')
             ->assertSee('admin@ptqamsa.id')
-            ->assertSee('value="password"', false);
+            ->assertSee('value="adminamsa2026"', false);
 
         $this->get(route('portal.login'))
             ->assertOk()

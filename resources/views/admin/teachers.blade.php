@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Data Guru - PTQ Amsa001')
+@section('title', 'Data Guru dan Staf - SIKA PTQ')
 
 @section('content')
 <div class="space-y-6">
@@ -11,20 +11,20 @@
             <div class="flex items-center space-x-2 text-xs text-gray-500 mb-1">
                 <a href="{{ route('admin.dashboard') }}" class="hover:text-brand-900">Admin</a>
                 <span>/</span>
-                <span class="text-gray-800 font-semibold">Data Guru</span>
+                <span class="text-gray-800 font-semibold">Data Guru dan Staf</span>
             </div>
             <h1 class="text-2xl font-bold text-gray-900 flex items-center">
-                <i class="fa-solid fa-user-tie text-brand-800 mr-2.5"></i> Data Guru
+                <i class="fa-solid fa-user-tie text-brand-800 mr-2.5"></i> Data Guru dan Staf
             </h1>
             <p class="text-xs sm:text-sm text-gray-500 mt-0.5">
-                Data induk pengasuh, guru, dan staf. Cukup diisi sekali, lalu dipakai setiap bulan untuk bisyarah.
+                Data induk majelis kyai/nyai, guru, dan staf. Cukup diisi sekali, lalu dipakai setiap bulan untuk bisyarah.
             </p>
         </div>
         <div class="flex flex-col sm:flex-row sm:items-center gap-2">
             @include('admin.teachers._tabs')
             <button type="button" onclick="openTeacherModal('teacher-modal-add')"
                     class="inline-flex items-center justify-center px-4 py-2.5 bg-brand-900 hover:bg-brand-800 text-white rounded-xl text-xs font-bold shadow-sm transition whitespace-nowrap">
-                <i class="fa-solid fa-plus mr-1.5"></i> Tambah Data Guru
+                <i class="fa-solid fa-plus mr-1.5"></i> Tambah Data Guru dan Staf
             </button>
         </div>
     </div>
@@ -108,7 +108,7 @@
             <div class="p-12 text-center text-gray-400 text-sm">
                 <i class="fa-solid fa-user-tie text-4xl text-gray-300 block mb-3"></i>
                 <p class="font-semibold text-gray-500">Belum ada data guru yang cocok.</p>
-                <p class="text-xs mt-1">Tambahkan data lewat tombol "Tambah Data Guru" di atas.</p>
+                <p class="text-xs mt-1">Tambahkan data lewat tombol "Tambah Data Guru dan Staf" di atas.</p>
             </div>
         @else
             <div class="overflow-x-auto">
@@ -211,7 +211,7 @@
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
             <div>
-                <h2 class="text-base font-bold text-gray-900"><i class="fa-solid fa-user-plus text-brand-800 mr-2"></i>Tambah Data Guru</h2>
+                <h2 class="text-base font-bold text-gray-900"><i class="fa-solid fa-user-plus text-brand-800 mr-2"></i>Tambah Data Guru dan Staf</h2>
                 <p class="text-xs text-gray-500 mt-0.5">Isi identitas dan kontak. Nominal bisyarah diisi terpisah setiap bulan.</p>
             </div>
             <button type="button" onclick="closeTeacherModal('teacher-modal-add')" class="w-8 h-8 rounded-lg hover:bg-gray-100 text-gray-500" aria-label="Tutup">
@@ -224,7 +224,7 @@
             <div class="flex items-center justify-end space-x-2 pt-2 border-t border-gray-100">
                 <button type="button" onclick="closeTeacherModal('teacher-modal-add')" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-semibold transition">Batal</button>
                 <button type="submit" class="px-5 py-2.5 bg-brand-900 hover:bg-brand-800 text-white rounded-xl text-sm font-semibold shadow-sm transition">
-                    <i class="fa-solid fa-save mr-1.5"></i> Simpan Data Guru
+                    <i class="fa-solid fa-save mr-1.5"></i> Simpan Data Guru dan Staf
                 </button>
             </div>
         </form>
@@ -237,7 +237,7 @@
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
                 <div>
-                    <h2 class="text-base font-bold text-gray-900"><i class="fa-solid fa-pen-to-square text-amber-600 mr-2"></i>Ubah Data Guru</h2>
+                    <h2 class="text-base font-bold text-gray-900"><i class="fa-solid fa-pen-to-square text-amber-600 mr-2"></i>Ubah Data Guru dan Staf</h2>
                     <p class="text-xs text-gray-500 mt-0.5">{{ $teacher->nama_lengkap }}</p>
                 </div>
                 <button type="button" onclick="closeTeacherModal('teacher-modal-edit-{{ $teacher->id }}')" class="w-8 h-8 rounded-lg hover:bg-gray-100 text-gray-500" aria-label="Tutup">

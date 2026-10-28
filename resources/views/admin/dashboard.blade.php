@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Admin Bendahara - Keuangan PTQ Amsa001')
+@section('title', 'Dashboard - SIKA PTQ')
 
 @section('content')
 <div class="space-y-6">
@@ -67,7 +67,7 @@
                     <p class="text-sm font-extrabold text-teal-800">Rp {{ number_format($masukLainnya, 0, ',', '.') }}</p>
                 </div>
             </div>
-            <a href="{{ route('admin.reports.cash') }}" class="text-xs text-emerald-700 font-semibold hover:underline mt-3 inline-flex items-center">
+            <a href="{{ route('admin.reports.cash-flow') }}" class="text-xs text-emerald-700 font-semibold hover:underline mt-3 inline-flex items-center">
                 Lihat Laporan Kas &rarr;
             </a>
         </div>

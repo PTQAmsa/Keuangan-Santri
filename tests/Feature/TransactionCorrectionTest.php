@@ -7,6 +7,7 @@ use App\Enums\ActivityModule;
 use App\Enums\UserRole;
 use App\Models\ActivityLog;
 use App\Models\Invoice;
+use App\Models\OtherIncome;
 use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -76,16 +77,18 @@ class TransactionCorrectionTest extends TestCase
             ->patch(route('admin.transactions.void', $payment), ['void_reason' => 'Dobel input'])
             ->assertRedirect();
 
-        $report = $this->actingAs($admin)->get(route('admin.reports.cash', [
+        $report = $this->actingAs($admin)->get(route('admin.reports.cash-flow', [
             'start_date' => '2026-01-01',
             'end_date' => '2026-12-31',
         ]));
 
         $report->assertOk();
-        // Kuitansi yang dibatalkan tidak lagi masuk rincian transaksi maupun total kas.
-        $report->assertDontSee('Rp 1.350.000');
-        $report->assertSee('Rp 3.700.000');
-        $report->assertSee('3 <span class="text-xs font-normal text-gray-500">Kuitansi</span>', false);
+        // Kuitansi yang dibatalkan tidak lagi masuk buku kas maupun total kas masuk.
+        $report->assertDontSee($payment->payment_code);
+        $this->assertSame(
+            (float) Payment::whereNull('voided_at')->sum('amount_paid') + (float) OtherIncome::whereNull('voided_at')->sum('amount'),
+            (float) $report->viewData('totalMasuk'),
+        );
     }
 
     /**

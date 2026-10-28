@@ -122,8 +122,9 @@ Tambahkan juga di `.env`: `ASSET_URL=https://<domain-anda>`.
       bisyarah terbuka tanpa galat.
 - [ ] Unduh satu kuitansi PDF dan satu laporan PDF.
 - [ ] Login portal wali dengan akun uji coba `UJI00001` / `100001`.
-- [ ] Ganti sandi keenam akun pengurus dari sandi bawaan `password`
-      (menu *Akun Pengurus*). Lakukan sebelum demo.
+- [ ] Sandi awal akun pengurus: admin `adminamsa2026`, bendahara
+      `bendahara2026`, pengasuh `amsa2026`. Minta Bendahara dan Admin
+      menggantinya lewat menu *Akun Pengurus* setelah demo.
 - [ ] Blok "Akun untuk Uji Coba" tidak tampil (artinya `APP_DEMO_MODE=false`).
 
 ## 9. Cadangan data

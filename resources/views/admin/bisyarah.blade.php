@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Bisyarah Bulanan - PTQ Amsa001')
+@section('title', 'Bisyarah Bulanan - SIKA PTQ')
 
 @section('content')
 @php
@@ -16,7 +16,7 @@
             <div class="flex items-center space-x-2 text-xs text-gray-500 mb-1">
                 <a href="{{ route('admin.dashboard') }}" class="hover:text-brand-900">Admin</a>
                 <span>/</span>
-                <a href="{{ route('admin.teachers') }}" class="hover:text-brand-900">Data Guru</a>
+                <a href="{{ route('admin.teachers') }}" class="hover:text-brand-900">Data Guru dan Staf</a>
                 <span>/</span>
                 <span class="text-gray-800 font-semibold">Bisyarah Bulanan</span>
             </div>
@@ -127,7 +127,7 @@
                 <p class="font-semibold text-gray-500">Belum ada guru aktif.</p>
                 <p class="text-xs mt-1">
                     Tambahkan data guru terlebih dahulu di
-                    <a href="{{ route('admin.teachers') }}" class="text-brand-800 font-semibold hover:underline">Data Guru</a>.
+                    <a href="{{ route('admin.teachers') }}" class="text-brand-800 font-semibold hover:underline">Data Guru dan Staf</a>.
                 </p>
             </div>
         @else

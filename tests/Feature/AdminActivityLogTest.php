@@ -106,7 +106,7 @@ class AdminActivityLogTest extends TestCase
 
         $this->post(route('admin.login.post'), [
             'email' => $user->email,
-            'password' => 'password',
+            'password' => 'bendahara2026',
         ])->assertRedirect(route('admin.dashboard'));
 
         $log = ActivityLog::sole();

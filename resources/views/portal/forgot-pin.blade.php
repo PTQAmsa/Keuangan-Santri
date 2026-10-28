@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Lupa PIN Portal - PTQ Amsa001')
+@section('title', 'Lupa PIN Portal - SIKA PTQ')
 
 @section('content')
 <div class="mx-auto my-6 max-w-md sm:my-10">

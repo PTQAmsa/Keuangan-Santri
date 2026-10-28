@@ -25,7 +25,7 @@ class TestWhatsApp extends Command
 
         $outbox = $service->queue(
             phone: $phone,
-            message: (string) ($this->option('message') ?: 'Uji koneksi WhatsApp dari Sistem Keuangan PTQ Amsa001.'),
+            message: (string) ($this->option('message') ?: 'Uji koneksi WhatsApp dari SIKA PTQ (Sistem Informasi Keuangan Amanah PTQ Amsa001).'),
             template: 'test',
         );
 

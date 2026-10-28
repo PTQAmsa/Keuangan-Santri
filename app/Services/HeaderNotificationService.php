@@ -84,7 +84,7 @@ class HeaderNotificationService
                 'icon' => 'fa-chalkboard-user',
                 'color' => 'violet',
                 'title' => $pending.' guru belum dicatat bisyarahnya',
-                'text' => 'Bisyarah '.now()->translatedFormat('F Y').' belum lengkap. Catat di menu Data Guru & Bisyarah.',
+                'text' => 'Bisyarah '.now()->translatedFormat('F Y').' belum lengkap. Catat di menu Guru, Staf & Bisyarah.',
                 'url' => route('admin.bisyarah', ['period' => now()->format('Y-m')]),
             ];
         }

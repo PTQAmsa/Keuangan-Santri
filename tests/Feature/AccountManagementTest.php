@@ -123,7 +123,7 @@ class AccountManagementTest extends TestCase
 
         $this->actingAs($bendahara)
             ->patch(route('admin.password.update'), [
-                'current_password' => 'password',
+                'current_password' => 'bendahara2026',
                 'password' => 'sandiBaru2026',
                 'password_confirmation' => 'sandiBaru2026',
             ])
@@ -150,7 +150,7 @@ class AccountManagementTest extends TestCase
         $this->post(route('admin.logout'));
         $this->post(route('admin.login.post'), [
             'email' => $bendahara->email,
-            'password' => 'password',
+            'password' => 'bendahara2026',
         ])->assertSessionHasErrors('email');
 
         $this->assertGuest();

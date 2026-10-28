@@ -73,9 +73,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Modul Laporan Keuangan & Rekap Kas
         Route::prefix('laporan')->name('reports.')->group(function () {
-            Route::get('/kas', [ReportController::class, 'cashInflow'])->name('cash');
-            Route::get('/kas/csv', [ReportController::class, 'exportCashInflowCsv'])->name('cash.csv');
-            Route::get('/kas/pdf', [ReportController::class, 'exportCashInflowPdf'])->name('cash.pdf');
 
             Route::get('/arus-kas', [ReportController::class, 'cashFlow'])->name('cash-flow');
 

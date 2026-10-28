@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Login Pengurus - Keuangan PTQ Amsa001')
+@section('title', 'Login Pengurus - SIKA PTQ')
 
 @section('content')
 @php($demoMode = config('app.demo_mode'))
@@ -33,7 +33,7 @@
                     <label for="password" class="mb-1.5 block text-xs font-semibold text-slate-700">Kata Sandi</label>
                     <div class="relative">
                         <i class="fa-solid fa-lock pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i>
-                        <input type="password" name="password" id="password" value="{{ old('password', $demoMode ? 'password' : '') }}" required
+                        <input type="password" name="password" id="password" value="{{ old('password', $demoMode ? \Database\Seeders\DatabaseSeeder::DEFAULT_PASSWORDS['admin'] : '') }}" required
                             placeholder="••••••••"
                             class="h-11 w-full rounded-xl border border-slate-300 bg-slate-50 pl-10 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/30">
                     </div>
@@ -57,21 +57,22 @@
                         <span class="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] text-white">
                             <i class="fa-solid fa-key"></i>
                         </span>
-                        Akun Pengurus untuk Uji Coba (sandi: <code>password</code>):
+                        Akun Pengurus untuk Uji Coba:
                     </p>
+                    @php($sandi = \Database\Seeders\DatabaseSeeder::DEFAULT_PASSWORDS)
                     <div class="space-y-1.5">
                         @foreach([
-                            ['Administrator', null, 'admin@ptqamsa.id', 'Akses Penuh', 'bg-rose-100 text-rose-700'],
-                            ['Bendahara 1', 'Usth. Yuni Permatasari', 'bendahara1@ptqamsa.id', 'Kasir & Laporan', 'bg-emerald-100 text-emerald-700'],
-                            ['Bendahara 2', 'Usth. Revina', 'bendahara2@ptqamsa.id', 'Kasir & Laporan', 'bg-emerald-100 text-emerald-700'],
-                            ['Pengasuh Pesantren', 'KH. Drs. Aminullah Tsamud', 'pengasuh@ptqamsa.id', 'Hanya Melihat', 'bg-blue-100 text-blue-700'],
-                            ["Kepala Muadalah Mu'allimien", 'KH. Drs. Zubaidi, MM', 'muadalah@ptqamsa.id', 'Hanya Melihat', 'bg-blue-100 text-blue-700'],
-                            ['Direktur Yayasan', 'KH. Drs. Ahmadie Thaha, M.Si.', 'yayasan@ptqamsa.id', 'Hanya Melihat', 'bg-blue-100 text-blue-700'],
-                        ] as [$role, $person, $email, $badge, $badgeClass])
+                            ['Administrator', null, 'admin@ptqamsa.id', $sandi['admin'], 'Akses Penuh', 'bg-rose-100 text-rose-700'],
+                            ['Bendahara 1', 'Usth. Yuni Permatasari', 'bendahara1@ptqamsa.id', $sandi['bendahara'], 'Kasir & Laporan', 'bg-emerald-100 text-emerald-700'],
+                            ['Bendahara 2', 'Usth. Revina', 'bendahara2@ptqamsa.id', $sandi['bendahara'], 'Kasir & Laporan', 'bg-emerald-100 text-emerald-700'],
+                            ['Pengasuh Pesantren', 'KH. Drs. Aminullah Tsamud', 'pengasuh@ptqamsa.id', $sandi['pengasuh'], 'Hanya Melihat', 'bg-blue-100 text-blue-700'],
+                            ["Kepala Muadalah Mu'allimien", 'KH. Drs. Zubaidi, MM', 'muadalah@ptqamsa.id', $sandi['pengasuh'], 'Hanya Melihat', 'bg-blue-100 text-blue-700'],
+                            ['Direktur Yayasan', 'KH. Drs. Ahmadie Thaha, M.Si.', 'yayasan@ptqamsa.id', $sandi['pengasuh'], 'Hanya Melihat', 'bg-blue-100 text-blue-700'],
+                        ] as [$role, $person, $email, $password, $badge, $badgeClass])
                             <div class="flex items-center justify-between rounded-lg border border-blue-100 bg-white p-2">
                                 <div>
                                     <strong class="text-slate-900">{{ $role }}</strong>
-                                    <span class="block text-[11px] text-slate-500">@if($person){{ $person }} &mdash; @endif<code>{{ $email }}</code></span>
+                                    <span class="block text-[11px] text-slate-500">@if($person){{ $person }} &mdash; @endif<code>{{ $email }}</code> &middot; sandi <code>{{ $password }}</code></span>
                                 </div>
                                 <span class="rounded px-2 py-0.5 text-[10px] font-bold {{ $badgeClass }}">{{ $badge }}</span>
                             </div>

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Login Portal Wali Santri - PTQ Amsa001')
+@section('title', 'Login Portal Wali Santri - SIKA PTQ')
 
 @section('content')
 @php($demoMode = config('app.demo_mode'))

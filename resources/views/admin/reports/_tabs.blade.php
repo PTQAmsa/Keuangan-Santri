@@ -3,13 +3,6 @@
     // penanda halaman aktif selalu sama di semua halaman laporan.
     $reportTabs = [
         [
-            'route' => 'admin.reports.cash',
-            'label' => 'Kas Masuk',
-            'icon' => 'fa-money-bill-wave',
-            'iconColor' => 'text-emerald-600',
-            'active' => request()->routeIs('admin.reports.cash') || request()->routeIs('admin.reports.cash.csv') || request()->routeIs('admin.reports.cash.pdf'),
-        ],
-        [
             'route' => 'admin.reports.cash-flow',
             'label' => 'Arus Kas',
             'icon' => 'fa-scale-balanced',

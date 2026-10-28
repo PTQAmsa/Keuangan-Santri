@@ -11,21 +11,16 @@
             'label' => 'Dashboard', 'icon' => 'fa-chart-pie',
             'route' => 'admin.dashboard', 'match' => ['admin.dashboard'],
         ],
-        // Pengasuh (lihat saja) tidak mencatat kas masuk, jadi menu ini langsung
-        // membuka laporan Kas Masuk tanpa submenu kasir/pemasukan.
-        $isViewer
-            ? [
-                'label' => 'Kas Masuk', 'hint' => 'Laporan penerimaan', 'icon' => 'fa-wallet',
-                'route' => 'admin.reports.cash', 'match' => ['admin.reports.cash', 'admin.reports.cash.*'],
-            ]
-            : [
-                'label' => 'Kas Masuk', 'hint' => 'Kasir & pemasukan', 'icon' => 'fa-wallet',
-                'route' => 'admin.cashier', 'match' => ['admin.cashier*', 'admin.incomes*'],
-                'children' => [
-                    ['label' => 'Kasir Santri', 'icon' => 'fa-cash-register', 'url' => route('admin.cashier'), 'match' => ['admin.cashier*']],
-                    ['label' => 'Pemasukan Lainnya', 'icon' => 'fa-hand-holding-heart', 'url' => route('admin.incomes'), 'match' => ['admin.incomes*']],
-                ],
+        // Pengasuh (lihat saja) tidak mencatat kas masuk; penerimaan dilihat
+        // lewat Laporan Keuangan > Arus Kas, jadi menu ini tidak ditampilkan.
+        ...($isViewer ? [] : [[
+            'label' => 'Kas Masuk', 'hint' => 'Kasir & pemasukan', 'icon' => 'fa-wallet',
+            'route' => 'admin.cashier', 'match' => ['admin.cashier*', 'admin.incomes*'],
+            'children' => [
+                ['label' => 'Kasir Santri', 'icon' => 'fa-cash-register', 'url' => route('admin.cashier'), 'match' => ['admin.cashier*']],
+                ['label' => 'Pemasukan Lainnya', 'icon' => 'fa-hand-holding-heart', 'url' => route('admin.incomes'), 'match' => ['admin.incomes*']],
             ],
+        ]]),
         [
             'label' => 'Tagihan Santri', 'icon' => 'fa-file-invoice-dollar',
             'route' => 'admin.invoices', 'match' => ['admin.invoices*'],
@@ -55,14 +50,9 @@
         [
             'label' => 'Laporan Keuangan', 'icon' => 'fa-chart-column',
             // Untuk Pengasuh, laporan Kas Masuk sudah diwakili menu "Kas Masuk" di atas.
-            'route' => $isViewer ? 'admin.reports.cash-flow' : 'admin.reports.cash',
-            'match' => $isViewer
-                ? ['admin.reports.cash-flow', 'admin.reports.arrears*', 'admin.reports.closing*']
-                : ['admin.reports.*'],
+            'route' => 'admin.reports.cash-flow',
+            'match' => ['admin.reports.*'],
             'children' => [
-                ...($isViewer ? [] : [
-                    ['label' => 'Kas Masuk', 'icon' => 'fa-money-bill-wave', 'url' => route('admin.reports.cash'), 'match' => ['admin.reports.cash', 'admin.reports.cash.*']],
-                ]),
                 ['label' => 'Arus Kas', 'icon' => 'fa-scale-balanced', 'url' => route('admin.reports.cash-flow'), 'match' => ['admin.reports.cash-flow']],
                 ['label' => 'Rekap Tunggakan', 'icon' => 'fa-clock-rotate-left', 'url' => route('admin.reports.arrears'), 'match' => ['admin.reports.arrears*']],
                 ['label' => 'Tutup Buku', 'icon' => 'fa-lock', 'url' => route('admin.reports.closing'), 'match' => ['admin.reports.closing*']],
@@ -77,11 +67,11 @@
             ],
         ],
         [
-            'label' => 'Data Guru & Bisyarah', 'icon' => 'fa-chalkboard-user',
+            'label' => 'Guru, Staf & Bisyarah', 'icon' => 'fa-chalkboard-user',
             'route' => 'admin.teachers', 'match' => ['admin.teachers*', 'admin.bisyarah*'],
             'children' => [
-                ['label' => 'Data Guru', 'icon' => 'fa-user-tie', 'url' => route('admin.teachers'), 'match' => ['admin.teachers*'], 'query' => []],
-                ['label' => 'Tambah Guru', 'icon' => 'fa-user-plus', 'url' => route('admin.teachers', ['tambah' => 1]), 'match' => ['admin.teachers'], 'query' => ['tambah' => '1'], 'write' => true],
+                ['label' => 'Data Guru dan Staf', 'icon' => 'fa-user-tie', 'url' => route('admin.teachers'), 'match' => ['admin.teachers*'], 'query' => []],
+                ['label' => 'Tambah Guru / Staf', 'icon' => 'fa-user-plus', 'url' => route('admin.teachers', ['tambah' => 1]), 'match' => ['admin.teachers'], 'query' => ['tambah' => '1'], 'write' => true],
                 ['label' => 'Bisyarah Bulanan', 'icon' => 'fa-money-bill-wave', 'url' => route('admin.bisyarah'), 'match' => ['admin.bisyarah*']],
             ],
         ],

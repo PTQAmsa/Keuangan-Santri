@@ -42,7 +42,7 @@ class AdminLayoutTest extends TestCase
             ->assertSee('Log Aktivitas Kasir')
             ->assertSee(route('admin.logout'), false)
             ->assertSee('bg-blue-600 text-white font-bold', false)
-            ->assertSee('Data Guru &amp; Bisyarah', false)
+            ->assertSee('Guru, Staf &amp; Bisyarah', false)
             ->assertSee('Riwayat Transaksi')
             ->assertDontSee('Log Aktivitas Sistem');
 
@@ -73,14 +73,10 @@ class AdminLayoutTest extends TestCase
             ->assertDontSee('Catat Pengeluaran')
             ->assertDontSee('Akun Pengurus');
 
-        // Menu Kas Masuk untuk Pengasuh langsung menuju laporan Kas Masuk,
-        // dan submenu Laporan tidak lagi memuat Kas Masuk.
-        $this->assertStringContainsString('href="'.route('admin.reports.cash').'"', $dashboard->getContent());
+        // Pengasuh tidak punya menu Kas Masuk; penerimaan dilihat lewat Arus Kas.
+        $this->assertStringContainsString('href="'.route('admin.reports.cash-flow').'"', $dashboard->getContent());
         $this->assertStringNotContainsString('data-submenu-href="'.route('admin.cashier').'"', $dashboard->getContent());
-        $this->assertDoesNotMatchRegularExpression(
-            '/href="'.preg_quote(route('admin.reports.cash'), '/').'"\s+role="menuitem"/',
-            $dashboard->getContent(),
-        );
+        $this->assertStringNotContainsString('href="'.route('admin.cashier').'"', $dashboard->getContent());
 
         // Form catat di halaman kas keluar dan pemasukan lainnya ikut disembunyikan.
         $this->actingAs($pengasuh)->get(route('admin.expenses'))
@@ -252,7 +248,7 @@ class AdminLayoutTest extends TestCase
 
         $page = $this->get('/');
         $page->assertOk()
-            ->assertSee('Sistem Keuangan &amp; Tagihan Santri Terpadu', false)
+            ->assertSee('Sistem Informasi Keuangan Amanah PTQ Amsa001')
             ->assertSee('Nomor Induk Santri (NIS)')
             ->assertSee('No. WhatsApp Wali / PIN')
             ->assertSee('Masuk ke Dasbor Santri')
