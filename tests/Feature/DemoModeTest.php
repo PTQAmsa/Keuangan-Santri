@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Database\Seeders\DemoAccountSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class DemoModeTest extends TestCase
@@ -52,6 +53,8 @@ class DemoModeTest extends TestCase
 
     public function test_seeded_test_accounts_can_log_in_to_the_portal_with_pin_only(): void
     {
+        Storage::fake('local');
+
         $this->seed(DemoAccountSeeder::class);
 
         $this->post(route('portal.login.post'), [

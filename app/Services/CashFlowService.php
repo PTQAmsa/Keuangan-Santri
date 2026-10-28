@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Expense;
+use App\Models\OpeningBalance;
 use App\Models\OtherIncome;
 use App\Models\Payment;
 use Carbon\CarbonInterface;
@@ -39,7 +40,7 @@ class CashFlowService
         $start = $startDate->toDateString();
         $end = $endDate->toDateString();
 
-        $openingBalance = $this->balanceBefore($start);
+        $openingBalance = $this->balanceBefore($start, $end);
 
         $payments = Payment::with(['student', 'invoice.category', 'receipt'])
             ->whereNull('voided_at')
@@ -140,10 +141,17 @@ class CashFlowService
 
     /**
      * Saldo kas sebelum tanggal awal periode (kas masuk - kas keluar).
+     *
+     * Saldo awal migrasi (tabel opening_balances) ikut dihitung bila tanggal
+     * berlakunya tidak melewati akhir periode, sehingga bulan pertama sistem
+     * dipakai sudah menampilkan saldo lama tanpa mencatatnya sebagai kas masuk.
      */
-    private function balanceBefore(string $date): float
+    private function balanceBefore(string $date, string $endDate): float
     {
-        $masuk = (float) Payment::whereNull('voided_at')
+        $masuk = (float) OpeningBalance::whereDate('effective_date', '<=', $endDate)
+            ->sum('amount');
+
+        $masuk += (float) Payment::whereNull('voided_at')
             ->whereDate('payment_date', '<', $date)
             ->sum('amount_paid');
 

@@ -87,7 +87,7 @@ class StudentImportService
     public function import(string $path, string $marhalah, bool $deleteDummy = false, ?int $userId = null): array
     {
         $marhalah = strtolower($marhalah) === 'putri' ? 'putri' : 'putra';
-        $rows = $this->readCsv($path);
+        $rows = CsvImportReader::read($path, self::COLUMN_ALIASES, ['nama']);
 
         if ($rows === []) {
             throw new \RuntimeException('Berkas CSV tidak berisi data santri.');
@@ -221,88 +221,6 @@ class StudentImportService
         }
 
         return $students->count();
-    }
-
-    /**
-     * Baca CSV dan petakan nama kolom ke kunci internal.
-     *
-     * @return array<int, array<string, string>>
-     */
-    private function readCsv(string $path): array
-    {
-        if (! is_file($path)) {
-            throw new \RuntimeException('Berkas CSV tidak ditemukan: '.$path);
-        }
-
-        $handle = fopen($path, 'r');
-
-        if ($handle === false) {
-            throw new \RuntimeException('Tidak dapat membuka berkas CSV: '.$path);
-        }
-
-        $delimiter = $this->detectDelimiter($path);
-        $headers = fgetcsv($handle, 0, $delimiter, '"', '');
-
-        if ($headers === false) {
-            fclose($handle);
-
-            return [];
-        }
-
-        $headers[0] = preg_replace('/^\xEF\xBB\xBF/', '', (string) $headers[0]);
-        $keys = array_map(fn ($header) => $this->mapHeader((string) $header), $headers);
-
-        if (! in_array('nama', $keys, true)) {
-            fclose($handle);
-
-            throw new \RuntimeException('Kolom NAMA tidak ditemukan di baris judul CSV.');
-        }
-
-        $rows = [];
-
-        while (($data = fgetcsv($handle, 0, $delimiter, '"', '')) !== false) {
-            if ($data === [null] || implode('', array_map('trim', $data)) === '') {
-                continue;
-            }
-
-            $row = [];
-
-            foreach ($keys as $position => $key) {
-                if ($key === null) {
-                    continue;
-                }
-
-                $row[$key] = trim((string) ($data[$position] ?? ''));
-            }
-
-            $rows[] = $row;
-        }
-
-        fclose($handle);
-
-        return $rows;
-    }
-
-    /**
-     * Excel Indonesia sering menyimpan CSV dengan pemisah titik koma.
-     */
-    private function detectDelimiter(string $path): string
-    {
-        $handle = fopen($path, 'r');
-        $firstLine = $handle ? (string) fgets($handle) : '';
-
-        if ($handle) {
-            fclose($handle);
-        }
-
-        return substr_count($firstLine, ';') > substr_count($firstLine, ',') ? ';' : ',';
-    }
-
-    private function mapHeader(string $header): ?string
-    {
-        $normalized = strtoupper(trim(preg_replace('/\s+/', ' ', $header) ?? ''));
-
-        return self::COLUMN_ALIASES[$normalized] ?? null;
     }
 
     private function resolveGroup(string $marhalah, string $jenisKelamin, string $default): string
