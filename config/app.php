@@ -42,6 +42,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Kontak Bendahara
+    |--------------------------------------------------------------------------
+    |
+    | Nomor WhatsApp bendahara yang ditampilkan di portal wali dan footer.
+    | Format: "Nama:nomor;Nama:nomor". Nomor pertama menjadi tujuan utama
+    | tombol "Hubungi Bendahara". Disimpan di .env karena data pribadi.
+    |
+    */
+
+    'treasurer_contacts' => env('TREASURER_CONTACTS', ''),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Debug Mode
     |--------------------------------------------------------------------------
     |

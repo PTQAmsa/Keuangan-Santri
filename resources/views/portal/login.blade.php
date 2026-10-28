@@ -81,12 +81,14 @@
                         Lupa PIN?
                         <a href="{{ route('portal.forgot-pin') }}" class="font-semibold text-blue-700 hover:underline">Lihat cara reset PIN</a>
                     </p>
-                    <p>
-                        Mengalami kendala login?
-                        <a href="https://wa.me/6285692253516" target="_blank" rel="noopener" class="inline-flex items-center gap-1 font-semibold text-emerald-700 hover:underline">
-                            <i class="fa-brands fa-whatsapp"></i> Hubungi Bendahara
-                        </a>
-                    </p>
+                    @if($waUrl = \App\Services\TreasurerContactService::primaryUrl('Assalamu\'alaikum, saya wali santri dan mengalami kendala login Portal Wali.'))
+                        <p>
+                            Mengalami kendala login?
+                            <a href="{{ $waUrl }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 font-semibold text-emerald-700 hover:underline">
+                                <i class="fa-brands fa-whatsapp"></i> Hubungi Bendahara
+                            </a>
+                        </p>
+                    @endif
                 </div>
             </div>
         </div>

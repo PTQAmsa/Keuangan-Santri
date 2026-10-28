@@ -161,10 +161,11 @@
                         <!-- Panduan Pembayaran Singkat -->
                         <div class="mt-4 pt-3 border-t border-gray-100 flex flex-wrap items-center justify-between text-xs text-gray-500 gap-2">
                             <span>Metode: Transfer ke Bank Syariah Indonesia (BSI) 1202020212 a/n Pesantren Tadabbur Al-Qur'an</span>
-                            <a href="https://wa.me/6285692253516?text={{ urlencode('Assalamu\'alaikum Admin PTQ Amsa, saya wali dari ' . $student->nama_lengkap . ' (NIS: ' . $student->nis . ') ingin konfirmasi pembayaran untuk tagihan: ' . $inv->title) }}" 
-                               target="_blank" class="inline-flex items-center text-emerald-700 font-semibold hover:underline">
-                                <i class="fa-brands fa-whatsapp text-sm mr-1"></i> Konfirmasi Bayar ke Admin
-                            </a>
+                            @if($waUrl = \App\Services\TreasurerContactService::primaryUrl('Assalamu\'alaikum Bendahara PTQ Amsa, saya wali dari ' . $student->nama_lengkap . ' (NIS: ' . $student->nis . ') ingin konfirmasi pembayaran untuk tagihan: ' . $inv->title))
+                                <a href="{{ $waUrl }}" target="_blank" rel="noopener" class="inline-flex items-center text-emerald-700 font-semibold hover:underline">
+                                    <i class="fa-brands fa-whatsapp text-sm mr-1"></i> Konfirmasi Bayar ke Bendahara
+                                </a>
+                            @endif
                         </div>
                     </div>
                 @endforeach

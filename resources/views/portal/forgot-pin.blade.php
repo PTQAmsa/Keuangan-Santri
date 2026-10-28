@@ -54,10 +54,12 @@
             </form>
 
             <div class="space-y-2 border-t border-slate-100 pt-4 text-center text-xs text-slate-500">
-                <a href="https://wa.me/6285692253516?text={{ urlencode('Assalamu\'alaikum, saya wali santri dan lupa PIN Portal. Mohon bantuan reset PIN.') }}" target="_blank" rel="noopener"
-                   class="inline-flex items-center gap-1.5 font-semibold text-emerald-700 hover:underline">
-                    <i class="fa-brands fa-whatsapp"></i> Hubungi Bendahara via WhatsApp
-                </a>
+                @if($waUrl = \App\Services\TreasurerContactService::primaryUrl('Assalamu\'alaikum, saya wali santri dan lupa PIN Portal. Mohon bantuan reset PIN.'))
+                    <a href="{{ $waUrl }}" target="_blank" rel="noopener"
+                       class="inline-flex items-center gap-1.5 font-semibold text-emerald-700 hover:underline">
+                        <i class="fa-brands fa-whatsapp"></i> Hubungi Bendahara via WhatsApp
+                    </a>
+                @endif
                 <div>
                     <a href="{{ url('/') }}" class="inline-flex items-center gap-1.5 font-semibold text-slate-700 hover:text-slate-900 hover:underline">
                         <i class="fa-solid fa-arrow-left"></i> Kembali ke Halaman Depan

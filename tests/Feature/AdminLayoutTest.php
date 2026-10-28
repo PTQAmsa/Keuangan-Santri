@@ -265,7 +265,7 @@ class AdminLayoutTest extends TestCase
             ->assertSee('Skema Cicilan &amp; Beasiswa', false)
             ->assertSee('Kuitansi Digital PDF')
             ->assertSee('Notifikasi WhatsApp Gateway')
-            ->assertSee('+62 856-9225-3516')
+            ->assertSee('Layanan Keuangan')
             ->assertSee('www.ptqamsa.id')
             ->assertDontSee('Masuk Portal Wali Santri</a>', false)
             ->assertDontSee('Masukkan NIS / No. WhatsApp Santri')

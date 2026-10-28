@@ -85,7 +85,12 @@
         <footer class="border-t border-slate-200 bg-white px-4 py-4 text-center text-[11px] text-slate-500 sm:px-6">
             <p class="font-medium text-slate-700">Pesantren Tadabbur Al-Qur'an Amsa001 (PTQ Amsa001)</p>
             <p>Jl. Cikopo Selatan, Gg. Yulias, Sukabirus, Desa Gadog, Kec. Megamendung, Kab. Bogor, Jawa Barat 16770</p>
-            <p>Layanan Keuangan WhatsApp: <a href="https://wa.me/6285692253516" target="_blank" class="font-semibold text-brand-700 hover:underline">+62 856-9225-3516</a> | Website: <a href="https://www.ptqamsa.id" target="_blank" class="font-semibold text-brand-700 hover:underline">www.ptqamsa.id</a></p>
+            <p>
+                @foreach(\App\Services\TreasurerContactService::all() as $contact)
+                    Bendahara ({{ $contact['name'] }}): <a href="{{ \App\Services\TreasurerContactService::url($contact['phone']) }}" target="_blank" rel="noopener" class="font-semibold text-brand-700 hover:underline">{{ $contact['display'] }}</a> |
+                @endforeach
+                Website: <a href="https://www.ptqamsa.id" target="_blank" class="font-semibold text-brand-700 hover:underline">www.ptqamsa.id</a>
+            </p>
         </footer>
     </div>
 
@@ -107,7 +112,12 @@
         <div class="mx-auto max-w-7xl space-y-2 px-4">
             <p class="font-medium text-gray-700">Pesantren Tadabbur Al-Qur'an Amsa001 (PTQ Amsa001)</p>
             <p>Jl. Cikopo Selatan, Gg. Yulias, Sukabirus, Desa Gadog, Kec. Megamendung, Kab. Bogor, Jawa Barat 16770</p>
-            <p>Layanan Keuangan WhatsApp: <a href="https://wa.me/6285692253516" target="_blank" class="font-semibold text-brand-700 hover:underline">+62 856-9225-3516</a> | Website: <a href="https://www.ptqamsa.id" target="_blank" class="font-semibold text-brand-700 hover:underline">www.ptqamsa.id</a></p>
+            <p>
+                @foreach(\App\Services\TreasurerContactService::all() as $contact)
+                    Bendahara ({{ $contact['name'] }}): <a href="{{ \App\Services\TreasurerContactService::url($contact['phone']) }}" target="_blank" rel="noopener" class="font-semibold text-brand-700 hover:underline">{{ $contact['display'] }}</a> |
+                @endforeach
+                Website: <a href="https://www.ptqamsa.id" target="_blank" class="font-semibold text-brand-700 hover:underline">www.ptqamsa.id</a>
+            </p>
         </div>
     </footer>
 

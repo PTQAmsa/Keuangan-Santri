@@ -333,9 +333,11 @@
 
             <div class="space-y-2 text-sm">
                 <p class="text-xs font-bold uppercase tracking-widest text-slate-500">Layanan Keuangan</p>
-                <a href="https://wa.me/6285692253516" target="_blank" rel="noopener" class="flex items-center gap-2 transition hover:text-white">
-                    <i class="fa-brands fa-whatsapp text-emerald-400"></i> +62 856-9225-3516
-                </a>
+                @foreach(\App\Services\TreasurerContactService::all() as $contact)
+                    <a href="{{ \App\Services\TreasurerContactService::url($contact['phone']) }}" target="_blank" rel="noopener" class="flex items-center gap-2 transition hover:text-white">
+                        <i class="fa-brands fa-whatsapp text-emerald-400"></i> {{ $contact['display'] }} <span class="text-xs text-slate-500">({{ $contact['name'] }})</span>
+                    </a>
+                @endforeach
                 <a href="https://www.ptqamsa.id" target="_blank" rel="noopener" class="flex items-center gap-2 transition hover:text-white">
                     <i class="fa-solid fa-globe text-blue-400"></i> www.ptqamsa.id
                 </a>
