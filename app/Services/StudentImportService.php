@@ -385,7 +385,7 @@ class StudentImportService
         $normalized = strtolower(trim($hubungan));
 
         $mapped = match ($normalized) {
-            '', 'ayah', 'ayah kandung', 'bapak' => 'Ayah Kandung',
+            '', 'ayah', 'ayah kandung', 'bapak', 'kandung', 'orang tua', 'orangtua' => 'Ayah Kandung',
             'ibu', 'ibu kandung' => 'Ibu Kandung',
             'ayah angkat' => 'Ayah Angkat',
             'ibu angkat' => 'Ibu Angkat',

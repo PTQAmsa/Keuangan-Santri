@@ -155,6 +155,7 @@ class StudentImportTest extends TestCase
         $this->assertSame('2025001', $baru->nis);
         $this->assertSame('Intensif', $baru->kelas);
         $this->assertSame('081200000001', $baru->no_whatsapp_wali);
+        $this->assertSame('Ayah Kandung', $baru->hubungan_wali);
     }
 
     public function test_missing_file_or_name_column_fails_without_writing_students(): void
