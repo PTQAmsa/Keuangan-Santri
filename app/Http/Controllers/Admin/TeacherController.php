@@ -27,9 +27,9 @@ class TeacherController
 
         if ($search !== '') {
             $query->where(function ($sub) use ($search) {
-                $sub->where('nama_lengkap', 'like', "%{$search}%")
-                    ->orWhere('kota_asal', 'like', "%{$search}%")
-                    ->orWhere('no_whatsapp', 'like', "%{$search}%");
+                $sub->whereLike('nama_lengkap', "%{$search}%")
+                    ->orWhereLike('kota_asal', "%{$search}%")
+                    ->orWhereLike('no_whatsapp', "%{$search}%");
             });
         }
 

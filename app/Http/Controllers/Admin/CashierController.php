@@ -400,11 +400,11 @@ class CashierController
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('invoice_number', 'like', "%{$search}%")
-                    ->orWhere('title', 'like', "%{$search}%")
+                $q->whereLike('invoice_number', "%{$search}%")
+                    ->orWhereLike('title', "%{$search}%")
                     ->orWhereHas('student', function ($sub) use ($search) {
-                        $sub->where('nama_lengkap', 'like', "%{$search}%")
-                            ->orWhere('nis', 'like', "%{$search}%");
+                        $sub->whereLike('nama_lengkap', "%{$search}%")
+                            ->orWhereLike('nis', "%{$search}%");
                     });
             });
         }

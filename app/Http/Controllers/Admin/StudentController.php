@@ -51,10 +51,10 @@ class StudentController
 
         if ($search) {
             $query->where(function ($query) use ($search) {
-                $query->where('nama_lengkap', 'like', "%{$search}%")
-                    ->orWhere('nis', 'like', "%{$search}%")
-                    ->orWhere('kelas', 'like', "%{$search}%")
-                    ->orWhere('nama_wali', 'like', "%{$search}%");
+                $query->whereLike('nama_lengkap', "%{$search}%")
+                    ->orWhereLike('nis', "%{$search}%")
+                    ->orWhereLike('kelas', "%{$search}%")
+                    ->orWhereLike('nama_wali', "%{$search}%");
             });
         }
 

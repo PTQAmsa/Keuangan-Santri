@@ -48,12 +48,12 @@ class TransactionController
 
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('payment_code', 'like', "%{$search}%")
-                    ->orWhere('received_from', 'like', "%{$search}%")
-                    ->orWhereHas('receipt', fn ($sub) => $sub->where('receipt_number', 'like', "%{$search}%"))
+                $q->whereLike('payment_code', "%{$search}%")
+                    ->orWhereLike('received_from', "%{$search}%")
+                    ->orWhereHas('receipt', fn ($sub) => $sub->whereLike('receipt_number', "%{$search}%"))
                     ->orWhereHas('student', function ($sub) use ($search) {
-                        $sub->where('nama_lengkap', 'like', "%{$search}%")
-                            ->orWhere('nis', 'like', "%{$search}%");
+                        $sub->whereLike('nama_lengkap', "%{$search}%")
+                            ->orWhereLike('nis', "%{$search}%");
                     });
             });
         }

@@ -47,7 +47,7 @@ class ActivityLogController
         $query->orderBy($allowedSorts[$sortBy], $sortOrder)->orderByDesc('activity_logs.id');
 
         if ($search) {
-            $query->where('description', 'like', "%{$search}%");
+            $query->whereLike('description', "%{$search}%");
         }
 
         if ($userId) {

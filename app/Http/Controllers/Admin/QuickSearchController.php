@@ -49,10 +49,10 @@ class QuickSearchController
     {
         $students = Student::query()
             ->where(function ($query) use ($like) {
-                $query->where('nama_lengkap', 'like', $like)
-                    ->orWhere('nis', 'like', $like)
-                    ->orWhere('nama_wali', 'like', $like)
-                    ->orWhere('no_whatsapp_wali', 'like', $like);
+                $query->whereLike('nama_lengkap', $like)
+                    ->orWhereLike('nis', $like)
+                    ->orWhereLike('nama_wali', $like)
+                    ->orWhereLike('no_whatsapp_wali', $like);
             })
             ->orderByRaw("CASE WHEN status = 'aktif' THEN 0 ELSE 1 END")
             ->orderBy('nama_lengkap')
@@ -87,8 +87,8 @@ class QuickSearchController
     {
         $payments = Payment::with(['student', 'receipt', 'invoice'])
             ->where(function ($query) use ($like) {
-                $query->where('payment_code', 'like', $like)
-                    ->orWhereHas('receipt', fn ($sub) => $sub->where('receipt_number', 'like', $like));
+                $query->whereLike('payment_code', $like)
+                    ->orWhereHas('receipt', fn ($sub) => $sub->whereLike('receipt_number', $like));
             })
             ->latest('payment_date')
             ->latest('id')
@@ -121,9 +121,9 @@ class QuickSearchController
     {
         $teachers = Teacher::query()
             ->where(function ($query) use ($like) {
-                $query->where('nama_lengkap', 'like', $like)
-                    ->orWhere('kota_asal', 'like', $like)
-                    ->orWhere('no_whatsapp', 'like', $like);
+                $query->whereLike('nama_lengkap', $like)
+                    ->orWhereLike('kota_asal', $like)
+                    ->orWhereLike('no_whatsapp', $like);
             })
             ->orderByDesc('is_active')
             ->orderBy('nama_lengkap')

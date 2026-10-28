@@ -502,8 +502,8 @@ class ReportController
 
         if ($search) {
             $invoiceQuery->whereHas('student', function ($q) use ($search) {
-                $q->where('nama_lengkap', 'like', "%{$search}%")
-                    ->orWhere('nis', 'like', "%{$search}%");
+                $q->whereLike('nama_lengkap', "%{$search}%")
+                    ->orWhereLike('nis', "%{$search}%");
             });
         }
 

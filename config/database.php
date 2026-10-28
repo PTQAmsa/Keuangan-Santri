@@ -99,6 +99,22 @@ return [
             'sslmode' => env('DB_SSLMODE', 'prefer'),
         ],
 
+        // Koneksi kedua ke Supabase dari laptop: untuk migrasi skema, salin
+        // data (db:salin), dan cadangan tanpa mengubah DB_CONNECTION utama.
+        'supabase' => [
+            'driver' => 'pgsql',
+            'host' => env('SUPABASE_HOST', 'aws-0-ap-southeast-1.pooler.supabase.com'),
+            'port' => env('SUPABASE_PORT', '5432'),
+            'database' => env('SUPABASE_DATABASE', 'postgres'),
+            'username' => env('SUPABASE_USERNAME', ''),
+            'password' => env('SUPABASE_PASSWORD', ''),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => 'require',
+        ],
+
         'sqlsrv' => [
             'driver' => 'sqlsrv',
             'url' => env('DB_URL'),
