@@ -212,7 +212,7 @@ class TeacherBisyarahTest extends TestCase
             'period' => '2026-10',
             'amount' => 1500000,
             'payment_method' => 'transfer',
-            'bank_name' => 'BSI',
+            'transfer_channel' => 'BSI',
             'bank_account_number' => '7212345678',
             'bank_account_name' => 'Ahmad Fauzi',
             'notes' => 'Bisyarah Oktober.',
@@ -229,7 +229,7 @@ class TeacherBisyarahTest extends TestCase
             'period' => '2026-11',
             'amount' => 1600000,
             'payment_method' => 'cash',
-            'bank_name' => 'BCA',
+            'transfer_channel' => 'BCA',
             'bank_account_number' => '99887766',
             'bank_account_name' => 'Ahmad Fauzi',
         ])->assertRedirect(route('admin.bisyarah', ['period' => '2026-11']));
@@ -273,7 +273,7 @@ class TeacherBisyarahTest extends TestCase
             'period' => '2026-10',
             'amount' => 1500000,
             'payment_method' => 'transfer',
-        ])->assertSessionHasErrors(['bank_name', 'bank_account_number']);
+        ])->assertSessionHasErrors(['transfer_channel', 'bank_account_number']);
 
         $this->assertSame(0, TeacherBisyarahPayment::count());
 
@@ -282,7 +282,7 @@ class TeacherBisyarahTest extends TestCase
             'period' => '2026-10',
             'amount' => 1500000,
             'payment_method' => 'transfer',
-            'bank_name' => 'BSI',
+            'transfer_channel' => 'BSI',
             'bank_account_number' => '7212345678',
         ];
 
@@ -317,7 +317,7 @@ class TeacherBisyarahTest extends TestCase
             'period_month' => 10,
             'amount' => 1500000,
             'payment_method' => 'transfer',
-            'bank_name' => 'BSI',
+            'transfer_channel' => 'BSI',
             'bank_account_number' => '7212345678',
             'bank_account_name' => 'Ahmad Fauzi',
             'recorded_by' => $bendahara->id,
@@ -390,7 +390,7 @@ class TeacherBisyarahTest extends TestCase
             'period' => $period,
             'amount' => 1500000,
             'payment_method' => 'transfer',
-            'bank_name' => 'BSI',
+            'transfer_channel' => 'BSI',
             'bank_account_number' => '7212345678',
             'bank_account_name' => 'Ahmad Fauzi',
         ])->assertRedirect();
@@ -402,6 +402,8 @@ class TeacherBisyarahTest extends TestCase
         $this->assertSame(ExpenseCategory::Gaji, $expense->category);
         $this->assertSame('1500000.00', $expense->amount);
         $this->assertSame('transfer', $expense->payment_method);
+        $this->assertSame('BSI', $expense->transfer_channel);
+        $this->assertSame('Transfer BSI', $expense->paymentMethodLabel());
         $this->assertSame('Ust. Ahmad Fauzi', $expense->recipient);
         $this->assertSame(now()->toDateString(), $expense->expense_date->toDateString());
         $this->assertStringContainsString('Bisyarah Ust. Ahmad Fauzi', $expense->description);
@@ -453,7 +455,7 @@ class TeacherBisyarahTest extends TestCase
             'period' => now()->format('Y-m'),
             'amount' => 1500000,
             'payment_method' => 'transfer',
-            'bank_name' => 'BSI',
+            'transfer_channel' => 'BSI',
             'bank_account_number' => '7212345678',
         ])->assertRedirect();
 
@@ -472,8 +474,65 @@ class TeacherBisyarahTest extends TestCase
         $this->assertSame($originalCode, $expense->expense_code);
         $this->assertSame('1750000.00', $expense->amount);
         $this->assertSame('cash', $expense->payment_method);
+        $this->assertNull($expense->transfer_channel);
         $this->assertSame('Dibayar tunai.', $expense->notes);
         $this->assertFalse($expense->isVoided());
+    }
+
+    public function test_transfer_can_go_through_a_digital_wallet_or_a_channel_typed_under_lainnya(): void
+    {
+        $bendahara = $this->userWithRole(UserRole::Bendahara);
+        $teacher = $this->makeTeacher();
+
+        $this->actingAs($bendahara)->post(route('admin.bisyarah.store'), [
+            'teacher_id' => $teacher->id,
+            'period' => '2026-10',
+            'amount' => 1500000,
+            'payment_method' => 'transfer',
+            'transfer_channel' => 'DANA',
+            'bank_account_number' => '081234567890',
+        ])->assertRedirect(route('admin.bisyarah', ['period' => '2026-10']));
+
+        $payment = TeacherBisyarahPayment::sole();
+        $this->assertSame('DANA', $payment->bank_name);
+        $this->assertSame('DANA', $payment->expense->transfer_channel);
+        $this->assertSame('Transfer DANA', $payment->paymentChannelLabel());
+
+        $this->actingAs($bendahara)
+            ->get(route('admin.bisyarah', ['period' => '2026-10']))
+            ->assertOk()
+            ->assertSee('Transfer DANA')
+            ->assertSee('081234567890');
+
+        // Lainnya tanpa nama saluran ditolak, saluran di luar daftar ditolak.
+        $this->actingAs($bendahara)->patch(route('admin.bisyarah.update', $payment), [
+            'amount' => 1500000,
+            'payment_method' => 'transfer',
+            'transfer_channel' => 'Lainnya',
+            'bank_account_number' => '081234567890',
+        ])->assertSessionHasErrors('transfer_channel_other');
+
+        $this->actingAs($bendahara)->patch(route('admin.bisyarah.update', $payment), [
+            'amount' => 1500000,
+            'payment_method' => 'transfer',
+            'transfer_channel' => 'Bank Antah Berantah',
+            'bank_account_number' => '081234567890',
+        ])->assertSessionHasErrors('transfer_channel');
+
+        $this->actingAs($bendahara)->patch(route('admin.bisyarah.update', $payment), [
+            'amount' => 1500000,
+            'payment_method' => 'transfer',
+            'transfer_channel' => 'Lainnya',
+            'transfer_channel_other' => '  Bank Jatim ',
+            'bank_account_number' => '081234567890',
+        ])->assertRedirect();
+
+        $payment->refresh();
+        $this->assertSame('Bank Jatim', $payment->bank_name);
+        $this->assertSame('Bank Jatim', $payment->expense->transfer_channel);
+
+        $log = ActivityLog::where('action', ActivityAction::Updated->value)->latest('id')->firstOrFail();
+        $this->assertSame('Transfer DANA → Transfer Bank Jatim', $log->properties['Metode']);
     }
 
     public function test_cancelling_bisyarah_voids_its_expense_and_frees_the_month(): void

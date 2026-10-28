@@ -76,7 +76,7 @@
         <div class="bg-white rounded-2xl p-5 border border-gray-200/80 shadow-sm">
             <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Pengeluaran Transfer</p>
             <p class="text-xl font-extrabold text-gray-900 mt-1">Rp {{ number_format($totalTransfer, 0, ',', '.') }}</p>
-            <p class="text-xs text-gray-400 mt-2">Melalui rekening pesantren</p>
+            <p class="text-xs text-gray-400 mt-2">Melalui rekening bank atau dompet digital</p>
         </div>
     </div>
 
@@ -128,10 +128,17 @@
             </div>
             <div>
                 <label for="payment_method" class="block text-xs font-semibold text-gray-700 mb-1">Metode <span class="text-rose-500">*</span></label>
-                <select name="payment_method" id="payment_method" required class="w-full text-sm rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800 focus:border-brand-800">
+                <select name="payment_method" id="payment_method" required onchange="toggleExpenseTransferFields()" class="w-full text-sm rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800 focus:border-brand-800">
                     <option value="cash" {{ old('payment_method', 'cash') === 'cash' ? 'selected' : '' }}>Tunai</option>
-                    <option value="transfer" {{ old('payment_method') === 'transfer' ? 'selected' : '' }}>Transfer Bank</option>
+                    <option value="transfer" {{ old('payment_method') === 'transfer' ? 'selected' : '' }}>Transfer (Bank / Dompet Digital)</option>
                 </select>
+            </div>
+            <div id="expense-transfer-fields" class="lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 gap-4 bg-blue-50/60 border border-blue-100 rounded-xl p-4 {{ old('payment_method') === 'transfer' ? '' : 'hidden' }}">
+                <p class="sm:col-span-2 text-[11px] text-blue-800">
+                    <i class="fa-solid fa-building-columns mr-1"></i>
+                    Catat lewat mana uangnya keluar: rekening bank atau dompet digital. Pilih Lainnya bila tidak ada di daftar.
+                </p>
+                <x-transfer-channel-fields :channel="old('transfer_channel')" :other="old('transfer_channel_other', '')" :required="old('payment_method') === 'transfer'" />
             </div>
             <div class="lg:col-span-2">
                 <label for="description" class="block text-xs font-semibold text-gray-700 mb-1">Uraian Pengeluaran <span class="text-rose-500">*</span></label>
@@ -224,7 +231,7 @@
                                 <td class="py-3 px-3 text-right font-bold {{ $expense->isVoided() ? 'text-gray-400 line-through' : 'text-rose-700' }}">
                                     Rp {{ number_format((float) $expense->amount, 0, ',', '.') }}
                                 </td>
-                                <td class="py-3 px-3 text-[11px] text-gray-600">{{ $expense->payment_method === 'cash' ? 'Tunai' : 'Transfer Bank' }}</td>
+                                <td class="py-3 px-3 text-[11px] text-gray-600 whitespace-nowrap">{{ $expense->paymentMethodLabel() }}</td>
                                 <td class="py-3 px-3 text-gray-700">{{ $expense->recipient ?: '-' }}</td>
                                 <td class="py-3 px-3 text-gray-600">{{ $expense->recordedBy?->name ?? '-' }}</td>
                                 <td class="py-3 px-3 text-center">
@@ -267,4 +274,24 @@
         <p><strong>Catatan:</strong> Pengeluaran yang dibatalkan tetap tersimpan untuk keperluan audit, tetapi tidak dihitung dalam total kas keluar. Gunakan pembatalan jika ada kesalahan input, lalu catat ulang data yang benar. Klik judul kolom pada tabel untuk mengurutkan data.</p>
     </div>
 </div>
+
+<script>
+    // Pilihan bank / dompet digital hanya muncul (dan wajib) untuk metode transfer.
+    function toggleExpenseTransferFields() {
+        const method = document.getElementById('payment_method');
+        const box = document.getElementById('expense-transfer-fields');
+        if (!method || !box) return;
+
+        const isTransfer = method.value === 'transfer';
+        box.classList.toggle('hidden', !isTransfer);
+
+        const channel = box.querySelector('[data-transfer-channel]');
+        if (channel) {
+            channel.required = isTransfer;
+            toggleTransferChannelOther(channel);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', toggleExpenseTransferFields);
+</script>
 @endsection

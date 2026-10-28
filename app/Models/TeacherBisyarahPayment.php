@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\TransferChannel;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -61,6 +62,14 @@ class TeacherBisyarahPayment extends Model
     public function paymentMethodLabel(): string
     {
         return $this->payment_method === 'cash' ? 'Tunai' : 'Transfer';
+    }
+
+    /**
+     * Metode beserta salurannya: "Transfer BSI", "Transfer DANA", atau "Tunai".
+     */
+    public function paymentChannelLabel(): string
+    {
+        return TransferChannel::methodLabel((string) $this->payment_method, $this->bank_name);
     }
 
     public function hasBankAccount(): bool

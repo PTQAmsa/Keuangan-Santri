@@ -140,7 +140,7 @@
                             <x-sort-th column="recorded" label="Status" :sort-by="$sortBy" :sort-order="$sortOrder" class="px-4 py-3 font-semibold" />
                             <x-sort-th column="amount" label="Nominal" :sort-by="$sortBy" :sort-order="$sortOrder" align="right" class="px-4 py-3 font-semibold" />
                             <x-sort-th column="method" label="Metode" :sort-by="$sortBy" :sort-order="$sortOrder" class="px-4 py-3 font-semibold" />
-                            <x-sort-th column="account" label="Rekening" :sort-by="$sortBy" :sort-order="$sortOrder" class="px-4 py-3 font-semibold" />
+                            <x-sort-th column="account" label="Rekening / Dompet" :sort-by="$sortBy" :sort-order="$sortOrder" class="px-4 py-3 font-semibold" />
                             <th class="px-5 py-3 font-semibold text-right">Aksi</th>
                         </tr>
                     </thead>
@@ -198,7 +198,7 @@
                                     @if($payment)
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold {{ $payment->payment_method === 'cash' ? 'bg-emerald-50 text-emerald-700' : 'bg-blue-50 text-blue-700' }}">
                                             <i class="fa-solid {{ $payment->payment_method === 'cash' ? 'fa-money-bill-wave' : 'fa-building-columns' }} mr-1"></i>
-                                            {{ $payment->paymentMethodLabel() }}
+                                            {{ $payment->paymentChannelLabel() }}
                                         </span>
                                     @else
                                         <span class="text-gray-400">—</span>
@@ -308,7 +308,7 @@
                         <select name="payment_method" required data-payment-method
                                 class="w-full text-sm rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800 focus:border-brand-800">
                             <option value="" {{ $addValue('payment_method') ? '' : 'selected' }}>-- Pilih Metode --</option>
-                            <option value="transfer" {{ $addValue('payment_method') === 'transfer' ? 'selected' : '' }}>Transfer Bank</option>
+                            <option value="transfer" {{ $addValue('payment_method') === 'transfer' ? 'selected' : '' }}>Transfer (Bank / Dompet Digital)</option>
                             <option value="cash" {{ $addValue('payment_method') === 'cash' ? 'selected' : '' }}>Tunai</option>
                         </select>
                     </div>
@@ -317,18 +317,13 @@
                 <div data-bank-fields class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-blue-50/60 border border-blue-100 rounded-xl p-4">
                     <p class="sm:col-span-2 text-[11px] text-blue-800">
                         <i class="fa-solid fa-building-columns mr-1"></i>
-                        Rekening muncul karena metode yang dipilih adalah Transfer Bank.
+                        Catat lewat mana transfernya: rekening bank atau dompet digital (DANA, GoPay, OVO, dan sejenisnya). Pilih Lainnya bila tidak ada di daftar.
                     </p>
+                    <x-transfer-channel-fields :channel="$addValue('transfer_channel')" :other="$addValue('transfer_channel_other', '')" />
                     <div>
-                        <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Bank <span class="text-rose-500">*</span></label>
-                        <input type="text" name="bank_name" value="{{ $addValue('bank_name') }}" maxlength="50" data-bank-required="1"
-                               placeholder="Contoh: BSI"
-                               class="w-full text-sm rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800 focus:border-brand-800">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 mb-1">Nomor Rekening <span class="text-rose-500">*</span></label>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Nomor Rekening / Nomor Dompet Digital <span class="text-rose-500">*</span></label>
                         <input type="text" name="bank_account_number" value="{{ $addValue('bank_account_number') }}" maxlength="40" data-bank-required="1"
-                               placeholder="Contoh: 7212345678"
+                               placeholder="Contoh: 7212345678 atau 081234567890"
                                class="w-full text-sm rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800 focus:border-brand-800">
                     </div>
                     <div class="sm:col-span-2">
@@ -388,7 +383,7 @@
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Metode Pembayaran <span class="text-rose-500">*</span></label>
                             <select name="payment_method" required data-payment-method
                                     class="w-full text-sm rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800 focus:border-brand-800">
-                                <option value="transfer" {{ $editValue('payment_method', $payment->payment_method) === 'transfer' ? 'selected' : '' }}>Transfer Bank</option>
+                                <option value="transfer" {{ $editValue('payment_method', $payment->payment_method) === 'transfer' ? 'selected' : '' }}>Transfer (Bank / Dompet Digital)</option>
                                 <option value="cash" {{ $editValue('payment_method', $payment->payment_method) === 'cash' ? 'selected' : '' }}>Tunai</option>
                             </select>
                         </div>
@@ -397,18 +392,15 @@
                     <div data-bank-fields class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-blue-50/60 border border-blue-100 rounded-xl p-4">
                         <p class="sm:col-span-2 text-[11px] text-blue-800">
                             <i class="fa-solid fa-building-columns mr-1"></i>
-                            Rekening hanya diperlukan untuk pembayaran Transfer Bank.
+                            Rekening atau dompet digital hanya diperlukan untuk pembayaran transfer.
                         </p>
+                        <x-transfer-channel-fields
+                            :channel="$editValue('transfer_channel', \App\Enums\TransferChannel::optionFor($payment->bank_name))"
+                            :other="$editValue('transfer_channel_other', \App\Enums\TransferChannel::otherFor($payment->bank_name))" />
                         <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Bank <span class="text-rose-500">*</span></label>
-                            <input type="text" name="bank_name" value="{{ $editValue('bank_name', $payment->bank_name) }}" maxlength="50" data-bank-required="1"
-                                   placeholder="Contoh: BSI"
-                                   class="w-full text-sm rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800 focus:border-brand-800">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Nomor Rekening <span class="text-rose-500">*</span></label>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Nomor Rekening / Nomor Dompet Digital <span class="text-rose-500">*</span></label>
                             <input type="text" name="bank_account_number" value="{{ $editValue('bank_account_number', $payment->bank_account_number) }}" maxlength="40" data-bank-required="1"
-                                   placeholder="Contoh: 7212345678"
+                                   placeholder="Contoh: 7212345678 atau 081234567890"
                                    class="w-full text-sm rounded-xl border-gray-300 py-2 px-3 focus:ring-brand-800 focus:border-brand-800">
                         </div>
                         <div class="sm:col-span-2">
@@ -468,6 +460,9 @@
         box.querySelectorAll('[data-bank-required]').forEach(function (input) {
             input.required = isTransfer;
         });
+
+        const channel = box.querySelector('[data-transfer-channel]');
+        if (channel) toggleTransferChannelOther(channel);
     }
 
     function fillTeacherAccount(form) {
@@ -476,7 +471,7 @@
         const option = select.selectedOptions[0];
         if (!option || !option.value) return;
 
-        form.querySelector('[name="bank_name"]').value = option.dataset.bankName || '';
+        setTransferChannel(form.querySelector('[data-transfer-channel-box]'), option.dataset.bankName || '');
         form.querySelector('[name="bank_account_number"]').value = option.dataset.bankNumber || '';
         form.querySelector('[name="bank_account_name"]').value = option.dataset.bankOwner || '';
     }

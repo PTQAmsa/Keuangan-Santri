@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ExpenseCategory;
+use App\Enums\TransferChannel;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -20,6 +21,7 @@ class Expense extends Model
         'amount',
         'expense_date',
         'payment_method',
+        'transfer_channel',
         'recipient',
         'notes',
         'recorded_by',
@@ -46,6 +48,14 @@ class Expense extends Model
     public function isVoided(): bool
     {
         return $this->voided_at !== null;
+    }
+
+    /**
+     * "Tunai", atau "Transfer BSI" / "Transfer DANA" sesuai saluran keluarnya uang.
+     */
+    public function paymentMethodLabel(): string
+    {
+        return TransferChannel::methodLabel((string) $this->payment_method, $this->transfer_channel);
     }
 
     public function recordedBy(): BelongsTo

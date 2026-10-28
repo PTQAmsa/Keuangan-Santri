@@ -89,6 +89,58 @@ class ExpenseManagementTest extends TestCase
         $this->assertSame($bendahara->id, $log->user_id);
     }
 
+    public function test_transfer_expense_records_which_bank_or_wallet_the_money_left_through(): void
+    {
+        $bendahara = $this->userWithRole(UserRole::Bendahara);
+
+        $payload = [
+            'category' => ExpenseCategory::Operasional->value,
+            'description' => 'Pembayaran listrik',
+            'amount' => 450000,
+            'expense_date' => now()->toDateString(),
+            'payment_method' => 'transfer',
+        ];
+
+        $this->actingAs($bendahara)->post(route('admin.expenses.store'), $payload)
+            ->assertSessionHasErrors('transfer_channel');
+
+        $this->actingAs($bendahara)->post(route('admin.expenses.store'), $payload + ['transfer_channel' => 'Lainnya'])
+            ->assertSessionHasErrors('transfer_channel_other');
+
+        $this->assertSame(0, Expense::where('description', 'Pembayaran listrik')->count());
+
+        $this->actingAs($bendahara)->post(route('admin.expenses.store'), $payload + ['transfer_channel' => 'GoPay'])
+            ->assertRedirect(route('admin.expenses'));
+
+        $gopay = Expense::where('description', 'Pembayaran listrik')->sole();
+        $this->assertSame('GoPay', $gopay->transfer_channel);
+        $this->assertSame('Transfer GoPay', $gopay->paymentMethodLabel());
+        $this->assertSame('Transfer GoPay', ActivityLog::latest('id')->firstOrFail()->properties['Metode']);
+
+        $this->actingAs($bendahara)->post(route('admin.expenses.store'), [
+            'description' => 'Pembayaran internet',
+            'transfer_channel' => 'Lainnya',
+            'transfer_channel_other' => 'Flip',
+        ] + $payload)->assertRedirect(route('admin.expenses'));
+
+        $this->assertSame('Flip', Expense::where('description', 'Pembayaran internet')->sole()->transfer_channel);
+
+        // Tunai tidak menyimpan saluran transfer meskipun formulir mengirimkannya.
+        $this->actingAs($bendahara)->post(route('admin.expenses.store'), [
+            'description' => 'Belanja tunai',
+            'payment_method' => 'cash',
+            'transfer_channel' => 'BSI',
+        ] + $payload)->assertRedirect(route('admin.expenses'));
+
+        $this->assertNull(Expense::where('description', 'Belanja tunai')->sole()->transfer_channel);
+
+        $this->actingAs($bendahara)
+            ->get(route('admin.expenses'))
+            ->assertOk()
+            ->assertSee('Transfer GoPay')
+            ->assertSee('Transfer Flip');
+    }
+
     public function test_expense_validation_rejects_empty_data(): void
     {
         $this->actingAs($this->userWithRole(UserRole::Bendahara))

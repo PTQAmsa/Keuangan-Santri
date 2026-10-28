@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\ExpenseCategory;
+use App\Enums\TransferChannel;
 use App\Models\Expense;
 use App\Services\ActivityLogService;
 use App\Services\BookClosingService;
@@ -106,6 +107,8 @@ class ExpenseController
             'amount' => ['required', 'numeric', 'min:1', 'max:999999999999'],
             'expense_date' => ['required', 'date'],
             'payment_method' => ['required', 'in:cash,transfer'],
+            'transfer_channel' => ['required_if:payment_method,transfer', 'nullable', Rule::enum(TransferChannel::class)],
+            'transfer_channel_other' => ['required_if:transfer_channel,'.TransferChannel::Lainnya->value, 'nullable', 'string', 'max:50'],
             'recipient' => ['nullable', 'string', 'max:150'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ], [
@@ -115,17 +118,27 @@ class ExpenseController
             'amount.min' => 'Nominal pengeluaran harus lebih dari nol.',
             'expense_date.required' => 'Tanggal pengeluaran wajib diisi.',
             'payment_method.required' => 'Metode pembayaran wajib dipilih.',
+            'transfer_channel.required_if' => 'Pilih lewat mana transfernya: bank atau dompet digital.',
+            'transfer_channel.Illuminate\Validation\Rules\Enum' => 'Saluran transfer tidak dikenali.',
+            'transfer_channel_other.required_if' => 'Tuliskan nama bank atau dompet digital lainnya.',
         ], [
             'category' => 'kategori',
             'description' => 'uraian',
             'amount' => 'nominal',
             'expense_date' => 'tanggal',
             'payment_method' => 'metode',
+            'transfer_channel' => 'saluran transfer',
+            'transfer_channel_other' => 'nama saluran lainnya',
             'recipient' => 'penerima',
             'notes' => 'catatan',
         ]);
 
         $bookClosing->assertOpen($data['expense_date'], 'pengeluaran');
+
+        $data['transfer_channel'] = $data['payment_method'] === 'transfer'
+            ? TransferChannel::resolveName($data['transfer_channel'] ?? null, $data['transfer_channel_other'] ?? null)
+            : null;
+        unset($data['transfer_channel_other']);
 
         $data['expense_code'] = Expense::generateCode();
         $data['recorded_by'] = auth()->id();
@@ -136,7 +149,7 @@ class ExpenseController
 
         return redirect()
             ->route('admin.expenses')
-            ->with('success', 'Kas keluar '.$expense->expense_code.' sebesar Rp '.number_format((float) $expense->amount, 0, ',', '.').' berhasil dicatat.');
+            ->with('success', 'Kas keluar '.$expense->expense_code.' sebesar Rp '.number_format((float) $expense->amount, 0, ',', '.').' ('.$expense->paymentMethodLabel().') berhasil dicatat.');
     }
 
     /**

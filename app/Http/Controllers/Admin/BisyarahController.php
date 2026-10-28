@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\TransferChannel;
 use App\Models\BookClosing;
 use App\Models\Teacher;
 use App\Models\TeacherBisyarahPayment;
@@ -11,6 +12,7 @@ use App\Services\BookClosingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -140,7 +142,7 @@ class BisyarahController
                 'period_month' => $period->month,
                 'amount' => $data['amount'],
                 'payment_method' => $data['payment_method'],
-                'bank_name' => $data['payment_method'] === 'transfer' ? $data['bank_name'] : null,
+                'bank_name' => $data['bank_name'],
                 'bank_account_number' => $data['payment_method'] === 'transfer' ? $data['bank_account_number'] : null,
                 'bank_account_name' => $data['payment_method'] === 'transfer' ? ($data['bank_account_name'] ?? null) : null,
                 'notes' => $data['notes'] ?? null,
@@ -156,7 +158,7 @@ class BisyarahController
 
         return redirect()
             ->route('admin.bisyarah', ['period' => $period->format('Y-m')])
-            ->with('success', 'Bisyarah '.$teacher->nama_lengkap.' periode '.$periodLabel.' sebesar Rp '.number_format((float) $payment->amount, 0, ',', '.').' ('.$payment->paymentMethodLabel().') berhasil dicatat dan masuk kas keluar '.$payment->expense->expense_code.'.');
+            ->with('success', 'Bisyarah '.$teacher->nama_lengkap.' periode '.$periodLabel.' sebesar Rp '.number_format((float) $payment->amount, 0, ',', '.').' ('.$payment->paymentChannelLabel().') berhasil dicatat dan masuk kas keluar '.$payment->expense->expense_code.'.');
     }
 
     public function update(Request $request, TeacherBisyarahPayment $bisyarah, BookClosingService $bookClosing)
@@ -175,8 +177,10 @@ class BisyarahController
             ];
         }
 
-        if ($bisyarah->payment_method !== $data['payment_method']) {
-            $changes['Metode'] = [$bisyarah->paymentMethodLabel(), $data['payment_method'] === 'cash' ? 'Tunai' : 'Transfer'];
+        $newMethodLabel = TransferChannel::methodLabel($data['payment_method'], $data['bank_name']);
+
+        if ($bisyarah->paymentChannelLabel() !== $newMethodLabel) {
+            $changes['Metode'] = [$bisyarah->paymentChannelLabel(), $newMethodLabel];
         }
 
         if ($data['payment_method'] === 'transfer') {
@@ -201,7 +205,7 @@ class BisyarahController
             $bisyarah->fill([
                 'amount' => $data['amount'],
                 'payment_method' => $data['payment_method'],
-                'bank_name' => $data['payment_method'] === 'transfer' ? $data['bank_name'] : null,
+                'bank_name' => $data['bank_name'],
                 'bank_account_number' => $data['payment_method'] === 'transfer' ? $data['bank_account_number'] : null,
                 'bank_account_name' => $data['payment_method'] === 'transfer' ? ($data['bank_account_name'] ?? null) : null,
                 'notes' => $data['notes'] ?? null,
@@ -253,6 +257,10 @@ class BisyarahController
     }
 
     /**
+     * Data tervalidasi. Kunci bank_name sudah berisi nama saluran transfer
+     * (bank atau dompet digital) hasil pilihan daftar atau isian Lainnya,
+     * dan null untuk pembayaran tunai.
+     *
      * @return array<string, mixed>
      */
     private function validated(Request $request, bool $withPeriod = true): array
@@ -260,7 +268,8 @@ class BisyarahController
         $rules = [
             'amount' => ['required', 'numeric', 'min:1', 'max:999999999999'],
             'payment_method' => ['required', 'in:transfer,cash'],
-            'bank_name' => ['required_if:payment_method,transfer', 'nullable', 'string', 'max:50'],
+            'transfer_channel' => ['required_if:payment_method,transfer', 'nullable', Rule::enum(TransferChannel::class)],
+            'transfer_channel_other' => ['required_if:transfer_channel,'.TransferChannel::Lainnya->value, 'nullable', 'string', 'max:50'],
             'bank_account_number' => ['required_if:payment_method,transfer', 'nullable', 'string', 'max:40'],
             'bank_account_name' => ['nullable', 'string', 'max:100'],
             'notes' => ['nullable', 'string', 'max:500'],
@@ -271,7 +280,7 @@ class BisyarahController
             $rules['period'] = ['required', 'date_format:Y-m'];
         }
 
-        return $request->validate($rules, [
+        $data = $request->validate($rules, [
             'teacher_id.required' => 'Pilih guru yang akan dibayar bisyarahnya.',
             'teacher_id.exists' => 'Data guru yang dipilih tidak ditemukan.',
             'period.required' => 'Periode bisyarah wajib dipilih.',
@@ -281,18 +290,28 @@ class BisyarahController
             'amount.min' => 'Nominal bisyarah harus lebih dari nol.',
             'payment_method.required' => 'Metode pembayaran bisyarah wajib dipilih.',
             'payment_method.in' => 'Metode pembayaran bisyarah tidak dikenali.',
-            'bank_name.required_if' => 'Nama bank wajib diisi untuk pembayaran transfer.',
-            'bank_account_number.required_if' => 'Nomor rekening wajib diisi untuk pembayaran transfer.',
+            'transfer_channel.required_if' => 'Pilih lewat mana transfernya: bank atau dompet digital.',
+            'transfer_channel.Illuminate\Validation\Rules\Enum' => 'Saluran transfer tidak dikenali.',
+            'transfer_channel_other.required_if' => 'Tuliskan nama bank atau dompet digital lainnya.',
+            'bank_account_number.required_if' => 'Nomor rekening atau nomor dompet digital wajib diisi untuk pembayaran transfer.',
         ], [
             'teacher_id' => 'guru',
             'period' => 'periode',
             'amount' => 'nominal bisyarah',
             'payment_method' => 'metode pembayaran',
-            'bank_name' => 'nama bank',
+            'transfer_channel' => 'saluran transfer',
+            'transfer_channel_other' => 'nama saluran lainnya',
             'bank_account_number' => 'nomor rekening',
             'bank_account_name' => 'nama pemilik rekening',
             'notes' => 'catatan',
         ]);
+
+        $data['bank_name'] = $data['payment_method'] === 'transfer'
+            ? TransferChannel::resolveName($data['transfer_channel'] ?? null, $data['transfer_channel_other'] ?? null)
+            : null;
+        unset($data['transfer_channel'], $data['transfer_channel_other']);
+
+        return $data;
     }
 
     /**

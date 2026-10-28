@@ -380,7 +380,7 @@ class ActivityLogService
                 'Uraian' => $expense->description,
                 'Nominal' => self::rupiah($expense->amount),
                 'Tanggal' => $expense->expense_date?->format('d/m/Y') ?? '-',
-                'Metode' => $expense->payment_method === 'cash' ? 'Tunai' : 'Transfer',
+                'Metode' => $expense->paymentMethodLabel(),
                 'Penerima' => $expense->recipient ?: '-',
                 'Dicatat Oleh' => $expense->recordedBy->name ?? '-',
             ],
@@ -837,7 +837,7 @@ class ActivityLogService
             'Guru' => $payment->teacher->nama_lengkap ?? '-',
             'Periode' => $payment->periodLabel(),
             'Kas Keluar' => $payment->expense?->expense_code ?? '-',
-            'Metode' => $payment->paymentMethodLabel(),
+            'Metode' => $payment->paymentChannelLabel(),
             'Rekening Tujuan' => $payment->hasBankAccount()
                 ? trim(($payment->bank_name ?? 'Bank').' • '.$payment->bank_account_number.' • '.($payment->bank_account_name ?? '-'))
                 : '-',

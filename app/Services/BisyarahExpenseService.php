@@ -27,6 +27,7 @@ class BisyarahExpenseService
             'description' => 'Bisyarah '.$payment->teacher->nama_lengkap.' '.$payment->periodLabel(),
             'amount' => $payment->amount,
             'payment_method' => $payment->payment_method,
+            'transfer_channel' => $payment->payment_method === 'transfer' ? $payment->bank_name : null,
             'recipient' => $payment->teacher->nama_lengkap,
             'notes' => $this->expenseNotes($payment),
         ];
